@@ -1,3 +1,4 @@
+#include "global_defines.h"
 #include "${lname}_impl_defines.h"
 #include <stdbool.h>
 

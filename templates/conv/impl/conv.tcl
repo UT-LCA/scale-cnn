@@ -1,16 +1,17 @@
-############################################################
+###############################################################################
 #
 #  ${lname}.tcl -- AUTO-GENERATED --
 #  
 #  Top-level TCL file for synthesizing the layer
+#  Run this TCL file if you just want to synthesize this one layer.
 #  To execute this, use this command:
 #     vivado_hls -f run_hls.tcl
 #
-############################################################
+###############################################################################
 
 # Create a Vivado HLS project
 open_project -reset conv_prj
-add_files {${lname}.c}
+add_files -cflags "-I .." {../global_defines.h ${lname}.c}
 set_top ${lname}
 
 # Create solution, specify FPGA and desired clock period.
@@ -20,7 +21,7 @@ create_clock -period 10
 
 # Apply the directives
 source ${lname}_impl_directives.tcl
-source ${lname}_common_directives.tcl
+source ../${lname}_common_directives.tcl
 
 # Run Synthesis
 csynth_design

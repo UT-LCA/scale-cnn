@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// {$lname}_common_defines.h  -- AUTO-GENERATED --
+// ${lname}_common_defines.h  -- AUTO-GENERATED --
 //
 //  Includes constants that are specific to the layer and not any particular
 //  implementation of the layer. This mainly consists of the layer dimensions
@@ -21,7 +21,7 @@ static const int INPUT_HEIGHT = $input_height;
 static const int INPUT_WIDTH  = $input_width;
 static const int INPUT_CHANS  = $input_chans;
 
-static const int VECTOR_SIZE = ($input_height * $input_width * $input_chans);
+static const int VECTOR_SIZE = ($filter_size * $filter_size * $input_chans);
 static const int INTERLEAVE  = 4; // For dot_prduct FP accumulation interleaving
 
 #endif
