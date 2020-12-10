@@ -3,7 +3,7 @@
 
 #include "${lname}_common_defines.h"
 
-static const int SCALE_FACTOR = $SCALE_FACTOR;
-static const int PSUM_LEN     = $SCALE_FACTOR * 4;
+static const int SCALE_FACTOR = $scale_factor;
+static const int PSUM_LEN     = $scale_factor * 4;
 
 #endif
