@@ -35,7 +35,7 @@ if {$$SCALE_FACTOR > 1} {
 # readFilters directives
 set_directive_pipeline ${lname}_readFilters/FL6
 if {$$SCALE_FACTOR > 1} {
-  set_directive_unroll -factor $$SCALE_FACTOR $lname_readFilters/FL6
+  set_directive_unroll -factor $$SCALE_FACTOR ${lname}_readFilters/FL6
 }
 
 # Don't inline dot_product or accum

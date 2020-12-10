@@ -1,1 +1,1 @@
-set SCALE_FACTOR $SCALE_FACTOR
+set SCALE_FACTOR $scale_factor

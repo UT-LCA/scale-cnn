@@ -9,19 +9,19 @@
 #ifndef ${lname}_COMMON_H
 #define ${lname}_COMMON_H
 
-static const int OUTPUT_HEIGHT = $OUTPUT_HEIGHT;
-static const int OUTPUT_WIDTH  = $OUTPUT_WIDTH;
-static const int OUTPUT_CHANS  = $OUTPUT_CHANS;
+static const int OUTPUT_HEIGHT = $output_height;
+static const int OUTPUT_WIDTH  = $output_width;
+static const int OUTPUT_CHANS  = $output_chans;
 
-static const int FILTER_SIZE = $FILTER_SIZE;
-static const int PAD         = $PAD;
-static const int STRIDE      = $STRIDE;
+static const int FILTER_SIZE = $filter_size;
+static const int PAD         = $pad;
+static const int STRIDE      = $stride;
 
-static const int INPUT_HEIGHT = $INPUT_HEIGHT;
-static const int INPUT_WIDTH  = $INPUT_WIDTH;
-static const int INPUT_CHANS  = $INPUT_CHANS;
+static const int INPUT_HEIGHT = $input_height;
+static const int INPUT_WIDTH  = $input_width;
+static const int INPUT_CHANS  = $input_chans;
 
-static const int VECTOR_SIZE = ($INPUT_HEIGHT * $INPUT_WIDTH * $INPUT_CHANS);
+static const int VECTOR_SIZE = ($input_height * $input_width * $input_chans);
 static const int INTERLEAVE  = 4; // For dot_prduct FP accumulation interleaving
 
 #endif

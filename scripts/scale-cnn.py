@@ -13,6 +13,9 @@ if __name__ == '__main__':
 
    mode  = args.mode
 
+   if os.getenv('SCALE_CNN_ROOT') is None:
+      raise Exception('SCALE_CNN_ROOT environment variable is not set!')
+
    if mode == 'genlayer':
       layer_gen.generate_layer(args.input, args.output)
    else:
