@@ -36,11 +36,15 @@ def get_layer_impl_files(layer_name, layer_type):
    return impl_files
    
 
+# Given a template file, substitutions, and output file path,
+# copies the template file to the output file making the appropriate substitutions.
+# If it is a .sh file, it also makes it executable.
 def make_file_from_template(template_fp, output_fp, substitutions):
    with open(template_fp, 'r') as ifile, open(output_fp, 'w') as ofile:
       template = string.Template(ifile.read())
       ofile.write(template.substitute(substitutions))
-
+   if output_fp.endswith('.sh'):
+      os.system('chmod +x ' + output_fp)
 
 def gen_layer_files(layer_spec, odir, template_path):
    layer_name = layer_spec['layer_name']

@@ -10,7 +10,7 @@
 ###############################################################################
 
 # Create a Vivado HLS project
-open_project -reset conv_prj
+open_project -reset ${lname}_prj
 add_files -cflags "-I .." {../global_defines.h ${lname}.c}
 set_top ${lname}
 
