@@ -20,7 +20,7 @@ def GetCostInfo(report_xml):
    # TODO: Make cost function configurable, might just want to consider BRAMs or DSPs.
    total_cost = 0.0
    for name, rpt_name in cost_factors:
-      resource_cost = int(resources.find(rpt_name)) / int(available_resources.find(rpt_name))
+      resource_cost = int(resources.find(rpt_name).text) / int(available_resources.find(rpt_name).text)
       cost[name] = resource_cost
       total_cost = total_cost + resource_cost
    cost['total'] = total_cost
