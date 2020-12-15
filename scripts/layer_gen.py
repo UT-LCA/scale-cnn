@@ -3,20 +3,8 @@
 # given its template and its specification
 from functools import reduce
 import copy
-import json
 import os
 import string
-
-# Finds and reads the layer.json for the layer
-def read_layer_spec(json_path):
-   if not os.path.isfile(json_path):
-      raise Exception('Error: could not find layer json file at {}.'.format(json_path))
-   layer_spec = {}
-   with open(json_path, 'r') as jf:
-      layer_spec = json.load(jf)
-   layer_spec['lname'] = layer_spec['layer_name'] # shorthand
-   return layer_spec
-
 
 def get_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
@@ -140,9 +128,7 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
 
 # Given a path to a layer config file, generates all the files needed
 # for that layer in the specified output directory.
-def generate_layer(ipath, odir):
-   # Read in the layer spec
-   layer_spec = read_layer_spec(ipath)
+def generate_layer(layer_spec, odir):
    layer_type = layer_spec['layer_type']
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    layer_spec['fpga_part'] = 'xcku115-flvf1924-3-e'
