@@ -55,17 +55,20 @@ def gen_layer_files(layer_spec, odir, template_path):
       make_file_from_template(template_fp, output_fp, layer_spec)
 
 
-def gen_layer_impl_files(impl, odir, impl_name, template_path):
-   impl_dir = os.path.join(odir, impl_name)
+def gen_layer_impl_files(layer_spec, impl, odir, template_path):
+   impl_dir = os.path.join(odir, impl['name'])
    if not os.path.isdir(impl_dir):
       os.mkdir(impl_dir)
-   layer_name = impl['layer_name']
-   layer_type = impl['layer_type']
+   layer_name = layer_spec['layer_name']
+   layer_type = layer_spec['layer_type']
    impl_files = get_layer_impl_files(layer_name, layer_type)
    for impl_file, template_fname in impl_files:
       template_fp = os.path.join(template_path, 'impl', template_fname)
-      output_fp = os.path.join(odir, impl_name, impl_file)
-      make_file_from_template(template_fp, output_fp, impl)
+      output_fp = os.path.join(odir, impl['name'], impl_file)
+      substitutions = copy.copy(layer_spec)
+      substitutions.update(impl)
+      make_file_from_template(template_fp, output_fp, substitutions)
+   return impl_dir
 
 
 # Return a sorted list of all the integer factors of a positive integer
@@ -78,7 +81,7 @@ def factors(n):
 
 
 # Generates a conv layer from the template, and generates the different implementations
-# Returns a list of directories for each implementation
+# Returns a list of dicts that describe each implementation, including their directory.
 def gen_conv_layer(layer_spec, odir):
    template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/conv/"
    # Generate the layer-specific files once
@@ -106,32 +109,32 @@ def gen_conv_layer(layer_spec, odir):
    # Right now it's just the scale factors.
    layer_impls = []
    for sf in scale_factors:
-      impl = copy.copy(layer_spec)
+      impl = {}
       impl['scale_factor'] = sf
-      layer_impls.append(impl)
-
-   impl_dirs = []
-   # Now, generate the files for each implementation
-   for impl in layer_impls:
       # Need to pick a name for the implementation
       # For now pick "sf#"
-      impl_name = "sf{}".format(impl['scale_factor'])
-      gen_layer_impl_files(impl, odir, impl_name, template_path)
-      impl_dir = os.path.join(odir, impl_name)
-      impl_dirs.append(impl_dir)
+      impl['name'] = "sf{}".format(impl['scale_factor'])
+      layer_impls.append(impl)
 
-   return impl_dirs
+   # Now, generate the files for each implementation
+   for impl in layer_impls:
+      impl_dir = gen_layer_impl_files(layer_spec, impl, odir, template_path)
+      impl['dir'] = os.path.abspath(impl_dir)
+
+   return layer_impls
 
 
 # Create a file with a list of implementation directories.
-def gen_layer_impl_list(odir, layer_spec, impl_dirs):
+# It will be a text file where each line is a string representation of the 
+# dictionary that describes each implementation.
+def gen_layer_impl_list(odir, layer_spec, implementations):
    lname = layer_spec['layer_name']
    fp = os.path.abspath(os.path.join(odir, lname + "_implementations.txt"))
    with open(fp, 'w') as f:
-      for impl_dir in impl_dirs:
-         f.write(os.path.abspath(impl_dir))
+      for impl in implementations:
+         f.write(str(impl))
          f.write("\n")
-   print("Generated {} implementations for {}".format(len(impl_dirs), lname))
+   print("Generated {} implementations for {}".format(len(implementations), lname))
    print("Generated implementation list at {}".format(fp))
 
 
@@ -146,8 +149,8 @@ def generate_layer(ipath, odir):
    if not os.path.isdir(odir):
       os.mkdir(odir)
    if layer_type == 'conv':
-      impl_dirs = gen_conv_layer(layer_spec, odir)
+      implementations = gen_conv_layer(layer_spec, odir)
    else:
       raise Exception('Unknown layer type: {}'.format(layer_type))
 
-   gen_layer_impl_list(odir, layer_spec, impl_dirs)
+   gen_layer_impl_list(odir, layer_spec, implementations)
