@@ -20,7 +20,8 @@ def get_layer_impl_files(layer_name, layer_type):
                  ('{}.tcl'.format(layer_name), '{}.tcl'.format(layer_type)), \
                  ('{}_impl_defines.h'.format(layer_name), 'impl_defines.h'), \
                  ('{}_impl_directives.tcl'.format(layer_name), 'impl_directives.tcl'), \
-                 ('run.sh', 'run.sh')]
+                 ('run.sh', 'run.sh'),
+                 ('viewreport.sh', 'viewreport.sh')]
    return impl_files
    
 

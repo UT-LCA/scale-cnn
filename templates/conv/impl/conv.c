@@ -81,6 +81,9 @@ void ${lname}_dot_product (
    DP_LOOP: for (int x = 0; x < VECTOR_SIZE; x+= PSUM_LEN) {
       #pragma HLS pipeline
       PARTIAL_ACCUM: for (int p = 0; p < PSUM_LEN; p++) {
+         // Explicitly tell Vivado to unroll this loop, because sometimes PSUM_LEN > VECTOR_SIZE,
+         // in which case, DP_LOOP is removed entirely, but we still want this loop to be fully unrolled.
+         #pragma HLS unroll
          // NOTE: VECTOR_SIZE may not be a multiple of PSUM_LEN!
          data_t val = (x+p) < VECTOR_SIZE ? (ifmap_vec[x+p] * weight_vec[x+p]) : 0.0;
          psum[p] += val;
