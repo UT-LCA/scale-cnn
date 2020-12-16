@@ -99,7 +99,6 @@ void ${lname}_dot_product (
 data_t ${lname}_accum (data_t psum_vec[PSUM_LEN]) {
    data_t sum = 0.0;
    ACCUM: for (int p = 0; p < PSUM_LEN; p++) {
-      #pragma HLS pipeline
       sum += psum_vec[p];
    }
    return sum;

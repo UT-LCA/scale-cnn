@@ -35,7 +35,7 @@ def CalcMemReadBandwidthUtil(layer_spec, implementation, total_cycles):
                           layer_spec['output_width']  * \
                           layer_spec['output_chans']
    # Right now, the memory read bandwidth is just the scale factor.
-   mem_read_bandwidth = implementation['scale_factor']
+   mem_read_bandwidth = implementation['read_scale_factor']
    return (total_words_to_read / mem_read_bandwidth) / total_cycles
 
 

@@ -24,7 +24,6 @@ def get_layer_impl_files(layer_name, layer_type):
                  ('viewreport.sh', 'viewreport.sh')]
    return impl_files
    
-
 # Given a template file, substitutions, and output file path,
 # copies the template file to the output file making the appropriate substitutions.
 # If it is a .sh file, it also makes it executable.
@@ -43,7 +42,6 @@ def gen_layer_files(layer_spec, odir, template_path):
       output_fp = os.path.join(odir, layer_file)
       make_file_from_template(template_fp, output_fp, layer_spec)
 
-
 def gen_layer_impl_files(layer_spec, impl, odir, template_path):
    impl_dir = os.path.join(odir, impl['name'])
    if not os.path.isdir(impl_dir):
@@ -59,7 +57,6 @@ def gen_layer_impl_files(layer_spec, impl, odir, template_path):
       make_file_from_template(template_fp, output_fp, substitutions)
    return impl_dir
 
-
 # Return a sorted list of all the integer factors of a positive integer
 # Used to determine options for unroll factors.
 def factors(n):
@@ -67,7 +64,6 @@ def factors(n):
                ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0))))
    x.sort()
    return x
-
 
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
@@ -77,33 +73,37 @@ def gen_conv_layer(layer_spec, odir):
    gen_layer_files(layer_spec, odir, template_path)
 
    # Different implementations for conv layers:
-   # - Scale factor:
+   # - Read Scale factor:
    #   - First choose the factors of input channels
    #   - Then iterate over the factors of filter size, multiplying each by # input channels
    #     (this is when the scale factor goes beyond the number of input channels
    #   - Do not scale beyond that as at that point we might as well just do complete partitioning
    #     with registers.
+   # - Dot Product scale factor:
+   #     - Equal to read scale factor
+   #     - Equal to twice the read scale factor
    ichans      = layer_spec['input_chans']
    filter_size = layer_spec['filter_size']
    ichans_factors = factors(ichans)
    fsize_factors  = factors(filter_size)
-   scale_factors = copy.copy(ichans_factors)
+   read_scale_factors = copy.copy(ichans_factors)
    for f in fsize_factors:
-      scale_factors.append(ichans*f)
+      read_scale_factors.append(ichans*f)
    # Sort and remove duplicates
-   scale_factors = list(set(scale_factors))
-   scale_factors.sort()
+   read_scale_factors = list(set(read_scale_factors))
+   read_scale_factors.sort()
 
-   # Generate all of the conv implementations
-   # Right now it's just the scale factors.
+   # Generate all of the possible conv implementations
    layer_impls = []
-   for sf in scale_factors:
-      impl = {}
-      impl['scale_factor'] = sf
-      # Need to pick a name for the implementation
-      # For now pick "sf#"
-      impl['name'] = "sf{}".format(impl['scale_factor'])
-      layer_impls.append(impl)
+   for read_sf in read_scale_factors:
+      for double_dp_sf in [False, True]:
+         impl = {}
+         dp_sf = 2*read_sf if double_dp_sf else read_sf
+         impl['read_scale_factor'] = read_sf
+         impl['dp_scale_factor']   = dp_sf
+         # Pick a name for the implementation
+         impl['name'] = "sf{}_{}".format(read_sf, dp_sf)
+         layer_impls.append(impl)
 
    # Now, generate the files for each implementation
    for impl in layer_impls:
