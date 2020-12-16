@@ -1,0 +1,13 @@
+{
+   "layer_name"    : "td_conv1",
+   "layer_type"    : "conv",
+   "input_height"  : 224,
+   "input_width"   : 224, 
+   "input_chans"   : 3,
+   "output_height" : 224,
+   "output_width"  : 224,
+   "output_chans"  : 16,
+   "filter_size"   : 3,
+   "stride"        : 1,
+   "pad"           : 1
+}

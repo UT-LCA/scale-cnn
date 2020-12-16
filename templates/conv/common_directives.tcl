@@ -27,16 +27,29 @@ set_directive_resource -core RAM_1P_BRAM $lname ifmap_vec
 set_directive_resource -core RAM_1P_BRAM $lname weight_vec
 
 # readInputs directives
-set_directive_pipeline ${lname}_readInputs/IL6
-if {$$SCALE_FACTOR > 1} {
+if {$$SCALE_FACTOR < $input_chans} {
+   set_directive_pipeline ${lname}_readInputs/IL6
    set_directive_unroll -factor $$SCALE_FACTOR ${lname}_readInputs/IL6
+} elseif {$$SCALE_FACTOR < [expr {$input_chans * $filter_size}]} {
+   set_directive_pipeline ${lname}_readInputs/IL5
+   set_directive_unroll -factor [expr {$$SCALE_FACTOR / $input_chans}] ${lname}_readInputs/IL5
+} elseif {$$SCALE_FACTOR <= [expr {$input_chans * $filter_size * $filter_size}]} {
+   set_directive_pipeline ${lname}_readInputs/IL4
+   set_directive_unroll -factor [expr {$$SCALE_FACTOR / ($input_chans * $filter_size)}] ${lname}_readInputs/IL4
 }
 
 # readFilters directives
-set_directive_pipeline ${lname}_readFilters/FL6
-if {$$SCALE_FACTOR > 1} {
-  set_directive_unroll -factor $$SCALE_FACTOR ${lname}_readFilters/FL6
+if {$$SCALE_FACTOR < $input_chans} {
+   set_directive_pipeline ${lname}_readFilters/FL6
+   set_directive_unroll -factor $$SCALE_FACTOR ${lname}_readFilters/FL6
+} elseif {$$SCALE_FACTOR < [expr {$input_chans * $filter_size}]} {
+   set_directive_pipeline ${lname}_readFilters/FL5
+   set_directive_unroll -factor [expr {$$SCALE_FACTOR / $input_chans}] ${lname}_readFilters/FL5
+} elseif {$$SCALE_FACTOR <= [expr {$input_chans * $filter_size * $filter_size}]} {
+   set_directive_pipeline ${lname}_readFilters/FL4
+   set_directive_unroll -factor [expr {$$SCALE_FACTOR / ($input_chans * $filter_size)}] ${lname}_readFilters/FL4
 }
+
 
 # Don't inline dot_product or accum
 set_directive_inline -off ${lname}_dot_product
