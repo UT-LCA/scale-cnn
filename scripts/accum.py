@@ -1,4 +1,10 @@
+# accum.py
+# Code for choosing accumulation stages for a layer,
+# and generating th C code for those stages.
 import math
+import os
+import string
+import copy
 
 
 # Design point compare function for pipelined tree accumulation stages
@@ -91,7 +97,6 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
 
    return best_point
 
-
 # Generates the parameters for an interleaved accumulation stage.
 def InterleavedStage(target_latency, curr_IL, input_read_bw):
    accum_stage = {}
@@ -155,6 +160,87 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          raise Exception('Number of accumulation stages is too large.')
 
    return accum_stages
+
+
+
+TEMPLATE_DIR = os.path.join(os.getenv('SCALE_CNN_ROOT'), 'templates/shared')
+def read_template(template_fname):
+   global TEMPLATE_DIR
+   tpath = os.path.join(TEMPLATE_DIR, template_fname)
+   with open(tpath, 'r') as f:
+      return string.Template(f.read())
+
+
+# Generates the code for a "simple" accumulation stage
+# TODO: This should really be called "unpipelined tree"
+# The "simple" stage should just be the simple for loop with one adder.
+def GenSimpleAccumStage(stage):
+   # Generate the body (all the intermediate sums)
+   val_queue = ['accum_in[{}]'.format(x) for x in range(stage['IL'])]
+   body = ""
+   int_sum_count = 0
+   while len(val_queue) > 1:
+      op1  = val_queue.pop()
+      op2  = val_queue.pop()
+      sum_ = "sum" + str(int_sum_count)
+      int_sum_count = int_sum_count + 1
+      body += "   data_t {} = {} + {};\n".format(sum_, op1, op2)
+      val_queue.insert(0, sum_)
+   body += "   return {};\n".format(val_queue[0])
+   # Read the template and make substitutions
+   template = read_template('accum_simple.c')
+   subs = copy.copy(stage)
+   subs['body'] = body
+   return template.substitute(subs)
+
+
+# Generates the code for an interleaved accumulation stage
+def GenInterleavedAccumStage(stage):
+  # There is no custom body to generate for this one
+  # So just read the template and make substitutions.
+   template = read_template('accum_interleaved.c')
+   return template.substitute(stage)
+
+
+# Generates the code for a pipelined tree accumulation stage
+def GenPipelinedTreeAccumStage(stage):
+   # Generate the body (all the intermediate sums)
+   # This part of the code is similar to the simple accumulation stage
+   # But there is one additional part that is handled in the template code.
+   val_queue = ['vals[{}]'.format(x) for x in range(stage['wrpc'])]
+   body = ""
+   int_sum_count = 0
+   s = " " * 6
+   # Calculate the total number of adders from the provided substage info
+   total_adders = 0
+   substages = stage['substages']
+   for adders, num_els in substages:
+      total_adders += adders
+   # Add statements for the pipelined tree
+   for i in range(total_adders):
+      op1  = val_queue.pop()
+      op2  = val_queue.pop()
+      sum_ = "sum" + str(int_sum_count)
+      int_sum_count = int_sum_count + 1
+      body += s + "data_t {} = {} + {};\n".format(sum_, op1, op2)
+      val_queue.insert(0, sum_)
+   # Sanity check: At this point, the number of elements in the val queue
+   # should be exactly equal to the number of outputs of the final stage.
+   final_stage_outputs = substages[-1][1]
+   if final_stage_outputs != len(val_queue):
+      exc_str = '''Something went wrong when generating pipelined tree accum stage.
+         final stage outputs ({}) does not equal length of val queue ({})'''
+      exc_str = exc_str.format(final_stage_outputs, len(val_queue))
+      raise Exception(exc_str)
+   # Statements for assigning the final outputs to accum_out
+   for o, op in enumerate(val_queue):
+      body += s + "accum_out[out_idx+{}] = {};\n".format(o, op)
+   body += s + "out_idx += {};\n".format(final_stage_outputs)
+   # Read the template and make substitutions
+   template = read_template('accum_pipelined_tree.c')
+   subs = copy.copy(stage)
+   subs['body'] = body
+   return template.substitute(subs)
 
 
 if __name__ == "__main__":
