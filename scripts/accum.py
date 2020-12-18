@@ -30,7 +30,7 @@ def GetPipelinedTreeStageSubstages(wrpc, th):
    for i in range(th):
       adders  = math.floor(num_els / 2)
       num_els = adders + (num_els % 2)
-      tree_stages.append(adders, num_els)
+      tree_stages.append((adders, num_els))
    return tree_stages
 
 
@@ -48,7 +48,7 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
    ol = tree_stages[-1][1] # number of outputs of the last tree stage.
    latency = (ADD_LATENCY*tree_height) + trip_count + OVERHEAD
-   return {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, \
+   return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
            'substages': tree_stages, 'type': 'pipelined_tree'}
 
 
@@ -80,7 +80,7 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
          # Each stage does a 2x reduction, but have to handle odd numbers correctly.
          tree_stages = GetPipelinedTreeStageSubstages(wrpc, th)
          ol = tree_stages[-1][1] # number of outputs of the last tree stage.
-         new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, \ 
+         new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 
                       'substages': tree_stages, 'type': 'pipelined_tree'}
          if best_point is None or compare_points(new_point, best_point):
             best_point = new_point
@@ -132,7 +132,7 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          # accumulation stage for the first stage. Since this stage will perform a 
          # relatively drastic reduction, it is unlikely that we would want one beyond 
          # the first stage.
-         accum_stage = InterleavedStage(target_latency, curr_IL, input_read_bw):
+         accum_stage = InterleavedStage(target_latency, curr_IL, input_read_bw)
       else:
          # Otherwise, insert a pipelined tree accumulation stage
          #
@@ -143,11 +143,35 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          if first_stage:
             accum_stage = PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw)
          else:
-            accum_stage = PipelinedTreeStageComplete(target_latency, curr_IL):
+            accum_stage = PipelinedTreeStageComplete(target_latency, curr_IL)
 
       first_stage = False
       accum_stage['IL'] = curr_IL
       accum_stages.append(accum_stage)
       curr_IL = accum_stage['OL']
+      
+      # Something has gone wrong if we have more than 10 stages
+      if len(accum_stages) > 10:
+         raise Exception('Number of accumulation stages is too large.')
 
    return accum_stages
+
+
+if __name__ == "__main__":
+   # Four test cases:
+   test_cases = [{'IL': 144, 'read_bw': 1, 'targ_lat': 146}, \
+                 {'IL': 144, 'read_bw': 4, 'targ_lat':  75}, \
+                 {'IL':  27, 'read_bw': 1, 'targ_lat':  30}, \
+                 {'IL':  27, 'read_bw': 6, 'targ_lat':  12}]
+   for tc in test_cases:
+      print("Test case: " + str(tc))
+      stages = GetAccumulationStageParams(tc['targ_lat'], tc['IL'], tc['read_bw'])
+      for stage in stages:
+         if stage['type'] == 'pipelined_tree':
+            print("Type: {}, WRPC: {}, TH: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
+               stage['wrpc'], stage['th'], stage['IL'], stage['OL'], stage['est_lat']))
+         else:
+            print("Type: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
+               stage['IL'], stage['OL'], stage['est_lat']))
+      print("\n")
+
