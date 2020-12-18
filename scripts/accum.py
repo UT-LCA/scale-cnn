@@ -52,8 +52,8 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    max_tree_height_latency_limited = math.floor((target_latency - trip_count - OVERHEAD) / ADD_LATENCY)
    tree_height = min(max_tree_height_read_bw_limited, max_tree_height_latency_limited)
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
-   ol = tree_stages[-1][1] # number of outputs of the last tree stage.
    latency = (ADD_LATENCY*tree_height) + trip_count + OVERHEAD
+   ol = tree_stages[-1][1] * math.ceil(curr_IL / input_read_bw)
    return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
            'substages': tree_stages, 'type': 'pipelined_tree'}
 
@@ -85,7 +85,9 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
          # Calculate the output length and # adders per stage of the tree.
          # Each stage does a 2x reduction, but have to handle odd numbers correctly.
          tree_stages = GetPipelinedTreeStageSubstages(wrpc, th)
-         ol = tree_stages[-1][1] # number of outputs of the last tree stage.
+         # Output length = # outputs of the last stage * # of times inputs are read
+         #               = # outputs of last stage * ceil(IL / wrpc)
+         ol = tree_stages[-1][1] * math.ceil(curr_IL / wrpc)
          new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 
                       'substages': tree_stages, 'type': 'pipelined_tree'}
          if best_point is None or compare_points(new_point, best_point):
@@ -152,6 +154,7 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
 
       first_stage = False
       accum_stage['IL'] = curr_IL
+      accum_stage['stage_num'] = len(accum_stages) + 1
       accum_stages.append(accum_stage)
       curr_IL = accum_stage['OL']
       
@@ -243,12 +246,59 @@ def GenPipelinedTreeAccumStage(stage):
    return template.substitute(subs)
 
 
+def GenerateAccumStageCode(stage):
+   if stage['type'] == 'simple':
+      func = GenSimpleAccumStage(stage)
+   elif stage['type'] == 'interleaved':
+      func = GenInterleavedAccumStage(stage)
+   elif stage['type'] == 'pipelined_tree':
+      func = GenPipelinedTreeAccumStage(stage)
+   else:
+      raise Exception('Unknown accum stage type.')
+   return func
+
+# Generates the code that calls all of the accumulation stages in sequence.
+def GenAccumStageFuncCalls(stage_params):
+   code = ""
+   s = " " * 6
+   for stage in stage_params:
+      stage_num = stage['stage_num']
+      op_in = 'products' if stage_num == 1 else 'accum{}_out'.format(stage_num-1)
+      op_out = "accum{}_out".format(stage_num)
+      if stage['type'] == 'simple':
+         code += s + "data_t final_sum = ${{lname}}_accum_{}({});\n".format(stage_num, op_in)
+      else:
+         code += s + "data_t {}[{}];\n".format(op_out, stage['OL'])
+         code += s + "${{lname}}_accum_{}({}, {})\n".format(stage_num, op_in, op_out)
+         
+   if stage_params[-1]['type'] != 'simple':
+      code += s + "data_t final_sum = accum{}_out[0];\n".format(stage_params[-1]['stage_num'])
+
+   return code
+
+# Top-level function for generating the code for the accumulation stages of a layer.
+# Target latency is the maximum latency allowed for any single accumulation stage
+# Input length is the number of values that need to be added together.
+# Read bandwidth is the number of inputs we can read per cycle. This will either 
+# be the array partitioning factor of the inputs, or twice it.
+def GenerateAccumulationStages(target_latency, input_length, read_bw):
+   stage_params = GetAccumulationStageParams(target_latency, input_length, read_bw)
+   stage_functions = []
+   for stage in stage_params:
+      stage_functions.append(GenerateAccumStageCode(stage))
+   function_defs_code  = '\n\n\n'.join(stage_functions)
+   function_calls_code = GenAccumStageFuncCalls(stage_params)
+   return (function_defs_code, function_calls_code)
+
+#========================================================================================
+#========================================================================================
+
 if __name__ == "__main__":
    # Four test cases:
    test_cases = [{'IL': 144, 'read_bw': 1, 'targ_lat': 146}, \
                  {'IL': 144, 'read_bw': 4, 'targ_lat':  75}, \
                  {'IL':  27, 'read_bw': 1, 'targ_lat':  30}, \
-                 {'IL':  27, 'read_bw': 6, 'targ_lat':  12}]
+                 {'IL':  27, 'read_bw': 6, 'targ_lat':  13}]
    for tc in test_cases:
       print("Test case: " + str(tc))
       stages = GetAccumulationStageParams(tc['targ_lat'], tc['IL'], tc['read_bw'])
@@ -260,4 +310,9 @@ if __name__ == "__main__":
             print("Type: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
                stage['IL'], stage['OL'], stage['est_lat']))
       print("\n")
+      func_code, func_calls_code = GenerateAccumulationStages(tc['targ_lat'], tc['IL'], tc['read_bw'])
+      print("Function definitions:\n")
+      print(func_code)
+      print("Function calls:\n")
+      print(func_calls_code)
 

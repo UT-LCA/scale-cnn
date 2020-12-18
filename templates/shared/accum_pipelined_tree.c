@@ -1,6 +1,7 @@
-// Accumulation stage ${accum_stage}
+// Accumulation stage $stage_num
 // This is a pipelined tree accumulation stage
 // It reduces $IL inputs to $OL outputs.
+// The estimated latency is $est_lat cycles.
 data_t $${lname}_accum_${stage_num}(
    data_t accum_in[$IL], 
    data_t accum_out[$OL]
@@ -17,6 +18,6 @@ data_t $${lname}_accum_${stage_num}(
          // a multiple of words read per cycle.
          vals[w] = (i+w < $IL) ? accum_in[i+w] : 0.0;
       }
-      $body
+$body
    }
 }
