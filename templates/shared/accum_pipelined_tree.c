@@ -2,7 +2,7 @@
 // This is a pipelined tree accumulation stage
 // It reduces $IL inputs to $OL outputs.
 // The estimated latency is $est_lat cycles.
-data_t $${lname}_accum_${stage_num}(
+data_t ${lname}_accum_${stage_num}(
    data_t accum_in[$IL], 
    data_t accum_out[$OL]
 ) {

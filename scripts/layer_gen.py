@@ -6,6 +6,7 @@ import copy
 import os
 import string
 import accum
+import math
 
 def get_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
@@ -108,6 +109,7 @@ def gen_conv_layer(layer_spec, odir):
          vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
          rdInp_latency = math.ceil(vec_size / read_sf) + 3 + 1
          accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
+                                          layer_name = layer_spec['layer_name'],
                                           target_latency=rdInp_latency, 
                                           input_length=vec_size,
                                           read_bw = dp_sf )
