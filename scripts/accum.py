@@ -112,13 +112,23 @@ def InterleavedStage(target_latency, curr_IL, input_read_bw):
    accum_stage['est_lat'] = estimated_latency
    return accum_stage
 
-# Generates the parameters for a simple accumulation stage.
-def SimpleStage(curr_IL):
+# Generates the parameters for an unpipelined tree accumulation stage.
+def UnpipelinedTreeStage(curr_IL):
    accum_stage = {}
-   accum_stage['type'] = 'simple'
+   accum_stage['type'] = 'unpipelined_tree'
    accum_stage['OL']   = 1
    # Estimated latency = add_latency * ceil(log2(IL))
    estimated_latency = ADD_LATENCY * math.ceil(math.log2(curr_IL)) + OVERHEAD
+   accum_stage['est_lat'] = estimated_latency
+   return accum_stage
+
+# Generates the parameters for a simple loop accumulation stage.
+def SimpleLoopStage(curr_IL):
+   accum_stage = {}
+   accum_stage['type'] = 'simple_loop'
+   accum_stage['OL']   = 1
+   # Estimated latency = add_latency * IL
+   estimated_latency = ADD_LATENCY * curr_IL + OVERHEAD
    accum_stage['est_lat'] = estimated_latency
    return accum_stage
 
@@ -129,16 +139,30 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
    curr_IL = input_length
    first_stage = True
    while (curr_IL > 1):
-      if curr_IL <= 8:
-         # If there are 8 or fewer inputs, we can just do a simple
-         # hard-coded accumulation down to one element. This is likely to be
-         # the final accumulation stage for many layers.
-         accum_stage = SimpleStage(curr_IL)
+      if (ADD_LATENCY * curr_IL) + OVERHEAD < target_latency:
+         # If the target latency is sufficiently large, we may have enough time to 
+         # place a simple loop accumulation stage. This is the slowest but cheapest 
+         # possible accumulation stage. It uses a single adder and has no pipelining.
+         # This stage always reduces the inputs to 1 output, so it will always be the 
+         # last stage.
+         accum_stage = SimpleLoopStage(curr_IL)
+      elif curr_IL <= 16 and (ADD_LATENCY * math.ceil(math.log2(curr_IL)) + OVERHEAD < target_latency):
+         # The next option is an unpipelined tree. This will also reduce it down to 1 element.
+         # This is a good option when the number of inputs is small but we don't have time for
+         # a simple loop stage. We should only use this if the number of inputs is small.
+         # Otherwise the number of adders will be huge and this will be too costly.
+         # I will choose a limit of 16 inputs for this stage (another heuristic)
+         accum_stage = UnpipelinedTreeStage(curr_IL)
       elif first_stage and ((curr_IL / input_read_bw) > 15):
          # If the input length is sufficiently large enough, we can use an interleaved
          # accumulation stage for the first stage. Since this stage will perform a 
          # relatively drastic reduction, it is unlikely that we would want one beyond 
          # the first stage.
+         #
+         # Why 15? In this stage there are 4*input_read_bw accumulators. I have somewhat
+         # arbitrarily chosen a heuristic that we should only use this stage if each 
+         # accumulator is used 4 times in order to get "decent" utilization. This would 
+         # imply I should compare it to 16 but I subtracted one for "close calls".
          accum_stage = InterleavedStage(target_latency, curr_IL, input_read_bw)
       else:
          # Otherwise, insert a pipelined tree accumulation stage
@@ -174,10 +198,8 @@ def read_template(template_fname):
       return string.Template(f.read())
 
 
-# Generates the code for a "simple" accumulation stage
-# TODO: This should really be called "unpipelined tree"
-# The "simple" stage should just be the simple for loop with one adder.
-def GenSimpleAccumStage(stage):
+# Generates the code for an unpipelined tree accumulation stage
+def GenUnpipelinedTreeAccumStage(stage):
    # Generate the body (all the intermediate sums)
    val_queue = ['accum_in[{}]'.format(x) for x in range(stage['IL'])]
    body = ""
@@ -191,7 +213,7 @@ def GenSimpleAccumStage(stage):
       val_queue.insert(0, sum_)
    body += "   return {};\n".format(val_queue[0])
    # Read the template and make substitutions
-   template = read_template('accum_simple.c')
+   template = read_template('accum_unpipelined_tree.c')
    subs = copy.copy(stage)
    subs['body'] = body
    return template.substitute(subs)
@@ -199,11 +221,16 @@ def GenSimpleAccumStage(stage):
 
 # Generates the code for an interleaved accumulation stage
 def GenInterleavedAccumStage(stage):
-  # There is no custom body to generate for this one
-  # So just read the template and make substitutions.
+   # There is no custom body to generate for this one
+   # So just read the template and make substitutions.
    template = read_template('accum_interleaved.c')
    return template.substitute(stage)
 
+# Generates the code for a simple loop stage
+def GenSimpleLoopAccumStage(stage):
+   # Same deal as above
+   template = read_template('accum_simple.c')
+   return template.substitute(stage)
 
 # Generates the code for a pipelined tree accumulation stage
 def GenPipelinedTreeAccumStage(stage):
@@ -247,12 +274,14 @@ def GenPipelinedTreeAccumStage(stage):
 
 
 def GenerateAccumStageCode(stage):
-   if stage['type'] == 'simple':
-      func = GenSimpleAccumStage(stage)
+   if stage['type'] == 'simple_loop':
+      func = GenSimpleLoopAccumStage(stage)
    elif stage['type'] == 'interleaved':
       func = GenInterleavedAccumStage(stage)
    elif stage['type'] == 'pipelined_tree':
       func = GenPipelinedTreeAccumStage(stage)
+   elif stage['type'] == 'unpipelined_tree':
+      func = GenUnpipelinedTreeAccumStage(stage)
    else:
       raise Exception('Unknown accum stage type.')
    return func
@@ -261,17 +290,20 @@ def GenerateAccumStageCode(stage):
 def GenAccumStageFuncCalls(stage_params):
    code = ""
    s = " " * 6
+   has_return_val = False
    for stage in stage_params:
       stage_num = stage['stage_num']
       op_in = 'products' if stage_num == 1 else 'accum{}_out'.format(stage_num-1)
       op_out = "accum{}_out".format(stage_num)
-      if stage['type'] == 'simple':
+      has_return_val = stage['type'] == 'simple_loop' or stage['type'] == 'unpipelined_tree'
+      if has_return_val:
          code += s + "data_t final_sum = ${{lname}}_accum_{}({});\n".format(stage_num, op_in)
       else:
+         code += s + "#pragma HLS partition variable={} complete\n".format(op_out)
          code += s + "data_t {}[{}];\n".format(op_out, stage['OL'])
-         code += s + "${{lname}}_accum_{}({}, {})\n".format(stage_num, op_in, op_out)
+         code += s + "${{lname}}_accum_{}({}, {});\n".format(stage_num, op_in, op_out)
          
-   if stage_params[-1]['type'] != 'simple':
+   if not has_return_val:
       code += s + "data_t final_sum = accum{}_out[0];\n".format(stage_params[-1]['stage_num'])
 
    return code
