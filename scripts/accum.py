@@ -156,12 +156,18 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          # This stage always reduces the inputs to 1 output, so it will always be the 
          # last stage.
          accum_stage = SimpleLoopStage(curr_IL)
-      elif curr_IL <= 16 and (ADD_LATENCY * math.ceil(math.log2(curr_IL)) - 1 < target_latency):
+      elif not first_stage and curr_IL <= 8 and (ADD_LATENCY * math.ceil(math.log2(curr_IL)) - 1 < target_latency):
          # The next option is an unpipelined tree. This will also reduce it down to 1 element.
          # This is a good option when the number of inputs is small but we don't have time for
          # a simple loop stage. We should only use this if the number of inputs is small.
-         # Otherwise the number of adders will be huge and this will be too costly.
-         # I will choose a limit of 16 inputs for this stage (another heuristic)
+         # Otherwise the number of DSPs  will be approximately equal to the input length, and 
+         # each will only be used once per function call. This is a wasteful use of FPGA resources.
+         # In these scenarios it is better to use a pipelined tree stage that would use each DSP
+         # multiple times. I heuristically chose 8 as the size limit for this stage type.
+         #
+         # It also cannot be the first stage as we must be able to read all inputs at once
+         # on the first cycle. For the first accum stage, the inputs are in BRAMs instead of 
+         # registers, so this would not be possible.
          accum_stage = UnpipelinedTreeStage(curr_IL)
       elif first_stage and ((curr_IL / input_read_bw) > 15):
          # If the input length is sufficiently large enough, we can use an interleaved

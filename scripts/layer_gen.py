@@ -105,9 +105,8 @@ def gen_conv_layer(layer_spec, odir):
 
          # Generate the custom code for the accumulation functions for this layer.
          # Target latency is the estimated latency of the readInputs stage.
-         # Add one more cycle for good measure, may take this out later
          vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
-         rdInp_latency = math.ceil(vec_size / read_sf) + 3 + 1
+         rdInp_latency = math.ceil(vec_size / read_sf) + 3
          accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                           layer_name = layer_spec['layer_name'],
                                           target_latency=rdInp_latency, 
