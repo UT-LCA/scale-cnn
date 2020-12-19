@@ -2,15 +2,15 @@
 // This is a pipelined tree accumulation stage
 // It reduces $IL inputs to $OL outputs.
 // The estimated latency is $est_lat cycles.
-data_t ${lname}_accum_${stage_num}(
+void ${lname}_accum_${stage_num}(
    data_t accum_in[$IL], 
    data_t accum_out[$OL]
 ) {
    int out_idx = 0;
    IL_LOOP: for (int i = 0; i < $IL; i += $wrpc) {
       #pragma HLS pipeline
-      #pragma HLS array_partition variable=vals complete
       data_t vals[$wrpc];
+      #pragma HLS array_partition variable=vals complete
       // This loop will be automatically unrolled and ideally all 
       // iterations of it must be scheduled in the same cycle.
       WRPC_LOOP: for (int w = 0; w < $wrpc; w++) {

@@ -10,11 +10,8 @@ import copy
 # Design point compare function for pipelined tree accumulation stages
 # where the inputs are complete-partitioned.
 # Returns True if point1 is better than point2
-# We want to find the design point that has the smallest output length
-# but still meets the latency requirement. If multiple points have the 
-# same output length, choose the one with the smallest words read per cycle.
-# This will correspond to the one with the fewest number of adders.
-# If those are the same, choose the one with the smallest tree length.
+# First we compare output length, then words read per cycle, then tree height
+# For all three, smaller is better.
 def compare_points(point1, point2):
    if point1['OL'] == point2['OL']:
       if point1['wrpc'] == point2['wrpc']:
@@ -43,7 +40,7 @@ def GetPipelinedTreeStageSubstages(wrpc, th):
 
 
 # Function for choosing a pipelined tree accumulation stage with
-# non-complete-partitioned inputs.
+# non-complete-partitioned inputs (inputs stored in partitioned BRAMs).
 def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    # For the first stage, the maximum tree height is limited by one of two things:
    # the number of words we can read per cycle, or the target latency
@@ -58,7 +55,9 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    tree_height = min(max_tree_height_read_bw_limited, max_tree_height_latency_limited)
    tree_height = max(tree_height, 1)
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
-   latency = (ADD_LATENCY*tree_height) + trip_count + OVERHEAD
+   # Experimentation showed there is one extra cycle of latency in the pipeline for when
+   # reading from BRAMs compared to reading from registers.
+   latency = (ADD_LATENCY*tree_height) + trip_count + 1 + OVERHEAD
    ol = tree_stages[-1][1] * math.ceil(curr_IL / input_read_bw)
    return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
            'substages': tree_stages, 'type': 'pipelined_tree'}
@@ -70,10 +69,12 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
    # For all stages beyond the first, we have no limitation on words read per cycle.
    # This means we can explore different values of tree height and words read per cycle.
    # This is an optimization problem. The search space is as follows:
+   #
    # Minimum words read per cycle = 2
    # Maximum words read per cycle = input length
    # Minimum tree height = 1
    # Maximum tree height = ceil(log2(words read per cycle))
+   #
    # The constraints are:
    #  - Words read per cycle must be even.
    #  - The calculated latency for the design point cannot exceed the target latency
@@ -81,7 +82,7 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
    # For the "cost" function see compare_points()
    #
    # The design space is not that large so we can just do a brute-force search.
-   best_point = None
+   points = []
    for wrpc in range(2, curr_IL+2, 2):
       trip_count = math.ceil(curr_IL / wrpc)
       for th in range(1, math.ceil(math.log2(wrpc))+1):
@@ -94,15 +95,46 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
          # Output length = # outputs of the last stage * # of times inputs are read
          #               = # outputs of last stage * ceil(IL / wrpc)
          ol = tree_stages[-1][1] * math.ceil(curr_IL / wrpc)
+         # Each function call, each DSP produces ceil(IL / wrpc) outputs.
+         dsp_util = math.ceil(curr_IL / wrpc)
          new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 
-                      'substages': tree_stages, 'type': 'pipelined_tree'}
-         if best_point is None or compare_points(new_point, best_point):
-            best_point = new_point
+                      'substages': tree_stages, 'dsp_util': dsp_util}
+         points.append(new_point)
+
+
+   # There can be multiple points that satisfy the latency requirement. The different points
+   # will have a trade-off between DSP usage and output length.
+   #
+   # A naive approach would be to always pick the design point with the smallest output length.
+   # This would minimize the total amount of accumulation stages required for the overall layer.
+   # But this isn't a really great design choice between having one or two additional accum 
+   # stages isn't that bad. It will not affect the initiation interval of the dataflow pipeline,
+   # and will barely increase the overall latency of the whole laye.
+   #
+   # What we really should consider is the DSP utilization, i.e., how many times each adder is 
+   # used per function call. The higher the utilization, the fewer DSPs used overall. However, we 
+   # wouldn't want to pick the one with the absolute fewest DSPs possible either, as then we 
+   # would just have a bunch of stages where each one uses a single DSP.
+   #
+   # So to strike a balance, I will use this heuristic: Choose the design point with the smallest
+   # output length, that uses each DSP at least 4 times per function call. If no such points exist,
+   # try with 3 times, then 2, then 1.
+   best_point = None
+   ideal_min_dsp_util = 4  # DSP utilization in units of "uses per function call"
+   for min_dsp_util in reversed(range(1, ideal_min_dsp_util+1)):
+      for point in points:
+         if point['dsp_util'] < min_dsp_util:
+            continue
+         if best_point is None or compare_points(point, best_point):
+            best_point = point
+      if best_point is not None:
+         break # Found at least one point with this min_dsp_util.
 
    # Something went wrong if we didn't find any valid points.
    if best_point is None:
       raise Exception('Something went wrong with the accum stage generation algorithm.')
 
+   best_point['type'] = 'pipelined_tree'
    return best_point
 
 # Generates the parameters for an interleaved accumulation stage.
@@ -110,11 +142,18 @@ def InterleavedStage(target_latency, curr_IL, input_read_bw):
    accum_stage = {}
    accum_stage['type'] = 'interleaved'
    # The stage will reduce the inputs to 4*input_read_bw outputs.
-   accum_stage['OL'] = 4*input_read_bw
-   # The accumulators form an effective pipeline with II of 1
-   # The trip count is ceil(curr_IL / input_read_bw)
-   trip_count = math.ceil(curr_IL / input_read_bw)
-   estimated_latency = ADD_LATENCY + trip_count + OVERHEAD
+   interleave_factor = 4 # TODO try with 3 instead?
+   ol = interleave_factor*input_read_bw 
+   accum_stage['OL'] = ol
+   # The accumulators form a pipeline, but the pipeline II is equal to
+   # the interleave factor, not 1.
+   # Due to the interleaving, it's really an effective II of 1, but the 
+   # synthesizer doesn't know that.
+   trip_count = math.ceil(curr_IL / ol)
+   # Add 2 cycles to wait for the final addition to finish (latency of the pipeline)
+   # And another two cycles for overall function overhead.
+   # This equation was validated empirically through experimentation.
+   estimated_latency = interleave_factor*trip_count + 2 + 2
    accum_stage['est_lat'] = estimated_latency
    return accum_stage
 
