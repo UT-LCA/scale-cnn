@@ -5,6 +5,7 @@ from functools import reduce
 import copy
 import os
 import string
+import accum
 
 def get_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
@@ -74,11 +75,10 @@ def gen_conv_layer(layer_spec, odir):
 
    # Different implementations for conv layers:
    # - Read Scale factor:
-   #   - First choose the factors of input channels
-   #   - Then iterate over the factors of filter size, multiplying each by # input channels
-   #     (this is when the scale factor goes beyond the number of input channels
-   #   - Do not scale beyond that as at that point we might as well just do complete partitioning
-   #     with registers.
+   #   - Right now only choosing factors of input chans. Having difficulty getting
+   #     ideally-scheduled BRAM reads beyond that. The padding pixel checks for
+   #     readInputs makes it difficult for the synthesizer to schedule all the reads
+   #     in parallel.
    # - Dot Product scale factor:
    #     - Equal to read scale factor
    #     - Equal to twice the read scale factor
@@ -87,8 +87,8 @@ def gen_conv_layer(layer_spec, odir):
    ichans_factors = factors(ichans)
    fsize_factors  = factors(filter_size)
    read_scale_factors = copy.copy(ichans_factors)
-   for f in fsize_factors:
-      read_scale_factors.append(ichans*f)
+   #for f in fsize_factors:
+   #  read_scale_factors.append(ichans*f)
    # Sort and remove duplicates
    read_scale_factors = list(set(read_scale_factors))
    read_scale_factors.sort()
@@ -101,6 +101,19 @@ def gen_conv_layer(layer_spec, odir):
          dp_sf = 2*read_sf if double_dp_sf else read_sf
          impl['read_scale_factor'] = read_sf
          impl['dp_scale_factor']   = dp_sf
+
+         # Generate the custom code for the accumulation functions for this layer.
+         # Target latency is the estimated latency of the readInputs stage.
+         # Add one more cycle for good measure, may take this out later
+         vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
+         rdInp_latency = math.ceil(vec_size / read_sf) + 3 + 1
+         accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
+                                          target_latency=rdInp_latency, 
+                                          input_length=vec_size,
+                                          read_bw = dp_sf )
+         impl['accum_functions']      = accum_funcs
+         impl['accum_function_calls'] = accum_func_calls
+
          # Pick a name for the implementation
          impl['name'] = "sf{}_{}".format(read_sf, dp_sf)
          layer_impls.append(impl)

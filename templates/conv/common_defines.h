@@ -22,6 +22,5 @@ static const int INPUT_WIDTH  = $input_width;
 static const int INPUT_CHANS  = $input_chans;
 
 static const int VECTOR_SIZE = ($filter_size * $filter_size * $input_chans);
-static const int INTERLEAVE  = 4; // For dot_prduct FP accumulation interleaving
 
 #endif

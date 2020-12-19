@@ -15,10 +15,9 @@ if {$$READ_SCALE_FACTOR > 1} {
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR $lname filter_data
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR $lname ifmap_vec
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR $lname weight_vec
+   set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR $lname products
 }
 
-set_directive_array_partition -type complete ${lname}_dot_product psum
-set_directive_array_partition -type complete $lname psum_vec
 set_directive_array_partition -type complete $lname indices
 
 # When we want dot_product to have twice the scale factor as the read functions
@@ -30,6 +29,12 @@ set_directive_array_partition -type complete $lname indices
 if {$$DP_SCALE_FACTOR == $$READ_SCALE_FACTOR} {
    set_directive_resource -core RAM_1P_BRAM $lname ifmap_vec
    set_directive_resource -core RAM_1P_BRAM $lname weight_vec
+}
+
+# Pipeline and unroll dot product multiplications
+set_directive_pipeline ${lname}_dot_product/DP_LOOP
+if {$$DP_SCALE_FACTOR > 1} {
+   set_directive_unroll -factor $$DP_SCALE_FACTOR ${lname}_dot_product/DP_LOOP
 }
 
 # readInputs directives
