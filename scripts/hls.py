@@ -125,10 +125,6 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          # Implementation name and directory
          rpt.write("Implementation: {}\n".format(impl['name']))
          rpt.write("Directory: {}\n".format(impl['dir']))
-         # All other factors of the implementation
-         for k in impl.keys():
-            if k != 'name' and k != 'dir':
-               rpt.write("{}: {}\n".format(k, impl[k]))
          # Report Info
          # Total latency
          rpt.write("\nTotal latency: {} cycles\n".format('{:,}'.format(report_info['latency'])))

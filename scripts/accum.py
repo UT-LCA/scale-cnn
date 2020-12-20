@@ -46,18 +46,17 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    # the number of words we can read per cycle, or the target latency
    # Read bandwidth can limit the tree height because we always want an II of 1.
    # We must be able to supply all first-stage adders with new values each cycle.
+   total_overhead = OVERHEAD
    max_tree_height_read_bw_limited = math.ceil(math.log2(input_read_bw))
    trip_count = math.ceil(curr_IL / input_read_bw)
-   max_tree_height_latency_limited = math.floor((target_latency - trip_count - OVERHEAD) / ADD_LATENCY)
+   max_tree_height_latency_limited = math.floor((target_latency - trip_count - total_overhead) / ADD_LATENCY)
    # In some extreme cases, the latency-limited tree height is 0. In this case, we have no choice but 
    # to just accept that accumulation will be the bottleneck stage. So just choose a tree height of 1
    # in this case
    tree_height = min(max_tree_height_read_bw_limited, max_tree_height_latency_limited)
    tree_height = max(tree_height, 1)
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
-   # Experimentation showed there is one extra cycle of latency in the pipeline for when
-   # reading from BRAMs compared to reading from registers.
-   latency = (ADD_LATENCY*tree_height) + trip_count + 1 + OVERHEAD
+   latency = (ADD_LATENCY*tree_height) + trip_count + total_overhead
    ol = tree_stages[-1][1] * math.ceil(curr_IL / input_read_bw)
    return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
            'substages': tree_stages, 'type': 'pipelined_tree'}

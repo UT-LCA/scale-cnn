@@ -55,6 +55,12 @@ void ${lname}_dot_product (
    data_t weight_vec[VECTOR_SIZE],
    data_t products[VECTOR_SIZE]
 ) { 
+   // Sometimes the synthesizer is unable to figure out there are no 
+   // WAW dependencies for when we utilize both write ports of one BRAM.
+   // I'm not sure why this only sometimes happens and sometimes doesn't.
+   // But luckily we can explicitly tell it there are no dependencies.
+   #pragma HLS dependence variable=products inter WAW false
+   #pragma HLS dependence variable=products intra WAW false
    DP_LOOP: for (int p = 0; p < VECTOR_SIZE; p++) {
       products[p] = ifmap_vec[p] * weight_vec[p];
    }
