@@ -13,12 +13,15 @@ def get_layer_files(layer_name):
    # List of once-per-layer files
    layer_files = [('global_defines.h', 'global_defines.h'), \
                   ('{}_common_defines.h'.format(layer_name), 'common_defines.h'), \
-                  ('{}_common_directives.tcl'.format(layer_name), 'common_directives.tcl')]
+                  ('{}_common_directives.tcl'.format(layer_name), 'common_directives.tcl'), \
+                  ('test/tb_{}.cpp'.format(layer_name), 'test/testbench.cpp'), \
+                  ('test/golden.cpp', 'test/golden.cpp')]
+
    return layer_files
 
 def get_layer_impl_files(layer_name, layer_type):
    # List of once-per-layer-implementation files
-   impl_files = [('{}.c'.format(layer_name), '{}.c'.format(layer_type)), \
+   impl_files = [('{}.cpp'.format(layer_name), '{}.cpp'.format(layer_type)), \
                  ('{}.tcl'.format(layer_name), '{}.tcl'.format(layer_type)), \
                  ('{}_impl_defines.h'.format(layer_name), 'impl_defines.h'), \
                  ('{}_impl_directives.tcl'.format(layer_name), 'impl_directives.tcl'), \
@@ -30,6 +33,9 @@ def get_layer_impl_files(layer_name, layer_type):
 # copies the template file to the output file making the appropriate substitutions.
 # If it is a .sh file, it also makes it executable.
 def make_file_from_template(template_fp, output_fp, substitutions):
+   output_fp_dir = os.path.dirname(output_fp)
+   if not os.path.isdir(output_fp_dir):
+      os.mkdir(output_fp_dir)
    with open(template_fp, 'r') as ifile, open(output_fp, 'w') as ofile:
       template = string.Template(ifile.read())
       ofile.write(template.substitute(substitutions))

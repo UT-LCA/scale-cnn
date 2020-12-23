@@ -19,7 +19,7 @@ void ${lname}_readInputs (
          IL6: for (int kk = 0; kk < INPUT_CHANS; ++kk) {
             int in_data_idx = input_pixel_base  + kk;
             int vec_idx     = filter_pixel_base + kk;
-            data_t in_data_elem = is_padding ? 0 : in_data[in_data_idx];
+            data_t in_data_elem = is_padding ? (data_t)0 : in_data[in_data_idx];
             ifmap_vec[vec_idx] = in_data_elem;
          }
       }

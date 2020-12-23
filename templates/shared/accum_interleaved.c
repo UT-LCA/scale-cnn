@@ -18,7 +18,7 @@ void ${lname}_accum_${stage_num} (
       #pragma HLS pipeline
       ACCUM_LOOP_INNER: for (int p = 0; p < PSUM_LEN; p++) {
          // NOTE: INPUT_SIZE may not be a multiple of PSUM_LEN!
-         data_t val = (x+p) < INPUT_SIZE ? (accum_in[x+p]) : 0.0;
+         data_t val = (x+p) < INPUT_SIZE ? (accum_in[x+p]) : (data_t)0;
          psum[p] += val;
       }
    }
