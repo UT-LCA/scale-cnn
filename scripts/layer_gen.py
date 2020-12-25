@@ -152,7 +152,7 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
 def generate_layer(layer_spec, odir):
    layer_type = layer_spec['layer_type']
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
-   layer_spec['fpga_part'] = 'xcku115-flvf1924-3-e'
+   layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
    if not os.path.isdir(odir):
       os.mkdir(odir)
    if layer_type == 'conv':

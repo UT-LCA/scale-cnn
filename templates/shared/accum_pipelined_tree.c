@@ -16,7 +16,7 @@ void ${lname}_accum_${stage_num}(
       WRPC_LOOP: for (int w = 0; w < $wrpc; w++) {
          // Need this bounds check because input length is not necessarily
          // a multiple of words read per cycle.
-         vals[w] = (i+w < $IL) ? accum_in[i+w] : 0;
+         vals[w] = (i+w < $IL) ? accum_in[i+w] : (data_t)0;
       }
 $body
    }

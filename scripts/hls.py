@@ -15,7 +15,7 @@ def synthesize_layer(layer_name, impl_path):
    exitcode = os.WEXITSTATUS(os.system('vivado_hls -f {}.tcl > /dev/null'.format(layer_name)))
    os.chdir(cwd)
    if exitcode != 0:
-      raise Exception('Vivado HLS failed with exit code {}'.format(exitcode))
+      raise Exception('Vivado HLS failed with exit code {} at {}'.format(exitcode, impl_path))
    print("Done.")
 
 

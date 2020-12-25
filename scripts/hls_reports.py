@@ -46,14 +46,14 @@ def GetDataflowStageLatencies(dataflow_rpt_filepath):
       # Skip the next line
       rpt.readline()
       # Now parse lines until we find one that matches "---"
-      # For each one, split it on spaces and "|"
-      # Index [2] is the module name, index [6] is the worst-case latency.
+      # For each one, split it on "|" surrounded by whitespace characters (greedy)
+      # Index [2] is the module name, index [8] is the worst-case latency.
       for line in rpt:
          if "---" in line:
             break
-         tokens = re.split(r'[ \|]+', line)
+         tokens = re.split(r'\s*\|\s*', line)
          stage  = tokens[2]
-         cycles = int(tokens[6])
+         cycles = int(tokens[8])
          if cycles > 0:
             stages.append({'name': stage, 'latency': cycles})
    return stages
