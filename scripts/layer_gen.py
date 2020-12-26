@@ -73,13 +73,33 @@ def factors(n):
    x.sort()
    return x
 
+
+# If number of channels is a multiple of 4, choose 4.
+# Otherwise, if a multiple of 3, choose 3.
+# Otherwise - invalid layer configuration. We cannot currently handle other cases.
+def GetUramWordsPerRow(chans):
+   if chans % 4 == 0:
+      return 4
+   elif chans % 3 == 0:
+      return 3
+   else:
+      raise Exception('Invalid # channels: {}'.format(chans))
+
+
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
 def gen_conv_layer(layer_spec, odir):
    template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/conv/"
+
+   # Determine input and output words per URAM row.
+   ichans = layer_spec['input_chans']
+   ochans = layer_spec['output_chans']
+   layer_spec['input_words_per_uram_row']  = GetUramWordsPerRow(ichans)
+   layer_spec['output_words_per_uram_row'] = GetUramWordsPerRow(ochans)
+
    # Generate the layer-specific files once
    gen_layer_files(layer_spec, odir, template_path)
-
+   
    # Different implementations for conv layers:
    # - Read Scale factor:
    #   - Right now only choosing factors of input chans. Having difficulty getting
@@ -89,7 +109,6 @@ def gen_conv_layer(layer_spec, odir):
    # - Dot Product scale factor:
    #     - Equal to read scale factor
    #     - Equal to twice the read scale factor
-   ichans      = layer_spec['input_chans']
    filter_size = layer_spec['filter_size']
    ichans_factors = factors(ichans)
    fsize_factors  = factors(filter_size)

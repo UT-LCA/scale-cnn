@@ -5,14 +5,14 @@
 #include <stdio.h>
 
 void $lname (
-   data_t in_data[INPUT_RAM_SIZE],
-   data_t out_data[OUTPUT_RAM_SIZE],
+   uram_i in_data[INPUT_RAM_SIZE],
+   uram_o out_data[OUTPUT_RAM_SIZE],
    data_t filter_data[FILTER_RAM_SIZE]
 );
 
 void conv_golden (
-   data_t in_data[INPUT_RAM_SIZE],
-   data_t out_data[OUTPUT_RAM_SIZE],
+   data_t in_data[NUM_INPUTS],
+   data_t out_data[NUM_OUTPUTS],
    data_t filter_data[FILTER_RAM_SIZE]
 );
 
@@ -23,20 +23,36 @@ int main() {
    fflush(stdout);
 
    // Generate random inputs and filters
-   data_t ifmaps[INPUT_RAM_SIZE];
+   data_t ifmaps[NUM_INPUTS];
    data_t filters[FILTER_RAM_SIZE];
-   gen_random_inputs(ifmaps, INPUT_RAM_SIZE);
+   gen_random_inputs(ifmaps, NUM_INPUTS);
    gen_random_filters(filters, FILTER_RAM_SIZE);
 
+   // Pack the inputs into URAM rows.
+   uram_i ifmaps_uram[INPUT_RAM_SIZE];
+   for (int i = 0; i < NUM_INPUTS; i+= $input_words_per_uram_row) {
+      for (int u = 0; u < $input_words_per_uram_row; u++) {
+         ifmaps_uram[i].d[u] = ifmaps[i];
+      }
+   }
+
    // Run the golden function and the synthesized function with the same inputs.
-   data_t ofmaps_synth[OUTPUT_RAM_SIZE];
-   data_t ofmaps_gold[OUTPUT_RAM_SIZE];
+   uram_o ofmaps_synth_uram[OUTPUT_RAM_SIZE];
+   data_t ofmaps_gold[NUM_OUTPUTS];
    printf("Running synthesized function...\n");
    fflush(stdout);
-   $lname(ifmaps, ofmaps_synth, filters);
+   $lname(ifmaps_uram, ofmaps_synth_uram, filters);
    printf("Running golden comparison function...\n");
    fflush(stdout);
    conv_golden(ifmaps, ofmaps_gold, filters);
+
+   // Unpack the output URAM rows into one flat array for validation.
+   data_t ofmaps_synth[NUM_OUTPUTS];
+   for (int o = 0; o < OUTPUT_RAM_SIZE; o++) {
+      for (int u = 0; u < $output_words_per_uram_row; u++) {
+         ofmaps_synth[(o*$output_words_per_uram_row) + u] = ofmaps_synth_uram[o].d[u];
+      }
+   }
 
    printf("Comparing expected vs. actual values.\n");
    fflush(stdout);

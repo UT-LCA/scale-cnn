@@ -4,9 +4,11 @@
 
 // Reads input feature maps into an internal buffer (ifmap_vec)
 void ${lname}_readInputs ( 
-   data_t in_data[INPUT_RAM_SIZE],
+   uram_i in_data[INPUT_RAM_SIZE],
    int i, int j,
    data_t ifmap_vec[VECTOR_SIZE] ) {
+   static const uram_i URAM_I_ZERO; // Should be initialized to all 0's.
+   #pragma HLS array_partition variable=URAM_I_ZERO complete
    IL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       IL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
          int row_coord = (i*STRIDE) + ii - PAD;
@@ -16,11 +18,14 @@ void ${lname}_readInputs (
          int input_pixel_base = (row_coord * INPUT_WIDTH * INPUT_CHANS) +
                                 (col_coord * INPUT_CHANS);
          int filter_pixel_base = (INPUT_CHANS*jj) + (INPUT_CHANS*FILTER_SIZE*ii);
-         IL6: for (int kk = 0; kk < INPUT_CHANS; ++kk) {
-            int in_data_idx = input_pixel_base  + kk;
-            int vec_idx     = filter_pixel_base + kk;
-            data_t in_data_elem = is_padding ? (data_t)0 : in_data[in_data_idx];
-            ifmap_vec[vec_idx] = in_data_elem;
+         IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk += $input_words_per_uram_row) {
+            int in_data_idx = input_pixel_base + kk;
+            uram_i in_data_row = is_padding ? URAM_I_ZERO : in_data[in_data_idx];
+            #pragma HLS array_partition variable=in_data_row complete
+            IL7: for (int u = 0; u < $input_words_per_uram_row; ++u) {
+               int vec_idx     = filter_pixel_base + kk + u;
+               ifmap_vec[vec_idx] = in_data_row.d[u];
+            }
          }
       }
    }
@@ -46,6 +51,28 @@ void ${lname}_readFilters (
    }
 }  
 
+
+// Function for writing output data to the output URAMs.
+// This function receives one word per function call, and packs the words
+// together before writing them to the output URAM. Because of this, the write
+// operation only occurs once every 3 or 4 calls. For this reason, this function
+// must use static variables to remember how many words are currently stored in 
+// the 
+void ${lname}_writeOutput(
+   data_t outputElem,
+   uram_o out_data[OUTPUT_RAM_SIZE]
+) {
+   static int outputCount = 0;
+   static int outputIdx   = 0;
+   static uram_o outputRow;
+   #pragma HLS array_partition variable=outputRow complete
+   outputRow.d[outputCount] = outputElem;
+   outputCount++;
+   if (outputCount == $output_words_per_uram_row) {
+      outputCount = 0;
+      out_data[outputIdx] = outputRow;
+   }
+}
 
 // Calculates the dot product of the ifmap and weight vectors.
 // All this stage does is multiply the numbers together into an array of 
@@ -97,8 +124,8 @@ void ${lname}_get_next_ijk (int indices[3]) {
 
 
 void $lname (
-   data_t in_data[INPUT_RAM_SIZE],
-   data_t out_data[OUTPUT_RAM_SIZE],
+   uram_i in_data[INPUT_RAM_SIZE],
+   uram_o out_data[OUTPUT_RAM_SIZE],
    data_t filter_data[FILTER_RAM_SIZE]
 ) {
    // Ideally, this single for loop would be split into three nested loops like this,
@@ -120,9 +147,9 @@ void $lname (
    // only makes the problem worse and causes the dataflow optimization to fail entirely.
    //
    // So instead, we must explicitly flatten the loops in the C code itself. The "get_next_ijk"
-   // function will take in the current iteration of this loop (f) and spit out what the 
-   // values of i,j,k would be if the loops were written as shown above.
-   TOP_LOOP: for (int f = 0; f < (OUTPUT_HEIGHT * OUTPUT_WIDTH * OUTPUT_CHANS); f++) {
+   // function will keep track of what the values of i,j,k would be if the loops were written 
+   // as shown above.
+   TOP_LOOP: for (int f = 0; f < NUM_OUTPUTS; f++) {
       data_t ifmap_vec[VECTOR_SIZE];
       data_t weight_vec[VECTOR_SIZE];
       data_t products[VECTOR_SIZE];
@@ -141,6 +168,6 @@ void $lname (
       // Accumulate the products
 $accum_function_calls
       // Store the final output
-      out_data[f] = final_sum;
+      ${lname}_writeOutput(final_sum, out_data);
    }
 }

@@ -13,9 +13,7 @@ typedef half data_t;
 typedef float data_t;
 #endif
 
-// Constants for calculating array dimensions
-#define INPUT_RAM_SIZE  INPUT_HEIGHT  * INPUT_WIDTH  * INPUT_CHANS
-#define OUTPUT_RAM_SIZE OUTPUT_HEIGHT * OUTPUT_WIDTH * OUTPUT_CHANS
-#define FILTER_RAM_SIZE FILTER_SIZE * FILTER_SIZE * INPUT_CHANS * OUTPUT_CHANS
+typedef struct URAM_3Pack { data_t d[3]; } uram3;
+typedef struct URAM_4Pack { data_t d[4]; } uram4;
 
 #endif
