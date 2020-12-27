@@ -7,8 +7,6 @@ void ${lname}_readInputs (
    uram_i in_data[INPUT_RAM_SIZE],
    int i, int j,
    data_t ifmap_vec[VECTOR_SIZE] ) {
-   static const uram_i URAM_I_ZERO; // Should be initialized to all 0's.
-   #pragma HLS array_partition variable=URAM_I_ZERO complete
    IL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       IL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
          int row_coord = (i*STRIDE) + ii - PAD;
