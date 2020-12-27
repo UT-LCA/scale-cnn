@@ -39,6 +39,4 @@ static const int FILTER_RAM_SIZE = FILTER_SIZE * FILTER_SIZE * INPUT_CHANS * OUT
 typedef uram${input_words_per_uram_row}  uram_i;
 typedef uram${output_words_per_uram_row} uram_o;
 
-static const uram_i URAM_I_ZERO = {{0}};
-
 #endif

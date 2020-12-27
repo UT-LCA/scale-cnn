@@ -24,8 +24,6 @@ if {$$READ_SCALE_FACTOR > 1} {
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR $lname products
 }
 
-set_directive_array_partition -type complete $lname indices
-
 # Input array partitioning.
 # The packing of words in the UltraRAMs already provides some read parallelism by itself
 # So any further partitioning should only be done by a factor of read scale factor / input words per URAM row

@@ -18,11 +18,9 @@ void ${lname}_readInputs (
          int filter_pixel_base = (INPUT_CHANS*jj) + (INPUT_CHANS*FILTER_SIZE*ii);
          IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk++) {
             int in_data_idx = input_pixel_base + kk;
-            uram_i in_data_row = is_padding ? URAM_I_ZERO : in_data[in_data_idx];
-            #pragma HLS array_partition variable=in_data_row complete
             IL7: for (int u = 0; u < $input_words_per_uram_row; ++u) {
                int vec_idx = filter_pixel_base + (kk*$input_words_per_uram_row) + u;
-               ifmap_vec[vec_idx] = in_data_row.d[u];
+               ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx].d[u];
             }
          }
       }
@@ -63,8 +61,15 @@ void ${lname}_writeOutput(
    static int outputCount = 0;
    static int outputIdx   = 0;
    static uram_o outputRow;
-   #pragma HLS array_partition variable=outputRow complete
-   outputRow.d[outputCount] = outputElem;
+   #pragma HLS array_partition variable=outputRow.d complete
+   // Ideally, we wouldn't need this for loop and could just do a single
+   // write to outputRow.d[outputCount]. However, for some strange reason,
+   // this causes the synthesis time of the layer to explode (from less than
+   // a minute to over 20 minutes). So writing it this way instead.
+   for (int x = 0; x < 4; x++) {
+      #pragma HLS unroll
+      outputRow.d[x] = (x == outputCount) ? outputElem : outputRow.d[x];
+   }
    outputCount++;
    if (outputCount == $output_words_per_uram_row) {
       outputCount = 0;
@@ -153,6 +158,7 @@ void $lname (
       data_t weight_vec[VECTOR_SIZE];
       data_t products[VECTOR_SIZE];
       int indices[3];
+      #pragma HLS array_partition variable=indices complete
       ${lname}_get_next_ijk(indices);
       int i_int = indices[0];
       int j_int = indices[1];
