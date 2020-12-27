@@ -30,9 +30,9 @@ int main() {
 
    // Pack the inputs into URAM rows.
    uram_i ifmaps_uram[INPUT_RAM_SIZE];
-   for (int i = 0; i < NUM_INPUTS; i+= $input_words_per_uram_row) {
+   for (int i = 0; i < INPUT_RAM_SIZE; i++) {
       for (int u = 0; u < $input_words_per_uram_row; u++) {
-         ifmaps_uram[i].d[u] = ifmaps[i];
+         ifmaps_uram[i].d[u] = ifmaps[(i*$input_words_per_uram_row)+u];
       }
    }
 

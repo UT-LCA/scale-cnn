@@ -15,15 +15,15 @@ void ${lname}_readInputs (
          int col_coord = (j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         int input_pixel_base = (row_coord * INPUT_WIDTH * INPUT_CHANS) +
-                                (col_coord * INPUT_CHANS);
+         int input_pixel_base = (row_coord * INPUT_WIDTH * INPUT_CHANS / $input_words_per_uram_row) +
+                                (col_coord * INPUT_CHANS / $input_words_per_uram_row);
          int filter_pixel_base = (INPUT_CHANS*jj) + (INPUT_CHANS*FILTER_SIZE*ii);
-         IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk += $input_words_per_uram_row) {
+         IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk++) {
             int in_data_idx = input_pixel_base + kk;
             uram_i in_data_row = is_padding ? URAM_I_ZERO : in_data[in_data_idx];
             #pragma HLS array_partition variable=in_data_row complete
             IL7: for (int u = 0; u < $input_words_per_uram_row; ++u) {
-               int vec_idx     = filter_pixel_base + kk + u;
+               int vec_idx = filter_pixel_base + (kk*$input_words_per_uram_row) + u;
                ifmap_vec[vec_idx] = in_data_row.d[u];
             }
          }
@@ -71,6 +71,7 @@ void ${lname}_writeOutput(
    if (outputCount == $output_words_per_uram_row) {
       outputCount = 0;
       out_data[outputIdx] = outputRow;
+      outputIdx++;
    }
 }
 
