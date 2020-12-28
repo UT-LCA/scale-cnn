@@ -175,3 +175,12 @@ $accum_function_calls
       ${lname}_writeOutput(final_sum, out_data);
    }
 }
+
+// Top-level wrapper function for $lname
+void ${lname}_top() {
+   uram_i in_data[INPUT_RAM_SIZE];
+   uram_o out_data[OUTPUT_RAM_SIZE];
+   data_t filter_data[FILTER_RAM_SIZE];
+   ${lname}(in_data, out_data, filter_data);
+}
+

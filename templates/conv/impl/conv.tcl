@@ -15,7 +15,7 @@ set COMMON_TEST_DIR $$env(SCALE_CNN_ROOT)/common/test
 open_project -reset ${lname}_prj
 add_files -cflags "-I .." {../global_defines.h ${lname}.cpp}
 add_files -tb -cflags "-I .. -I $$COMMON_TEST_DIR" "$$COMMON_TEST_DIR/tb_utils.cpp ../test/golden.cpp ../test/tb_${lname}.cpp"
-set_top ${lname}
+set_top ${lname}_top
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"
