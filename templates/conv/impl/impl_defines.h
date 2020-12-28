@@ -3,7 +3,8 @@
 
 #include "../${lname}_common_defines.h"
 
-static const int READ_SCALE_FACTOR = $read_scale_factor;
-static const int DP_SCALE_FACTOR   = $dp_scale_factor;
+static const int READ_SCALE_FACTOR  = $read_scale_factor;
+static const int DP_SCALE_FACTOR    = $dp_scale_factor;
+static const int OCHAN_SCALE_FACTOR = $ochan_scale_factor;
 
 #endif

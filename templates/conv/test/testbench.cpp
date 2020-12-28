@@ -7,13 +7,13 @@
 void $lname (
    uram_i in_data[INPUT_RAM_SIZE],
    uram_o out_data[OUTPUT_RAM_SIZE],
-   data_t filter_data[FILTER_RAM_SIZE]
+   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER]
 );
 
 void conv_golden (
    data_t in_data[NUM_INPUTS],
    data_t out_data[NUM_OUTPUTS],
-   data_t filter_data[FILTER_RAM_SIZE]
+   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER]
 );
 
 int main() {
@@ -24,9 +24,9 @@ int main() {
 
    // Generate random inputs and filters
    data_t ifmaps[NUM_INPUTS];
-   data_t filters[FILTER_RAM_SIZE];
+   data_t filters[OUTPUT_CHANS][WORDS_PER_FILTER];
    gen_random_inputs(ifmaps, NUM_INPUTS);
-   gen_random_filters(filters, FILTER_RAM_SIZE);
+   gen_random_filters<OUTPUT_CHANS, WORDS_PER_FILTER>(filters);
 
    // Pack the inputs into URAM rows.
    uram_i ifmaps_uram[INPUT_RAM_SIZE];

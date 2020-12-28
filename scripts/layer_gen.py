@@ -106,42 +106,43 @@ def gen_conv_layer(layer_spec, odir):
    #     ideally-scheduled BRAM reads beyond that. The padding pixel checks for
    #     readInputs makes it difficult for the synthesizer to schedule all the reads
    #     in parallel.
-   # - Dot Product scale factor:
-   #     - Equal to read scale factor
-   #     - Equal to twice the read scale factor
-   filter_size = layer_spec['filter_size']
+   # - Output channel scale factor: Factors of output chans
    ichans_factors = factors(ichans)
-   fsize_factors  = factors(filter_size)
+   ochans_factors = factors(ochans)
    read_scale_factors = copy.copy(ichans_factors)
-   #for f in fsize_factors:
-   #  read_scale_factors.append(ichans*f)
    # Sort and remove duplicates
    read_scale_factors = list(set(read_scale_factors))
    read_scale_factors.sort()
+   ochan_scale_factors = list(set(ochans_factors))
+   ochan_scale_factors.sort()
 
    # Generate all of the possible conv implementations
    layer_impls = []
    for read_sf in read_scale_factors:
-      for double_dp_sf in [False, True]:
+      for ochan_sf in ochan_scale_factors:
          impl = {}
-         dp_sf = 2*read_sf if double_dp_sf else read_sf
          impl['read_scale_factor'] = read_sf
-         impl['dp_scale_factor']   = dp_sf
-
+         # Originally I had experimented with making the dot product / accumulation scale
+         # factor twice that of the read scale factor. Removed it as after adding URAMs
+         # it did not provide any benefit.
+         impl['dp_scale_factor']   = read_sf
+         impl['ochan_scale_factor'] = ochan_sf
          # Generate the custom code for the accumulation functions for this layer.
          # Target latency is the estimated latency of the readInputs stage.
+         # Read bandwidth is twice the read scale factor because each BRAM has 
+         # two separate read ports.
          vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
          rdInp_latency = math.ceil(vec_size / read_sf) + 3
          accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                           layer_name = layer_spec['layer_name'],
                                           target_latency=rdInp_latency, 
                                           input_length=vec_size,
-                                          read_bw = dp_sf )
+                                          read_bw = read_sf*2 )
          impl['accum_functions']      = accum_funcs
          impl['accum_function_calls'] = accum_func_calls
 
          # Pick a name for the implementation
-         impl['name'] = "sf{}_{}".format(read_sf, dp_sf)
+         impl['name'] = "r{}_o{}".format(read_sf, ochan_sf)
          layer_impls.append(impl)
 
    # Now, generate the files for each implementation

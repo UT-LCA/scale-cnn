@@ -7,7 +7,7 @@
 void conv_golden (
    data_t in_data[INPUT_RAM_SIZE],
    data_t out_data[OUTPUT_RAM_SIZE],
-   data_t filter_data[FILTER_RAM_SIZE]
+   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER]
 ) {
   L1: for (int i = 0; i < OUTPUT_HEIGHT; i++) {
     L2: for (int j = 0; j < OUTPUT_WIDTH; j++) {
@@ -18,8 +18,7 @@ void conv_golden (
           data_t val = 0;
           L5: for (int ii = 0; ii < FILTER_SIZE; ii++) {
             L6: for (int jj = 0; jj < FILTER_SIZE; jj++) {
-              int filter_data_idx = (k  * FILTER_SIZE * FILTER_SIZE * INPUT_CHANS) +
-                                    (ii * FILTER_SIZE * INPUT_CHANS) +
+              int filter_data_idx = (ii * FILTER_SIZE * INPUT_CHANS) +
                                     (jj * INPUT_CHANS) +
                                     kk;
               int row_coord = (i*STRIDE) + ii - PAD;
@@ -30,7 +29,7 @@ void conv_golden (
                                 (col_coord * INPUT_CHANS) +
                                 kk;
               data_t in_data_elem = is_padding ? (data_t)0 : in_data[in_data_idx];
-              val += in_data_elem * filter_data[filter_data_idx];
+              val += in_data_elem * filter_data[k][filter_data_idx];
             }
           }
           all_chans_val += val;

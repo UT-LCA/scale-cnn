@@ -343,11 +343,11 @@ def GenerateAccumStageCode(stage):
 # Generates the code that calls all of the accumulation stages in sequence.
 def GenAccumStageFuncCalls(lname, stage_params):
    code = ""
-   s = " " * 6
+   s = " " * 9
    has_return_val = False
    for stage in stage_params:
       stage_num = stage['stage_num']
-      op_in = 'products' if stage_num == 1 else 'accum{}_out'.format(stage_num-1)
+      op_in = 'products[o]' if stage_num == 1 else 'accum{}_out'.format(stage_num-1)
       op_out = "accum{}_out".format(stage_num)
       has_return_val = stage['type'] == 'simple_loop' or stage['type'] == 'unpipelined_tree'
       if has_return_val:
