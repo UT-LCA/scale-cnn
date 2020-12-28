@@ -158,8 +158,12 @@ def gen_conv_layer(layer_spec, odir):
 def gen_layer_impl_list(odir, layer_spec, implementations):
    lname = layer_spec['layer_name']
    fp = os.path.abspath(os.path.join(odir, lname + "_implementations.txt"))
+   # Delete these keys, we don't need them anymore
+   del_keys = ['accum_functions', 'accum_function_calls']
    with open(fp, 'w') as f:
       for impl in implementations:
+         for k in del_keys:
+            impl.pop(k, None)
          f.write(str(impl))
          f.write("\n")
    print("Generated {} implementations for {}".format(len(implementations), lname))

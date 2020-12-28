@@ -57,7 +57,7 @@ int main() {
    printf("Comparing expected vs. actual values.\n");
    fflush(stdout);
 
-   int res = compare_expected_vs_actual(ofmaps_gold, ofmaps_synth, OUTPUT_RAM_SIZE); 
+   int res = compare_expected_vs_actual(ofmaps_gold, ofmaps_synth, NUM_OUTPUTS); 
    if (res == 0) printf("Validation successful.\n");
    return res;
 }
