@@ -104,8 +104,13 @@ void ${lname}_dot_product (
    // But luckily we can explicitly tell it there are no dependencies.
    #pragma HLS dependence variable=products inter WAW false
    #pragma HLS dependence variable=products intra WAW false
-   DP_LOOP: for (int p = 0; p < VECTOR_SIZE; p++) {
-      DP_OCHANS: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
+   // It is essential that these loops do not have labels. For some reason,
+   // adding labels causes the synthesis time to increase by several hundred percent.
+   // I believe this is a problem with the Vivado HLS software itself.
+   for (int p = 0; p < VECTOR_SIZE; p++) {
+      #pragma HLS pipeline
+      #pragma HLS unroll factor=$dp_scale_factor
+      for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
          products[oc][p] = ifmap_vec[p] * weight_vecs[oc][p];
       }
    }

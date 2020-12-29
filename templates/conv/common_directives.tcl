@@ -47,12 +47,6 @@ if {$$READ_SCALE_FACTOR > 1} {
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR  -dim 2 $lname products
 }
 
-# Pipeline and unroll dot product multiplications
-set_directive_pipeline ${lname}_dot_product/DP_LOOP
-if {$$DP_SCALE_FACTOR > 1} {
-   set_directive_unroll -factor $$DP_SCALE_FACTOR ${lname}_dot_product/DP_LOOP
-}
-
 # readInputs directives
 # Which exact loop we pipeline and unroll depends on the scale factor, since the scale factor
 # can exceed the trip count of the inner most loop.
