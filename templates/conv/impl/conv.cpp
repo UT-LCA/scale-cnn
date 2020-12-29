@@ -4,7 +4,7 @@
 
 // Reads input feature maps into an internal buffer (ifmap_vec)
 void ${lname}_readInputs ( 
-   uram_i in_data[INPUT_RAM_SIZE],
+   data_t in_data[INPUT_RAM_SIZE],
    int i, int j,
    data_t ifmap_vec[VECTOR_SIZE] ) {
    IL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
@@ -13,13 +13,14 @@ void ${lname}_readInputs (
          int col_coord = (j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * (INPUT_CHANS / $input_words_per_uram_row);
-         int filter_pixel_base = (INPUT_CHANS*jj) + (INPUT_CHANS*FILTER_SIZE*ii);
+         int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS;
+         int filter_pixel_base = ((ii*FILTER_SIZE) + jj) * INPUT_CHANS;
          IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk++) {
-            int in_data_idx = input_pixel_base + kk;
             IL7: for (int u = 0; u < $input_words_per_uram_row; ++u) {
-               int vec_idx = filter_pixel_base + (kk*$input_words_per_uram_row) + u;
-               ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx].d[u];
+               int offset = (kk*$input_words_per_uram_row) + u;
+               int in_data_idx = input_pixel_base  + offset;
+               int vec_idx     = filter_pixel_base + offset;
+               ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx];
             }
          }
       }
@@ -53,35 +54,32 @@ void ${lname}_readFilters (
 
 
 // Function for writing output data to the output URAMs.
-// This function receives one word per function call, and packs the words
-// together before writing them to the output URAM. Because of this, the write
-// operation only occurs once every 3 or 4 calls. For this reason, this function
-// must use static variables to remember how many words are currently stored in 
-// the 
+// This function receives OCHAN_SCALE_FACTOR words per function call, and packs 
+// the words together before writing them to the output URAM. Each URAM row will 
+// hold either 3 or 4 elements. OCHAN_SCALE_FACTOR may be less than, equal to, or 
+// greater than the number of elements per row. For this reason, this function
+// must use static variables to store partial URAM rows so that it only writes
+// to the URAM when an entire row is ready. If OCHAN_SCALE_FACTOR is less than
+// the number of elements per URAM row, the not every call to this function will
+// result in an actual write to the URAMs.
 void ${lname}_writeOutputs(
    data_t outputs[OCHAN_SCALE_FACTOR],
-   uram_o out_data[OUTPUT_RAM_SIZE]
+   data_t out_data[OUTPUT_RAM_SIZE]
 ) {
    static int outputCount = 0;
    static int outputIdx   = 0;
-   static uram_o outputRow;
-   #pragma HLS array_partition variable=outputRow.d complete
-   // If this function ever becomes a bottleneck, I should be able
-   // to unroll it by output_words_per_uram_row
+   static data_t outputRow[$output_words_per_uram_row];
+   #pragma HLS array_partition variable=outputRow complete
    for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
-      // Ideally, we wouldn't need this for loop and could just do a single
-      // write to outputRow.d[outputCount]. However, for some strange reason,
-      // this causes the synthesis time of the layer to explode (from less than
-      // a minute to over 20 minutes). So writing it this way instead.
-      for (int x = 0; x < 4; x++) {
-         #pragma HLS unroll
-         outputRow.d[x] = (x == outputCount) ? outputs[o] : outputRow.d[x];
-      }
+      outputRow[outputCount] = outputs[o];
       outputCount++;
       if (outputCount == $output_words_per_uram_row) {
          outputCount = 0;
-         out_data[outputIdx] = outputRow;
-         outputIdx++;
+         for (int w = 0; w < $output_words_per_uram_row; w++) {
+            #pragma HLS unroll
+            out_data[outputIdx + w] = outputRow[w];
+         }
+         outputIdx += $output_words_per_uram_row;
       }
    }
 }
@@ -102,11 +100,9 @@ void ${lname}_dot_product (
    // WAW dependencies for when we utilize both write ports of one BRAM.
    // I'm not sure why this only sometimes happens and sometimes doesn't.
    // But luckily we can explicitly tell it there are no dependencies.
+   // TODO: figure out if this is still necessary with Vitis.
    #pragma HLS dependence variable=products inter WAW false
    #pragma HLS dependence variable=products intra WAW false
-   // It is essential that these loops do not have labels. For some reason,
-   // adding labels causes the synthesis time to increase by several hundred percent.
-   // I believe this is a problem with the Vivado HLS software itself.
    for (int p = 0; p < VECTOR_SIZE; p++) {
       #pragma HLS pipeline
       #pragma HLS unroll factor=$dp_scale_factor
@@ -153,8 +149,8 @@ void ${lname}_get_next_ijk (int indices[3]) {
 
 
 void $lname (
-   uram_i in_data[INPUT_RAM_SIZE],
-   uram_o out_data[OUTPUT_RAM_SIZE],
+   data_t in_data[INPUT_RAM_SIZE],
+   data_t out_data[OUTPUT_RAM_SIZE],
    data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER]
 ) {
    // Ideally, this single for loop would be split into three nested loops like this,
@@ -178,6 +174,8 @@ void $lname (
    // So instead, we must explicitly flatten the loops in the C code itself. The "get_next_ijk"
    // function will keep track of what the values of i,j,k would be if the loops were written 
    // as shown above.
+   //
+   // TODO: Figure out if this is fixed in Vitis.
    TOP_LOOP: for (int f = 0; f < NUM_OUTPUTS / OCHAN_SCALE_FACTOR; f++) {
       data_t ifmap_vec[VECTOR_SIZE];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
@@ -212,8 +210,8 @@ $accum_function_calls
 
 // Top-level wrapper function for $lname
 void ${lname}_top() {
-   uram_i in_data[INPUT_RAM_SIZE];
-   uram_o out_data[OUTPUT_RAM_SIZE];
+   data_t in_data[INPUT_RAM_SIZE];
+   data_t out_data[OUTPUT_RAM_SIZE];
    data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER];
    ${lname}(in_data, out_data, filter_data);
 }

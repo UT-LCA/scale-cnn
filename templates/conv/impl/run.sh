@@ -1,1 +1,1 @@
-vivado_hls -f ${lname}.tcl
+vitis_hls -f ${lname}.tcl

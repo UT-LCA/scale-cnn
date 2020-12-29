@@ -13,7 +13,4 @@ typedef half data_t;
 typedef float data_t;
 #endif
 
-typedef struct URAM_3Pack { data_t d[3]; } uram3;
-typedef struct URAM_4Pack { data_t d[4]; } uram4;
-
 #endif
