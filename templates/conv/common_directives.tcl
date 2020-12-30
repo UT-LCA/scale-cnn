@@ -9,8 +9,8 @@
 ###############################################################################
 
 # Implement ifmaps and ofmaps as UltraRAMs
-set_directive_bind_storage -type RAM_2P -impl uram ${lname} in_data
-set_directive_bind_storage -type RAM_2P -impl uram ${lname} out_data
+set_directive_bind_storage -type RAM_2P -impl uram ${lname}_top in_data
+set_directive_bind_storage -type RAM_2P -impl uram ${lname}_top out_data
 
 # Pack the arrays into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.
@@ -21,13 +21,13 @@ set_directive_bind_storage -type RAM_2P -impl uram ${lname} out_data
 # Therefore the partitioning factor should be the larger of the two numbers.
 set INPUT_PART_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
 if {$$INPUT_PART_FACTOR > 1} {
-   set_directive_array_reshape -type cyclic -factor $$INPUT_PART_FACTOR ${lname} in_data
+   set_directive_array_reshape -type cyclic -factor $$INPUT_PART_FACTOR ${lname}_top in_data
 }
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do.
 # For right now just set it to to output words per URAM row
 # Eventually will need to put this elsewhere once I start synthesizing entire networks
-set_directive_array_reshape -type cyclic -factor $$OCHAN_SCALE_FACTOR ${lname} out_data
+set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row ${lname}_top out_data
 
 # Filters / vectors / products partitioning
 # Each of these arrays are two-dimensional
