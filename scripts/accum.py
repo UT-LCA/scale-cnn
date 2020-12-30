@@ -57,7 +57,7 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    tree_height = max(tree_height, 1)
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
    latency = (ADD_LATENCY*tree_height) + trip_count + total_overhead
-   ol = tree_stages[-1][1] * math.ceil(curr_IL / input_read_bw)
+   ol = tree_stages[-1][1] * trip_count
    return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
            'substages': tree_stages, 'type': 'pipelined_tree'}
 
@@ -341,24 +341,29 @@ def GenerateAccumStageCode(stage):
    return func
 
 # Generates the code that calls all of the accumulation stages in sequence.
-def GenAccumStageFuncCalls(lname, stage_params):
+def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
    code = ""
-   s = " " * 9
+   s = " " * 6
    has_return_val = False
    for stage in stage_params:
       stage_num = stage['stage_num']
-      op_in = 'products[o]' if stage_num == 1 else 'accum{}_out'.format(stage_num-1)
-      op_out = "accum{}_out".format(stage_num)
+      op_in = 'products[%d]' if stage_num == 1 else 'accum{}_out_%d'.format(stage_num-1)
+      op_out = "accum{}_out_%d".format(stage_num)
       has_return_val = stage['type'] == 'simple_loop' or stage['type'] == 'unpipelined_tree'
       if has_return_val:
-         code += s + "data_t final_sum = {}_accum_{}({});\n".format(lname, stage_num, op_in)
+         for ochan in range(ochan_sf):
+            code += s + "outputs[{}] = {}_accum_{}({});\n".format(ochan, lname, stage_num, (op_in % ochan))
       else:
-         code += s + "data_t {}[{}];\n".format(op_out, stage['OL'])
-         code += s + "#pragma HLS array_partition variable={} complete\n".format(op_out)
-         code += s + "{}_accum_{}({}, {});\n".format(lname, stage_num, op_in, op_out)
+         for ochan in range(ochan_sf):
+            code += s + "data_t {}[{}];\n".format(op_out % ochan, stage['OL'])
+         for ochan in range(ochan_sf):
+            code += s + "#pragma HLS array_partition variable={} complete\n".format(op_out % ochan)
+         for ochan in range(ochan_sf):
+            code += s + "{}_accum_{}({}, {});\n".format(lname, stage_num, op_in % ochan, op_out % ochan)
          
    if not has_return_val:
-      code += s + "data_t final_sum = accum{}_out[0];\n".format(stage_params[-1]['stage_num'])
+      for ochan in range(ochan_sf):
+         code += s + "outputs[{}] = accum{}_out_{}[0];\n".format(ochan, stage_params[-1]['stage_num'], ochan)
 
    return code
 
@@ -367,14 +372,15 @@ def GenAccumStageFuncCalls(lname, stage_params):
 # Input length is the number of values that need to be added together.
 # Read bandwidth is the number of inputs we can read per cycle. This will either 
 # be the array partitioning factor of the inputs, or twice it.
-def GenerateAccumulationStages(layer_name, target_latency, input_length, read_bw):
+# ochan_sf is the output channel scaling factor.
+def GenerateAccumulationStages(layer_name, ochan_sf, target_latency, input_length, read_bw):
    stage_params = GetAccumulationStageParams(target_latency, input_length, read_bw)
    stage_functions = []
    for stage in stage_params:
       stage['lname'] = layer_name
       stage_functions.append(GenerateAccumStageCode(stage))
    function_defs_code  = '\n\n\n'.join(stage_functions)
-   function_calls_code = GenAccumStageFuncCalls(layer_name, stage_params)
+   function_calls_code = GenAccumStageFuncCalls(layer_name, ochan_sf, stage_params)
    return (function_defs_code, function_calls_code)
 
 #========================================================================================
@@ -391,14 +397,14 @@ if __name__ == "__main__":
       lname = "l" + str(i)
       stages = GetAccumulationStageParams(tc['targ_lat'], tc['IL'], tc['read_bw'])
       for stage in stages:
-         if stage['type'] == 'pipelined_tree' or stage['type'] == 'unpipelined_tree':
+         if stage['type'] == 'pipelined_tree':
             print("Type: {}, WRPC: {}, TH: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
                stage['wrpc'], stage['th'], stage['IL'], stage['OL'], stage['est_lat']))
          else:
             print("Type: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
                stage['IL'], stage['OL'], stage['est_lat']))
       print("\n")
-      func_code, func_calls_code = GenerateAccumulationStages(lname, tc['targ_lat'], tc['IL'], tc['read_bw'])
+      func_code, func_calls_code = GenerateAccumulationStages(lname, 2, tc['targ_lat'], tc['IL'], tc['read_bw'])
       print("Function definitions:\n")
       print(func_code)
       print("Function calls:\n")

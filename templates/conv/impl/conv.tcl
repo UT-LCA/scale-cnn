@@ -30,6 +30,8 @@ source ../${lname}_common_directives.tcl
 csim_design -clean
 
 # Run Synthesis
+# Disable dataflow canonical form warnings
+config_dataflow -strict_mode off
 csynth_design
 
 exit

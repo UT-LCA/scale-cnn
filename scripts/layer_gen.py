@@ -122,10 +122,6 @@ def gen_conv_layer(layer_spec, odir):
       for ochan_sf in ochan_scale_factors:
          impl = {}
          impl['read_scale_factor'] = read_sf
-         # Originally I had experimented with making the dot product / accumulation scale
-         # factor twice that of the read scale factor. Removed it as after adding URAMs
-         # it did not provide any benefit.
-         impl['dp_scale_factor']   = read_sf
          impl['ochan_scale_factor'] = ochan_sf
          # Generate the custom code for the accumulation functions for this layer.
          # Target latency is the estimated latency of the readInputs stage.
@@ -135,6 +131,7 @@ def gen_conv_layer(layer_spec, odir):
          rdInp_latency = math.ceil(vec_size / read_sf) + 3
          accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                           layer_name = layer_spec['layer_name'],
+                                          ochan_sf = ochan_sf,
                                           target_latency=rdInp_latency, 
                                           input_length=vec_size,
                                           read_bw = read_sf*2 )

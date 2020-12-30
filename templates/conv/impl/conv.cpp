@@ -103,10 +103,8 @@ void ${lname}_dot_product (
    // TODO: figure out if this is still necessary with Vitis.
    #pragma HLS dependence variable=products inter WAW false
    #pragma HLS dependence variable=products intra WAW false
-   for (int p = 0; p < VECTOR_SIZE; p++) {
-      #pragma HLS pipeline
-      #pragma HLS unroll factor=$dp_scale_factor
-      for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
+   DP_OUTER: for (int p = 0; p < VECTOR_SIZE; p++) {
+      DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
          products[oc][p] = ifmap_vec[p] * weight_vecs[oc][p];
       }
    }
@@ -176,7 +174,9 @@ void $lname (
    // as shown above.
    //
    // TODO: Figure out if this is fixed in Vitis.
-   TOP_LOOP: for (int f = 0; f < NUM_OUTPUTS / OCHAN_SCALE_FACTOR; f++) {
+   TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
+      #pragma HLS stable variable=in_data
+      #pragma HLS stable variable=filter_data
       data_t ifmap_vec[VECTOR_SIZE];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
@@ -199,11 +199,7 @@ void $lname (
       ${lname}_readInputs(in_data, i_int, j_int, ifmap_vec);
       ${lname}_readFilters(filter_data, k_int, weight_vecs);
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
-      OCHAN_LOOP: for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
-         #pragma HLS unroll
 $accum_function_calls
-         outputs[o] = final_sum;
-      }
       ${lname}_writeOutputs(outputs, out_data);
    }
 }
