@@ -42,10 +42,10 @@ def GetPipelinedTreeStageSubstages(wrpc, th):
 # Function for choosing a pipelined tree accumulation stage with
 # non-complete-partitioned inputs (inputs stored in partitioned BRAMs).
 def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
-   # For the first stage, the maximum tree height is limited by one of two things:
+   # For these stages, the maximum tree height is limited by one of two things:
    # the number of words we can read per cycle, or the target latency
    # Read bandwidth can limit the tree height because we always want an II of 1.
-   # We must be able to supply all first-stage adders with new values each cycle.
+   # We must be able to supply all first-level adders with new values each cycle.
    total_overhead = OVERHEAD
    max_tree_height_read_bw_limited = math.ceil(math.log2(input_read_bw))
    trip_count = math.ceil(curr_IL / input_read_bw)
@@ -57,15 +57,33 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    tree_height = max(tree_height, 1)
    tree_stages = GetPipelinedTreeStageSubstages(input_read_bw, tree_height)
    latency = (ADD_LATENCY*tree_height) + trip_count + total_overhead
-   ol = tree_stages[-1][1] * trip_count
-   return {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
-           'substages': tree_stages, 'type': 'pipelined_tree'}
+   num_last_level_outputs = tree_stages[-1][1]
+   ol = num_last_level_outputs * trip_count
+   # Determine whether the outputs will be stored in BRAMs or registers.
+   # For pipelined tree accumulation stages that have more than 6 outputs, we will store the 
+   # outputs in BRAMs. All other accumulation stages will store outputs in registers.
+   # The threshold of 6 was chosen heuristically. The reason we do this is that complete-
+   # partitioned registers with a large number of elements infers a great deal of logic to
+   # determine when to write to each register. Putting them in a single BRAM is a much better
+   # design choice because LUTs are generally more limited than BRAMs in these designs.
+   # Also, pick registers over BRAMs if we would only write to each BRAM once (trip count of 1)
+   output_storage = 'bram' if (ol > 6 and trip_count > 1) else 'regs'
+   # We will partition the outputs with a factor equal to the amount of outputs we write per cycle.
+   # It might be possible to do just half, need to experiment (TODO)
+   stage = {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
+           'output_storage_type': output_storage, 'substages': tree_stages, 'type': 'pipelined_tree'}
+   if output_storage == 'bram':
+      stage['bram_part_factor'] = num_last_level_outputs
+      stage['next_read_bw'] = num_last_level_outputs * 2
+   else:
+      stage['next_read_bw'] = ol
+   return stage
 
 
 # Function for choosing a pipelined tree accumulation stage with
 # complete-partitioned inputs.
 def PipelinedTreeStageComplete(target_latency, curr_IL):
-   # For all stages beyond the first, we have no limitation on words read per cycle.
+   # When the inputs are complete-partitioned, we have no limitation on words read per cycle.
    # This means we can explore different values of tree height and words read per cycle.
    # This is an optimization problem. The search space is as follows:
    #
@@ -92,10 +110,10 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
          # Each stage does a 2x reduction, but have to handle odd numbers correctly.
          tree_stages = GetPipelinedTreeStageSubstages(wrpc, th)
          # Output length = # outputs of the last stage * # of times inputs are read
-         #               = # outputs of last stage * ceil(IL / wrpc)
-         ol = tree_stages[-1][1] * math.ceil(curr_IL / wrpc)
+         #               = # outputs of last stage * trip count
+         ol = tree_stages[-1][1] * trip_count
          # Each function call, each DSP produces ceil(IL / wrpc) outputs.
-         dsp_util = math.ceil(curr_IL / wrpc)
+         dsp_util = trip_count
          new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 
                       'substages': tree_stages, 'dsp_util': dsp_util}
          points.append(new_point)
@@ -106,9 +124,10 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
    #
    # A naive approach would be to always pick the design point with the smallest output length.
    # This would minimize the total amount of accumulation stages required for the overall layer.
-   # But this isn't a really great design choice between having one or two additional accum 
-   # stages isn't that bad. It will not affect the initiation interval of the dataflow pipeline,
-   # and will barely increase the overall latency of the whole laye.
+   # But this isn't a really great design choice because it could use a lot of DSPs that are only
+   # used once or twice per function call. Using fewer DSPs but having one or two additional accum 
+   # stages is better. It will not affect the initiation interval of the dataflow pipeline,
+   # and will barely increase the overall latency of the layer as a whole.
    #
    # What we really should consider is the DSP utilization, i.e., how many times each adder is 
    # used per function call. The higher the utilization, the fewer DSPs used overall. However, we 
@@ -185,7 +204,8 @@ def SimpleLoopStage(curr_IL):
 def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
    accum_stages = []
    curr_IL = input_length
-   first_stage = True
+   curr_input_read_bw = input_read_bw
+   curr_input_storage_type = 'bram'
    while (curr_IL > 1):
       if (ADD_LATENCY * curr_IL) + OVERHEAD < target_latency:
          # If the target latency is sufficiently large, we may have enough time to 
@@ -194,7 +214,7 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          # This stage always reduces the inputs to 1 output, so it will always be the 
          # last stage.
          accum_stage = SimpleLoopStage(curr_IL)
-      elif not first_stage and curr_IL <= 8 and (ADD_LATENCY * math.ceil(math.log2(curr_IL)) - 1 < target_latency):
+      elif curr_input_read_bw >= curr_IL and curr_IL <= 8 and (ADD_LATENCY * math.ceil(math.log2(curr_IL)) - 1 < target_latency):
          # The next option is an unpipelined tree. This will also reduce it down to 1 element.
          # This is a good option when the number of inputs is small but we don't have time for
          # a simple loop stage. We should only use this if the number of inputs is small.
@@ -203,13 +223,11 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          # In these scenarios it is better to use a pipelined tree stage that would use each DSP
          # multiple times. I heuristically chose 8 as the size limit for this stage type.
          #
-         # It also cannot be the first stage as we must be able to read all inputs at once
-         # on the first cycle. For the first accum stage, the inputs are in BRAMs instead of 
-         # registers, so this would not be possible.
+         # This stage also fundamentally requires that all inputs can be read in a single cycle.
          accum_stage = UnpipelinedTreeStage(curr_IL)
-      elif first_stage and ((curr_IL / input_read_bw) > 15):
-         # If the input length is sufficiently large enough, we can use an interleaved
-         # accumulation stage for the first stage. Since this stage will perform a 
+      elif curr_input_storage_type == 'bram' and ((curr_IL / curr_input_read_bw) > 15):
+         # If the input length is sufficiently large enough and is stored in BRAMs, we 
+         # can use an interleaved accumulation stage. Since this stage will perform a 
          # relatively drastic reduction, it is unlikely that we would want one beyond 
          # the first stage.
          #
@@ -217,28 +235,37 @@ def GetAccumulationStageParams(target_latency, input_length, input_read_bw):
          # arbitrarily chosen a heuristic that we should only use this stage if each 
          # accumulator is used 4 times in order to get "decent" utilization. This would 
          # imply I should compare it to 16 but I subtracted one for "close calls".
-         accum_stage = InterleavedStage(target_latency, curr_IL, input_read_bw)
+         accum_stage = InterleavedStage(target_latency, curr_IL, curr_input_read_bw)
       else:
          # Otherwise, insert a pipelined tree accumulation stage
          #
          # This stage is characterized by two parameters: tree height and words read per cycle.
-         # If this is the first stage, the word read per cycle is fixed, since we are reading
-         # from BRAMs. For all stages beyond the first, we use complete partitioning, so
-         # there is no limit other than the total length of the input itself.
-         if first_stage:
-            accum_stage = PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw)
+         # The inputs can be stored in either BRAMs or registers.
+         if curr_input_storage_type == 'bram':
+            accum_stage = PipelinedTreeStageNoncomplete(target_latency, curr_IL, curr_input_read_bw)
          else:
             accum_stage = PipelinedTreeStageComplete(target_latency, curr_IL)
 
-      first_stage = False
+
+      # If not specified by the function that generated the stage, the outputs will be stored in registers
+      if 'output_storage_type' not in accum_stage:
+         accum_stage['output_storage_type'] = 'regs'
+         accum_stage['next_read_bw'] = accum_stage['OL']
+
       accum_stage['IL'] = curr_IL
       accum_stage['stage_num'] = len(accum_stages) + 1
       accum_stages.append(accum_stage)
-      curr_IL = accum_stage['OL']
-      
+
+      # Prepare to choose the next stage
+      curr_IL =                 accum_stage['OL']
+      curr_input_storage_type = accum_stage['output_storage_type']
+      curr_input_read_bw      = accum_stage['next_read_bw']
+
       # Something has gone wrong if we have more than 10 stages
       if len(accum_stages) > 10:
          raise Exception('Number of accumulation stages is too large.')
+
+      ## end while loop
 
    return accum_stages
 
@@ -351,21 +378,34 @@ def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
       op_out = "accum{}_out_%d".format(stage_num)
       has_return_val = stage['type'] == 'simple_loop' or stage['type'] == 'unpipelined_tree'
       if has_return_val:
+         # Function call for the last stage
          for ochan in range(ochan_sf):
             code += s + "outputs[{}] = {}_accum_{}({});\n".format(ochan, lname, stage_num, (op_in % ochan))
       else:
+         # Declare the outputs of the current stage
          for ochan in range(ochan_sf):
             code += s + "data_t {}[{}];\n".format(op_out % ochan, stage['OL'])
+         # Array partitioning pragmas for stage outputs (if necessary)
          for ochan in range(ochan_sf):
-            code += s + "#pragma HLS array_partition variable={} complete\n".format(op_out % ochan)
+            if stage['output_storage_type'] == 'bram':
+               # Stage's outputs are stored in BRAMs
+               part_factor = stage['bram_part_factor']
+               if part_factor > 1:
+                  code += s + "#pragma HLS array_partition variable={} cyclic factor={}\n".format(op_out % ochan, part_factor)
+            else:
+               # Stage's outputs are stored in registers
+               code += s + "#pragma HLS array_partition variable={} complete\n".format(op_out % ochan)
+         # The actual function call
          for ochan in range(ochan_sf):
             code += s + "{}_accum_{}({}, {});\n".format(lname, stage_num, op_in % ochan, op_out % ochan)
          
    if not has_return_val:
+      # Function call for the last stage if the output is an array with length 1 instead of return value.
       for ochan in range(ochan_sf):
          code += s + "outputs[{}] = accum{}_out_{}[0];\n".format(ochan, stage_params[-1]['stage_num'], ochan)
 
    return code
+
 
 # Top-level function for generating the code for the accumulation stages of a layer.
 # Target latency is the maximum latency allowed for any single accumulation stage
