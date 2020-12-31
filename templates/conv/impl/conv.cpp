@@ -1,8 +1,12 @@
 #include "global_defines.h"
 #include "${lname}_impl_defines.h"
 #include <stdbool.h>
+#include <assert.h>
 
 // Reads input feature maps into an internal buffer (ifmap_vec)
+// The assertions tell the compiler the upper bounds of the index
+// variables which enable it to make major optimizations on the 
+// arithmetic logic.
 void ${lname}_readInputs ( 
    data_t in_data[INPUT_RAM_SIZE],
    int i, int j,
@@ -16,8 +20,10 @@ void ${lname}_readInputs (
          int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS_PADDED;
          int filter_pixel_base = ((ii*FILTER_SIZE) + jj) * INPUT_CHANS;
          IL6: for (int kk = 0; kk < INPUT_CHANS; kk++) {
-            int in_data_idx = input_pixel_base  + kk;
+            int in_data_idx = is_padding ? 0 : input_pixel_base + kk;
             int vec_idx     = filter_pixel_base + kk;
+            assert(in_data_idx < INPUT_RAM_SIZE);
+            assert(vec_idx < VECTOR_SIZE);
             ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx];
          }
       }
@@ -26,6 +32,7 @@ void ${lname}_readInputs (
 
 // Reads filters into internal buffers (weight_vecs)
 // It reads all the elements of $ochan_scale_factor filter(s)
+// Like with readInputs the assertions enable compiler optimizations
 void ${lname}_readFilters (
    data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER],
    int k,
@@ -33,16 +40,16 @@ void ${lname}_readFilters (
 ) {
    FL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       FL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
+         int idx_base = (ii*FILTER_SIZE + jj) * INPUT_CHANS;
          FL6: for (int kk = 0; kk < INPUT_CHANS; ++kk) {
-            int filter_data_idx = (ii * FILTER_SIZE * INPUT_CHANS) +
-                                  (jj * INPUT_CHANS) +
-                                  kk;
-            int vec_idx = kk + (INPUT_CHANS*jj) + (INPUT_CHANS*FILTER_SIZE*ii);
+            int idx = idx_base + kk;
+            assert(idx < WORDS_PER_FILTER);
             FL7: for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
                // This loop should always be unrolled completely.
                #pragma HLS unroll
                int ochan = (k*OCHAN_SCALE_FACTOR) + o;
-               weight_vecs[o][vec_idx] = filter_data[ochan][filter_data_idx];
+               assert(ochan < OUTPUT_CHANS);
+               weight_vecs[o][idx] = filter_data[ochan][idx];
             }
          }
       }
@@ -74,9 +81,9 @@ void ${lname}_writeOutputs(
          outputCount = 0;
          for (int w = 0; w < $output_words_per_uram_row; w++) {
             #pragma HLS unroll
-            out_data[outputIdx + w] = outputRow[w];
+            out_data[(outputIdx*$output_words_per_uram_row) + w] = outputRow[w];
          }
-         outputIdx += $output_words_per_uram_row;
+         outputIdx++;
       }
    }
 }
