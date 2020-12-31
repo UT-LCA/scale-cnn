@@ -51,19 +51,16 @@ if {$$READ_SCALE_FACTOR > 1} {
 # We theoretically could do the same for weight_vecs, ifmap_vec, and products as well, but we don't because we want everything after
 # the read stages to be faster than the read stages. To guarantee this, we give the dot product and first accumulation stages
 # twice the read bandwidth of readFilters and readInputs.
+# Read scale factor could be odd so need to round up.
 if {$$READ_SCALE_FACTOR > 2} {
-   set_directive_array_partition -type cyclic -factor [expr {$$READ_SCALE_FACTOR / 2}] -dim 2 ${lname}_top filter_data
+   set_directive_array_partition -type cyclic -factor [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}] -dim 2 ${lname}_top filter_data
 }
 
 # readInputs directives
 # Which exact loop we pipeline and unroll depends on the scale factor, since the scale factor
 # can exceed the trip count of the inner most loop.
-if {$$READ_SCALE_FACTOR < $input_words_per_uram_row} {
+if {$$READ_SCALE_FACTOR < $input_chans} {
    set unroll $$READ_SCALE_FACTOR
-   set_directive_pipeline ${lname}_readInputs/IL7
-   set_directive_unroll -factor $$unroll ${lname}_readInputs/IL7
-} elseif {$$READ_SCALE_FACTOR < $input_chans} {
-   set unroll [expr {$$READ_SCALE_FACTOR / $input_words_per_uram_row}]
    set_directive_pipeline ${lname}_readInputs/IL6
    set_directive_unroll -factor $$unroll ${lname}_readInputs/IL6
 } elseif {$$READ_SCALE_FACTOR == $input_chans} {

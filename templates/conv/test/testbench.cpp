@@ -28,12 +28,24 @@ int main() {
    gen_random_inputs(ifmaps, NUM_INPUTS);
    gen_random_filters<OUTPUT_CHANS, WORDS_PER_FILTER>(filters);
 
+   // Copy the ifmaps to the padded version for the synthesized function.
+   data_t ifmaps_padded[INPUT_RAM_SIZE];
+   for (int i = 0; i < INPUT_HEIGHT; i++) {
+      for (int j = 0; j < INPUT_WIDTH; j++) {
+         for (int k = 0; k < INPUT_CHANS; k++) {
+            int padded_idx     = k + INPUT_CHANS_PADDED * (j + INPUT_WIDTH * i);
+            int non_padded_idx = k + INPUT_CHANS        * (j + INPUT_WIDTH * i);
+            ifmaps_padded[padded_idx] = ifmaps[non_padded_idx];
+         }
+      }
+   }
+
    // Run the golden function and the synthesized function with the same inputs.
    data_t ofmaps_synth[NUM_OUTPUTS];
    data_t ofmaps_gold[NUM_OUTPUTS];
    printf("Running synthesized function...\n");
    fflush(stdout);
-   $lname(ifmaps, ofmaps_synth, filters);
+   $lname(ifmaps_padded, ofmaps_synth, filters);
    printf("Running golden comparison function...\n");
    fflush(stdout);
    conv_golden(ifmaps, ofmaps_gold, filters);

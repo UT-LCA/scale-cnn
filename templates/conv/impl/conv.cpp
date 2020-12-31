@@ -13,15 +13,12 @@ void ${lname}_readInputs (
          int col_coord = (j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS;
+         int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS_PADDED;
          int filter_pixel_base = ((ii*FILTER_SIZE) + jj) * INPUT_CHANS;
-         IL6: for (int kk = 0; kk < INPUT_CHANS / $input_words_per_uram_row; kk++) {
-            IL7: for (int u = 0; u < $input_words_per_uram_row; ++u) {
-               int offset = (kk*$input_words_per_uram_row) + u;
-               int in_data_idx = input_pixel_base  + offset;
-               int vec_idx     = filter_pixel_base + offset;
-               ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx];
-            }
+         IL6: for (int kk = 0; kk < INPUT_CHANS; kk++) {
+            int in_data_idx = input_pixel_base  + kk;
+            int vec_idx     = filter_pixel_base + kk;
+            ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx];
          }
       }
    }

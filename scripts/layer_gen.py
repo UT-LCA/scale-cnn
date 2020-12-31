@@ -94,18 +94,15 @@ def gen_conv_layer(layer_spec, odir):
    # Determine input and output words per URAM row.
    ichans = layer_spec['input_chans']
    ochans = layer_spec['output_chans']
-   layer_spec['input_words_per_uram_row']  = GetUramWordsPerRow(ichans)
-   layer_spec['output_words_per_uram_row'] = GetUramWordsPerRow(ochans)
+   layer_spec['input_words_per_uram_row']  = 4   # Currently just always 4 since we pad to 4 if there are 3.
+   layer_spec['output_words_per_uram_row'] = GetUramWordsPerRow(ochans)     
+   layer_spec['input_chans_padded'] = 4 * math.ceil(ichans / 4)
 
    # Generate the layer-specific files once
    gen_layer_files(layer_spec, odir, template_path)
    
    # Different implementations for conv layers:
-   # - Read Scale factor:
-   #   - Right now only choosing factors of input chans. Having difficulty getting
-   #     ideally-scheduled BRAM reads beyond that. The padding pixel checks for
-   #     readInputs makes it difficult for the synthesizer to schedule all the reads
-   #     in parallel.
+   # - Read Scale factor: Factors of input chans
    # - Output channel scale factor: Factors of output chans
    ichans_factors = factors(ichans)
    ochans_factors = factors(ochans)
