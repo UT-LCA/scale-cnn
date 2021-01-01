@@ -1,21 +1,19 @@
 # hls.py
-# Code to interface with the Vivado HLS tool
+# Code to interface with the Vitis HLS tool
 import os
 import hls_reports
 import ast
 
 # Given a layer name and a path to an implementation of that layer,
-# calls vivado_hls to synthesize it.
-# TODO: Make this function capable of recognizing vivado HLS failing,
-# and handle it gracefully.
+# calls vitis_hls to synthesize it.
 def synthesize_layer(layer_name, impl_path):
    print("Synthesizing layer implementation at {}".format(impl_path))
    cwd = os.getcwd()
    os.chdir(impl_path)
-   exitcode = os.WEXITSTATUS(os.system('vivado_hls -f {}.tcl > /dev/null'.format(layer_name)))
+   exitcode = os.WEXITSTATUS(os.system('vitis_hls -f {}.tcl > /dev/null'.format(layer_name)))
    os.chdir(cwd)
    if exitcode != 0:
-      raise Exception('Vivado HLS failed with exit code {} at {}'.format(exitcode, impl_path))
+      raise Exception('Vitis HLS failed with exit code {} at {}'.format(exitcode, impl_path))
    print("Done.")
 
 
@@ -28,15 +26,27 @@ def synthesize_layer(layer_name, impl_path):
 # Total data can be calculated as:
 # TD = # input data to read per output element * # output elements
 #    = (filter_size^2 * input_chans) * (output_height * output_width * output_chans) 
-def CalcMemReadBandwidthUtil(layer_spec, implementation, total_cycles):
-   total_words_to_read = (layer_spec['filter_size'] ** 2) * \
-                          layer_spec['input_chans']   * \
-                          layer_spec['output_height'] * \
-                          layer_spec['output_width']  * \
-                          layer_spec['output_chans']
-   # Right now, the memory read bandwidth is just the scale factor.
-   mem_read_bandwidth = implementation['read_scale_factor']
-   return (total_words_to_read / mem_read_bandwidth) / total_cycles
+#def CalcMemReadBandwidthUtil(layer_spec, implementation, total_cycles):
+#   total_words_to_read = (layer_spec['filter_size'] ** 2) * \
+#                          layer_spec['input_chans']   * \
+#                          layer_spec['output_height'] * \
+#                          layer_spec['output_width']  * \
+#                          layer_spec['output_chans']
+#   # Right now, the memory read bandwidth is just the scale factor.
+#   mem_read_bandwidth = implementation['read_scale_factor']
+#   return (total_words_to_read / mem_read_bandwidth) / total_cycles
+
+
+# Calculate the "true" latency of the function
+# This is necessary because right now, the function only iterates on a very small
+# subset of the data to reduce synthesis times. Since the top loop is a dataflow
+# pipeline, we can easily calculate the true latency by adding the number of "skipped"
+# iterations and multiplying it by the dataflow pipeline's II.
+def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
+   true_iters  = layer_spec['output_height'] * layer_spec['output_width'] * \
+                 layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
+   synth_iters = 100 * layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
+   return int(report_latency + (true_iters - synth_iters) * dataflow_ii)
 
 
 # Parse and analyze the reports after synthesis of a layer completes.
@@ -76,22 +86,24 @@ def analyze_reports(layer_spec, impl):
    # Now we want to analyze the reports.
    # First we must read the top-level report
    # Then we need to read the reports for all of the sub-functions.
-   # The top-level report file is named "(layer_name)_csynth_report.xml"
-   top_level_rpt_filepath = os.path.join(report_dir, '{}_csynth.xml'.format(layer_name))
-   top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
-
-   top_latency   = hls_reports.GetWorstCaseLatency(top_level_xml)
-   top_cost_info = hls_reports.GetCostInfo(top_level_xml)
+   # The top-level report file is named "(layer_name)_top_csynth_report.xml"
 
    # Get the latencies of each individual dataflow pipline stage
-   dataflow_rpt_filepath = os.path.join(report_dir, 'dataflow_in_loop_TOP_csynth.rpt')
-   stage_latencies = hls_reports.GetDataflowStageLatencies(dataflow_rpt_filepath)
+   dataflow_rpt_filepath = os.path.join(report_dir, 'dataflow_in_loop_TOP_LOOP_csynth.rpt')
+   stage_latencies, dataflow_ii = hls_reports.GetDataflowStageLatencies(dataflow_rpt_filepath)
+
+   top_level_rpt_filepath = os.path.join(report_dir, '{}_top_csynth.xml'.format(layer_name))
+   top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
+   top_latency_raw   = hls_reports.GetWorstCaseLatency(top_level_xml)
+   top_latency_true  = CalcTrueLatency(layer_spec, impl, top_latency_raw, dataflow_ii)
+   top_cost_info = hls_reports.GetCostInfo(top_level_xml)
 
    report_info = {}
-   report_info['latency']      = top_latency
+   report_info['latency']      = top_latency_raw
+   report_info['true_latency'] = top_latency_true
    report_info['cost_info']    = top_cost_info
    report_info['subfunctions'] = stage_latencies
-   report_info['mbru']         = CalcMemReadBandwidthUtil(layer_spec, impl, top_latency)
+   #report_info['mbru']         = CalcMemReadBandwidthUtil(layer_spec, impl, top_latency)
    return report_info
 
 
@@ -109,7 +121,7 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
    with open(csv_filepath, 'w') as csv_file:
       csv_file.write('ImplementationDir,Latency,Cost\n')
       for impl, report_info in impl_results:
-         latency = report_info['latency']
+         latency = report_info['true_latency']
          cost    = report_info['cost_info']['total']
          csv_file.write(",".join([impl['dir'], str(latency), str(cost)]))
          csv_file.write('\n')
@@ -127,7 +139,8 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          rpt.write("Directory: {}\n".format(impl['dir']))
          # Report Info
          # Total latency
-         rpt.write("\nTotal latency: {} cycles\n".format('{:,}'.format(report_info['latency'])))
+         rpt.write("\nTotal latency (raw)  : {} cycles\n".format('{:,}'.format(report_info['latency'])))
+         rpt.write("Total latency (true) : {} cycles\n\n".format('{:,}'.format(report_info['true_latency'])))
          # Cost info
          cost_info = report_info['cost_info']
          rpt.write("Cost info:\n")
@@ -142,7 +155,8 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          for func in subfunctions:
             rpt.write("{}: {} cycles\n".format(func['name'], func['latency']))
          # And finally, report memory read bandwidth utilization
-         rpt.write('\nMemory Read Bandwidth Utilization: {:.1f}%\n'.format(report_info['mbru'] * 100))
+         # Disabling this as the metric doesn't really make sense any more.
+         #rpt.write('\nMemory Read Bandwidth Utilization: {:.1f}%\n'.format(report_info['mbru'] * 100))
 
    # Print the entire report to stdout and then print messages about the generated files.
    os.system('cat ' + rpt_filepath)

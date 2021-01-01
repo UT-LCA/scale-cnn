@@ -120,6 +120,10 @@ def gen_conv_layer(layer_spec, odir):
          impl = {}
          impl['read_scale_factor'] = read_sf
          impl['ochan_scale_factor'] = ochan_sf
+         # Use the aligned writeOutputs if OCHAN_SCALE_FACTOR is a multiple of 4,
+         # otherwise use unaligned.
+         impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
+
          # Generate the custom code for the accumulation functions for this layer.
          # Target latency is the estimated latency of the readInputs stage.
          # Read bandwidth is twice the read scale factor because each BRAM has 
@@ -132,6 +136,7 @@ def gen_conv_layer(layer_spec, odir):
                                           target_latency=rdInp_latency, 
                                           input_length=vec_size,
                                           read_bw = read_sf*2 )
+
          impl['accum_functions']      = accum_funcs
          impl['accum_function_calls'] = accum_func_calls
 

@@ -60,13 +60,16 @@ void ${lname}_readFilters (
 // Function for writing output data to the output URAMs.
 // This function receives OCHAN_SCALE_FACTOR words per function call, and packs 
 // the words together before writing them to the output URAM. Each URAM row will 
-// hold either 3 or 4 elements. OCHAN_SCALE_FACTOR may be less than, equal to, or 
-// greater than the number of elements per row. For this reason, this function
-// must use static variables to store partial URAM rows so that it only writes
-// to the URAM when an entire row is ready. If OCHAN_SCALE_FACTOR is less than
-// the number of elements per URAM row, the not every call to this function will
-// result in an actual write to the URAMs.
-void ${lname}_writeOutputs(
+// hold 4 elements. In this version of the function, OCHAN_SCALE_FACTOR is not a
+// multiple of 4 (and may be less than 4). For this reason, this function must use 
+// static variables to store partial URAM rows so that it only writes to the URAM 
+// when an entire row is ready. If OCHAN_SCALE_FACTOR is less than 4, then not every 
+// call to this function will result in an actual write to the URAMs.
+//
+// Due to the nature of how static variables are accessed, the outer loop cannot be
+// pipelined. This is not a big deal because in most cases, OCHAN_SCALE_FACTOR will
+// be either 1 or 2, so pipelining would not even make sense.
+void ${lname}_writeOutputs_unaligned(
    data_t outputs[OCHAN_SCALE_FACTOR],
    data_t out_data[OUTPUT_RAM_SIZE]
 ) {
@@ -88,6 +91,29 @@ void ${lname}_writeOutputs(
    }
 }
 
+// This is the aligned version of writeOutputs
+// In this version, we are guaranteed that OCHAN_SCALE_FACTOR is either exactly
+// 4 or a multiple of 4. This enables us to avoid the use of static variables
+// outputRow and outputCount and process 4 words at once in the outer loop.
+void ${lname}_writeOutputs_aligned(
+   data_t outputs[OCHAN_SCALE_FACTOR],
+   data_t out_data[OUTPUT_RAM_SIZE]
+) {
+   static int row_count = 0;
+   for (int o = 0; o < (OCHAN_SCALE_FACTOR/$output_words_per_uram_row); o++) {
+      for (int w = 0; w < $output_words_per_uram_row; w++) {
+         #pragma HLS unroll
+         int outputs_idx  = (o*$output_words_per_uram_row) + w;
+         int out_data_idx = (row_count*$output_words_per_uram_row) + w;
+         assert(outputs_idx < OCHAN_SCALE_FACTOR);
+         assert(out_data_idx < OUTPUT_RAM_SIZE);
+         out_data[out_data_idx] = outputs[outputs_idx];
+      }
+      row_count++;
+   }
+}
+
+
 // Calculates the dot product of the ifmap and weight vectors.
 // All this stage does is multiply the numbers together into an array of 
 // products. The accumulation is handled by separate stages.
@@ -100,13 +126,6 @@ void ${lname}_dot_product (
    data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE],
    data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE]
 ) { 
-   // Sometimes the synthesizer is unable to figure out there are no 
-   // WAW dependencies for when we utilize both write ports of one BRAM.
-   // I'm not sure why this only sometimes happens and sometimes doesn't.
-   // But luckily we can explicitly tell it there are no dependencies.
-   // TODO: figure out if this is still necessary with Vitis.
-   #pragma HLS dependence variable=products inter WAW false
-   #pragma HLS dependence variable=products intra WAW false
    DP_OUTER: for (int p = 0; p < VECTOR_SIZE; p++) {
       DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
          products[oc][p] = ifmap_vec[p] * weight_vecs[oc][p];
@@ -204,7 +223,7 @@ void $lname (
       ${lname}_readFilters(filter_data, k_int, weight_vecs);
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
 $accum_function_calls
-      ${lname}_writeOutputs(outputs, out_data);
+      ${lname}_writeOutputs_${writeFuncType}(outputs, out_data);
    }
 }
 

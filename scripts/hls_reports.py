@@ -14,7 +14,7 @@ def GetCostInfo(report_xml):
    resources = report_xml.find('AreaEstimates').find('Resources')
    available_resources = report_xml.find('AreaEstimates').find('AvailableResources')
    cost = {}
-   cost_factors = [('bram', 'BRAM_18K'), ('dsp', 'DSP48E'), ('ff', 'FF'), ('lut', 'LUT')]
+   cost_factors = [('bram', 'BRAM_18K'), ('dsp', 'DSP'), ('ff', 'FF'), ('lut', 'LUT')]
    # "Total cost" is the sum of the percentages of each resource in the FPGA that is utilized.
    # This is a common cost function used in similar works.
    # TODO: Make cost function configurable, might just want to consider BRAMs or DSPs.
@@ -38,6 +38,7 @@ def GetCostInfo(report_xml):
 # stage in the pipeline. Stages with a latency of 0 are not reported.
 def GetDataflowStageLatencies(dataflow_rpt_filepath):
    stages = []
+   stage_names = []
    with open(dataflow_rpt_filepath, 'r') as rpt:
       # Find the line with the word "Module" in it
       for line in rpt:
@@ -54,13 +55,20 @@ def GetDataflowStageLatencies(dataflow_rpt_filepath):
          tokens = re.split(r'\s*\|\s*', line)
          stage  = tokens[2]
          cycles = int(tokens[8])
+         # Skip duplicate accumulation stages
+         if re.search('accum_\d_\d', stage) is not None or stage in stage_names:
+            continue
          if cycles > 0:
             stages.append({'name': stage, 'latency': cycles})
-   return stages
+            stage_names.append(stage)
+
+   longest_stage_cycles = max([s['latency'] for s in stages])
+   dataflow_ii = longest_stage_cycles + 1 # Dataflow pipeline incurs 1 cycle overhead
+   return stages, dataflow_ii
 
 
 # Test GetDataflowStageLatencies function
 if __name__ == "__main__":
    import sys
-   res = GetDataflowStageLatencies(sys.argv[1])
+   res, dii = GetDataflowStageLatencies(sys.argv[1])
    print(res)
