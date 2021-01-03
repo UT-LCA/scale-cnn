@@ -9,8 +9,10 @@
 ###############################################################################
 
 # Implement ifmaps and ofmaps as UltraRAMs
-set_directive_bind_storage -type RAM_2P -impl uram ${lname}_top in_data
-set_directive_bind_storage -type RAM_2P -impl uram ${lname}_top out_data
+# RAM_S2P means 2-port RAM where one only does write operations and the other
+# only does read operations.
+set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top in_data
+set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top out_data
 
 # Pack the arrays into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.

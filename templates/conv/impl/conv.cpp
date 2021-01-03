@@ -126,6 +126,12 @@ void ${lname}_dot_product (
    data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE],
    data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE]
 ) { 
+   // Sometimes the synthesizer is unable to figure out there are no  
+   // WAW dependencies for when we utilize both write ports of one BRAM.   
+   // I'm not sure why this only sometimes happens and sometimes doesn't.  
+   // But luckily we can explicitly tell it there are no dependencies.  
+   #pragma HLS dependence variable=products inter WAW false 
+   #pragma HLS dependence variable=products intra WAW false 
    DP_OUTER: for (int p = 0; p < VECTOR_SIZE; p++) {
       DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
          products[oc][p] = ifmap_vec[p] * weight_vecs[oc][p];

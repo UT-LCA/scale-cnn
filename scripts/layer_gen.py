@@ -86,9 +86,15 @@ def GetUramWordsPerRow(chans):
       raise Exception('Invalid # channels: {}'.format(chans))
 
 
+# To avoid using an ungodly amount of resources, we must put a reasonable limit on how
+# much scaling we can allow in a single layer.
+# For right now, choosing 200 as the maximum.
+MAX_TOTAL_SCALE_FACTOR = 200
+
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
 def gen_conv_layer(layer_spec, odir):
+   global MAX_TOTAL_SCALE_FACTOR
    template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/conv/"
 
    # Determine input and output words per URAM row.
@@ -117,6 +123,11 @@ def gen_conv_layer(layer_spec, odir):
    layer_impls = []
    for read_sf in read_scale_factors:
       for ochan_sf in ochan_scale_factors:
+         # Make sure the total scaling is less than the max.
+         total_scale = read_sf * ochan_sf
+         if total_scale > MAX_TOTAL_SCALE_FACTOR:
+            continue
+
          impl = {}
          impl['read_scale_factor'] = read_sf
          impl['ochan_scale_factor'] = ochan_sf
