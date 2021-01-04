@@ -169,7 +169,7 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
 #
 # For each implementation, it synthesizes the layer and parses the report.
 # Then it will analyze the results of all the implementations and report a summary.
-def explore_layer_implementations(layer_spec, impl_list_path):
+def explore_layer_implementations(layer_spec, impl_list_path, skip_synthesis):
 
    # Read the file with the implementation paths to explore.
    implementations = []
@@ -188,7 +188,8 @@ def explore_layer_implementations(layer_spec, impl_list_path):
       if not os.path.isdir(impl['dir']):
          raise Exception('Invalid implementation path at {}'.format(impl_dir))
       # Synthesize the layer
-      synthesize_layer(layer_name, impl['dir'])
+      if not skip_synthesis:
+         synthesize_layer(layer_name, impl['dir'])
       # Parse the reports to get performance and cost info
       report_info = analyze_reports(layer_spec, impl)
       implementation_results.append((impl, report_info))

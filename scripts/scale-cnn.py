@@ -20,6 +20,7 @@ if __name__ == '__main__':
    parser.add_argument('-l', '--layerspec', help="Path to the layer specification")
    parser.add_argument('-i', '--input',     help="Path to input file (not layer or network)")
    parser.add_argument('-o', '--output',    help="Output directory")
+   parser.add_argument('-ss', '--skip_synth', action='store_true', help="Skip synthesis, just analyze reports")
    args = parser.parse_args()
 
    mode  = args.mode
@@ -34,6 +35,6 @@ if __name__ == '__main__':
    if mode == 'gen_layer':
       layer_gen.generate_layer(layer_spec, args.output)
    elif mode == 'explore_layer':
-      hls.explore_layer_implementations(layer_spec, args.input)
+      hls.explore_layer_implementations(layer_spec, args.input, args.skip_synth)
    else:
       print("Unrecognized mode argument.")
