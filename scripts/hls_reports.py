@@ -10,17 +10,23 @@ def read_report_xml(xml_report_filepath):
 def GetWorstCaseLatency(report_xml):
    return int(report_xml.find('PerformanceEstimates').find('SummaryOfOverallLatency').find('Worst-caseLatency').text)
 
-def GetCostInfo(report_xml):
+def GetCostInfo(report_xml, min_urams):
+   # "Total cost" is the sum of the percentages of each resource in the FPGA that is utilized.
+   # This is a common cost function used in similar works. However there is one slight modification:
+   # Instead of using the raw percentage of utiized UltraRAMs, we instead calculate the percentage of 
+   # extra URAMs utilized with respect to the bare minimum required to hold all of the data. Without 
+   # this, the URAM percentage cost would heavily dominate the others.
+   # TODO: Make cost function configurable, might just want to consider BRAMs or DSPs.
    resources = report_xml.find('AreaEstimates').find('Resources')
    available_resources = report_xml.find('AreaEstimates').find('AvailableResources')
    cost = {}
-   cost_factors = [('bram', 'BRAM_18K'), ('dsp', 'DSP'), ('ff', 'FF'), ('lut', 'LUT')]
-   # "Total cost" is the sum of the percentages of each resource in the FPGA that is utilized.
-   # This is a common cost function used in similar works.
-   # TODO: Make cost function configurable, might just want to consider BRAMs or DSPs.
+   cost_factors = [('bram', 'BRAM_18K'), ('dsp', 'DSP'), ('ff', 'FF'), ('lut', 'LUT'), ('uram', 'URAM')]
    total_cost = 0.0
    for name, rpt_name in cost_factors:
-      resource_cost = int(resources.find(rpt_name).text) / int(available_resources.find(rpt_name).text)
+      resources_utilized = int(resources.find(rpt_name).text) 
+      resources_available = int(available_resources.find(rpt_name).text)
+      adjustment = min_urams if name == 'uram' else 0
+      resource_cost = (resources_utilized - adjustment) / (resources_available - adjustment)
       cost[name] = resource_cost
       total_cost = total_cost + resource_cost
    cost['total'] = total_cost
