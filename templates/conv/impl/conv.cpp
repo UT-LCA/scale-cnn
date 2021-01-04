@@ -17,14 +17,17 @@ void ${lname}_readInputs (
          int col_coord = (j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         int input_pixel_base = ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS_PADDED;
+         int input_pixel_base = is_padding ? 0 : ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS_PADDED;
          int filter_pixel_base = ((ii*FILTER_SIZE) + jj) * INPUT_CHANS;
          IL6: for (int kk = 0; kk < INPUT_CHANS; kk++) {
-            int in_data_idx = is_padding ? 0 : input_pixel_base + kk;
+            int in_data_idx = input_pixel_base + kk;
             int vec_idx     = filter_pixel_base + kk;
             assert(in_data_idx < INPUT_RAM_SIZE);
             assert(vec_idx < VECTOR_SIZE);
-            ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data[in_data_idx];
+            // Always do this read on in_data even if it's a padding pixel
+            // If the read is done conditionally it causes scheduling issues.
+            data_t in_data_elem = in_data[in_data_idx];
+            ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data_elem;
          }
       }
    }

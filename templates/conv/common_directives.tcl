@@ -20,11 +20,9 @@ set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top out_data
 # Sometimes we may want to read even more input channels per cycle.
 # To acheive this, we just need to set the partitioning factor to that number
 # But we always want to pack the words into the URAMs regardless to save on memory.
-# Therefore the partitioning factor should be the larger of the two numbers.
-set INPUT_PART_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
-if {$$INPUT_PART_FACTOR > 1} {
-   set_directive_array_reshape -type cyclic -factor $$INPUT_PART_FACTOR ${lname}_top in_data
-}
+# Therefore the reshape partitioning factor should always be at least 4
+set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
+set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR ${lname}_top in_data
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do.
 # For right now just set it to to output words per URAM row

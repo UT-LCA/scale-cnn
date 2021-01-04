@@ -45,7 +45,7 @@ def synthesize_layer(layer_name, impl_path):
 def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
    true_iters  = layer_spec['output_height'] * layer_spec['output_width'] * \
                  layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
-   synth_iters = 100 * layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
+   synth_iters = 50 * layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
    return int(report_latency + (true_iters - synth_iters) * dataflow_ii)
 
 
