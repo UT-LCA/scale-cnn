@@ -68,7 +68,7 @@ def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
 #
 # Additionally, a summary file with this data will be generated in the 
 # implementation's root directory.
-def analyze_reports(layer_spec, impl, skip_synthesis):
+def analyze_reports(layer_spec, impl, cost_func, skip_synthesis):
 
    layer_name = layer_spec['layer_name']
    impl_dir = impl['dir']
@@ -110,7 +110,7 @@ def analyze_reports(layer_spec, impl, skip_synthesis):
    top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
    top_latency_raw   = hls_reports.GetWorstCaseLatency(top_level_xml)
    top_latency_true  = CalcTrueLatency(layer_spec, impl, top_latency_raw, dataflow_ii)
-   top_cost_info = hls_reports.GetCostInfo(top_level_xml, min_urams)
+   top_cost_info = hls_reports.GetCostInfo(top_level_xml, cost_func, min_urams)
 
    report_info = {}
    report_info['latency']      = top_latency_raw
@@ -183,7 +183,7 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
 #
 # For each implementation, it synthesizes the layer and parses the report.
 # Then it will analyze the results of all the implementations and report a summary.
-def explore_layer_implementations(layer_spec, impl_list_path, skip_synthesis):
+def explore_layer_implementations(layer_spec, impl_list_path, cost_func, skip_synthesis):
 
    # Read the file with the implementation paths to explore.
    implementations = []
@@ -205,7 +205,7 @@ def explore_layer_implementations(layer_spec, impl_list_path, skip_synthesis):
       if not skip_synthesis:
          synthesize_layer(layer_name, impl['dir'])
       # Parse the reports to get performance and cost info
-      report_info = analyze_reports(layer_spec, impl, skip_synthesis)
+      report_info = analyze_reports(layer_spec, impl, cost_func, skip_synthesis)
       implementation_results.append((impl, report_info))
       
    # Summarize the results

@@ -16,11 +16,12 @@ def read_layer_spec(json_path):
 
 if __name__ == '__main__':
    parser = argparse.ArgumentParser()
-   parser.add_argument('mode') # positional
+   parser.add_argument('mode', choices=['gen_layer', 'explore_layer']) # positional
    parser.add_argument('-l', '--layerspec', help="Path to the layer specification")
-   parser.add_argument('-i', '--input',     help="Path to input file (not layer or network)")
-   parser.add_argument('-o', '--output',    help="Output directory")
+   parser.add_argument('-i', '--input', help="Path to input file (not layer or network)")
+   parser.add_argument('-o', '--output', help="Output directory")
    parser.add_argument('-ss', '--skip_synth', action='store_true', help="Skip synthesis, just analyze reports")
+   parser.add_argument('-cf', '--cost_function', choices=['default', 'no_luts', 'dsp_only'], default='default', help="Cost function")
    args = parser.parse_args()
 
    mode  = args.mode
@@ -35,6 +36,6 @@ if __name__ == '__main__':
    if mode == 'gen_layer':
       layer_gen.generate_layer(layer_spec, args.output)
    elif mode == 'explore_layer':
-      hls.explore_layer_implementations(layer_spec, args.input, args.skip_synth)
+      hls.explore_layer_implementations(layer_spec, args.input, args.cost_function, args.skip_synth)
    else:
       print("Unrecognized mode argument.")

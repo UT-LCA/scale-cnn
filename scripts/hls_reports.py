@@ -10,13 +10,16 @@ def read_report_xml(xml_report_filepath):
 def GetWorstCaseLatency(report_xml):
    return int(report_xml.find('PerformanceEstimates').find('SummaryOfOverallLatency').find('Worst-caseLatency').text)
 
-def GetCostInfo(report_xml, min_urams):
-   # "Total cost" is the sum of the percentages of each resource in the FPGA that is utilized.
+def GetCostInfo(report_xml, cost_func, min_urams):
+   # Function for calculating cost. There are different cost functions the user can specify.
+   #
+   # "Default" cost is the sum of the percentages of each resource in the FPGA that is utilized.
    # This is a common cost function used in similar works. However there is one slight modification:
    # Instead of using the raw percentage of utiized UltraRAMs, we instead calculate the percentage of 
    # extra URAMs utilized with respect to the bare minimum required to hold all of the data. Without 
    # this, the URAM percentage cost would heavily dominate the others.
-   # TODO: Make cost function configurable, might just want to consider BRAMs or DSPs.
+   #
+   # "LUTs only" cost excludes LUT utilization, and "DSP only" only considers DSPs.
    resources = report_xml.find('AreaEstimates').find('Resources')
    available_resources = report_xml.find('AreaEstimates').find('AvailableResources')
    cost = {}
@@ -29,7 +32,16 @@ def GetCostInfo(report_xml, min_urams):
       resource_cost = (resources_utilized - adjustment) / (resources_available - adjustment)
       cost[name] = resource_cost
       total_cost = total_cost + resource_cost
-   cost['total'] = total_cost
+
+   if cost_func == 'default':
+      cost['total'] = total_cost
+   elif cost_func == 'no_luts':
+      cost['total'] = total_cost - cost['lut']
+   elif cost_func == 'dsp_only':
+      cost['total'] = cost['dsp']
+   else:
+      raise Exception('Unrecognized cost function.')
+
    return cost
 
 # This method is used to parse the human-readable report generated
