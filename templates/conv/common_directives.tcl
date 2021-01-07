@@ -14,7 +14,10 @@
 set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top in_data
 set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top out_data
 
-# Pack the arrays into the URAMs so we get multiple words per URAM row.
+# Implement filter data as Block RAMs.
+set_directive_bind_storage -type RAM_2P -impl bram ${lname}_top filter_data
+
+# Pack the input data into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.
 # E.g. With a factor of 4, this puts elements 0,1,2,3 together in URAM row 0.
 # Sometimes we may want to read even more input channels per cycle.
