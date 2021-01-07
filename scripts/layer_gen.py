@@ -22,6 +22,7 @@ def get_layer_files(layer_name):
 def get_layer_impl_files(layer_name, layer_type):
    # List of once-per-layer-implementation files
    impl_files = [('{}.cpp'.format(layer_name), '{}.cpp'.format(layer_type)), \
+                 ('{}_conv_stages.h'.format(layer_name), '../../conv_shared/conv_stages.h'), \
                  ('{}.tcl'.format(layer_name), '{}.tcl'.format(layer_type)), \
                  ('{}_impl_defines.h'.format(layer_name), 'impl_defines.h'), \
                  ('{}_impl_directives.tcl'.format(layer_name), 'impl_directives.tcl'), \
