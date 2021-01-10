@@ -1,21 +1,21 @@
 ###############################################################################
 #
-#  ${lname}_common_directives.tcl  -- AUTO-GENERATED --
+#  ${lname}_conv_directives.tcl  -- AUTO-GENERATED --
 #
 #  Directives used to synthesize $lname that are common regardless of
 #  implementation. Some are parameterized based on implementation-specific
-#  values.
+#  values. These directives are shared between conv and conv-max stages.
 #
 ###############################################################################
 
 # Implement ifmaps and ofmaps as UltraRAMs
 # RAM_S2P means 2-port RAM where one only does write operations and the other
 # only does read operations.
-set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top in_data
-set_directive_bind_storage -type RAM_S2P -impl uram ${lname}_top out_data
+set_directive_bind_storage -type RAM_S2P -impl uram $$top $$in_data
+set_directive_bind_storage -type RAM_S2P -impl uram $$top $$out_data
 
 # Implement filter data as Block RAMs.
-set_directive_bind_storage -type RAM_2P -impl bram ${lname}_top filter_data
+set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data
 
 # Pack the input data into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.
@@ -25,12 +25,12 @@ set_directive_bind_storage -type RAM_2P -impl bram ${lname}_top filter_data
 # But we always want to pack the words into the URAMs regardless to save on memory.
 # Therefore the reshape partitioning factor should always be at least 4
 set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
-set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR ${lname}_top in_data -dim 3
+set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$in_data -dim 3
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do.
 # For right now just set it to to output words per URAM row
 # Eventually will need to put this elsewhere once I start synthesizing entire networks
-set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row ${lname}_top out_data -dim 3
+set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row $$top $$out_data -dim 3
 
 # Filters / vectors / products partitioning
 # ifmap_vec dimensions are [FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
@@ -41,7 +41,7 @@ set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row ${ln
 # And the input channel dimension by READ_SCALE_FACTOR
 # (note that the partition type for dim 1 of weight_vecs / products doesn't really matter since it is a complete partitioning)
 if {$$OCHAN_SCALE_FACTOR > 1} {
-   set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 ${lname}_top filter_data
+   set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $$top  $$filter_data
    set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $lname weight_vecs
    set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $lname products
 }
@@ -58,7 +58,7 @@ if {$$READ_SCALE_FACTOR > 1} {
 # twice the read bandwidth of readFilters and readInputs.
 # Read scale factor could be odd so need to round up.
 if {$$READ_SCALE_FACTOR > 2} {
-   set_directive_array_partition -type cyclic -factor [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}] -dim 4 ${lname}_top filter_data
+   set_directive_array_partition -type cyclic -factor [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}] -dim 4 $$top $$filter_data
 }
 
 # readInputs directives
@@ -85,12 +85,6 @@ if {$$READ_SCALE_FACTOR < $input_chans} {
 }
 
 # Pipeline and unroll dot product multiplications
-# # The unroll factor is twice the scale factor because each BRAM has two read ports.
-# # This doubles the number of DSPs incurred by the function but it avoids certain
-# # situations where dot product takes one cycle longer than the read stages.
-# # This one cycle can make a big impact on performance when the critical path of 
-# # the dataflow stages is small (sometimes as small as ~12 cycles).
-#set_directive_unroll -factor [expr {$$READ_SCALE_FACTOR * 2}] ${lname}_dot_product/DP_OUTER   
 if {$$READ_SCALE_FACTOR < $input_chans} {
    set_directive_pipeline ${lname}_dot_product/DP_OUTER_3
    set_directive_unroll -factor $$READ_SCALE_FACTOR ${lname}_dot_product/DP_OUTER_3

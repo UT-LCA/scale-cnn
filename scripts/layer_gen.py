@@ -12,7 +12,7 @@ def get_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
    # List of once-per-layer files
    layer_files = [('{}_common_defines.h'.format(layer_name), 'common_defines.h'), \
-                  ('{}_common_directives.tcl'.format(layer_name), 'common_directives.tcl'), \
+                  ('{}_conv_directives.tcl'.format(layer_name), '../conv_shared/conv_directives.tcl'), \
                   ('test/tb_{}.cpp'.format(layer_name), 'test/testbench.cpp'), \
                   ('test/golden.cpp', 'test/golden.cpp')]
 

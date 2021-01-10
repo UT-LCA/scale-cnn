@@ -18,6 +18,12 @@ add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ${lnam
 add_files -tb -cflags "-I .. -I $$COMMON_TEST_DIR" "$$COMMON_TEST_DIR/tb_utils.cpp ../test/golden.cpp ../test/tb_${lname}.cpp"
 set_top ${lname}_top
 
+# Set variables for the optimization directives
+set top ${lname}_top
+set in_data in_data
+set out_data out_data
+set filter_data filter_data
+
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"
 set_part {$fpga_part}
@@ -25,7 +31,7 @@ create_clock -period 10
 
 # Apply the directives
 source ${lname}_impl_directives.tcl
-source ../${lname}_common_directives.tcl
+source ../${lname}_conv_directives.tcl
 
 # Simulate the design
 csim_design -clean

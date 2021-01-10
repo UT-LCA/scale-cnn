@@ -4,6 +4,7 @@
 #include "${lname}_impl_defines.h"
 #include <stdbool.h>
 #include <assert.h>
+#include <inttypes.h>
 
 // Reads input feature maps into an internal buffer (ifmap_vec)
 // The assertions tell the compiler the upper bounds of the index
@@ -144,7 +145,7 @@ void ${lname}_dot_product (
       DP_OUTER_2: for (int jj = 0; jj < FILTER_SIZE; jj++) {
          DP_OUTER_3: for (int ic = 0; ic < INPUT_CHANS; ic++) {
             DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
-               int p = ic + INPUT_CHANS * (jj + FILTER_SIZE*ii);
+               uint16_t p = ic + INPUT_CHANS * (jj + FILTER_SIZE*ii);
                assert(p < VECTOR_SIZE);
                products[oc][p] = ifmap_vec[ii][jj][ic] * weight_vecs[oc][ii][jj][ic];
             }
