@@ -9,6 +9,13 @@ void gen_random_inputs(data_t *ifmaps, int len) {
    }
 }
 
+// Filters: random values between -1 and 1
+void gen_random_filters(data_t *filters, int len) {
+   for (int i = 0; i < len; ++i) {
+      filters[i] = (data_t)((double)rand()/(double(RAND_MAX/2))) - 1.0;
+   }
+}
+
 // Compare expected data against actual data
 // Due to floating point rounding error the values might not be exactly
 // the same. Since the exponents of the numbers across accumulations can 

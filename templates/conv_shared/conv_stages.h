@@ -10,51 +10,47 @@
 // variables which enable it to make major optimizations on the 
 // arithmetic logic.
 void ${lname}_readInputs ( 
-   data_t in_data[INPUT_RAM_SIZE],
+   data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    int i, int j,
-   data_t ifmap_vec[VECTOR_SIZE] ) {
+   data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS] 
+) {
    IL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       IL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
          int row_coord = (i*STRIDE) + ii - PAD;
          int col_coord = (j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         int input_pixel_base = is_padding ? 0 : ((row_coord * INPUT_WIDTH) + col_coord) * INPUT_CHANS_PADDED;
-         int filter_pixel_base = ((ii*FILTER_SIZE) + jj) * INPUT_CHANS;
          IL6: for (int kk = 0; kk < INPUT_CHANS; kk++) {
-            int in_data_idx = input_pixel_base + kk;
-            int vec_idx     = filter_pixel_base + kk;
-            assert(in_data_idx < INPUT_RAM_SIZE);
-            assert(vec_idx < VECTOR_SIZE);
+            int row_coord_int = is_padding ? 0 : row_coord;
+            int col_coord_int = is_padding ? 0 : col_coord;
+            assert(row_coord_int < INPUT_HEIGHT);
+            assert(col_coord_int < INPUT_WIDTH);
             // Always do this read on in_data even if it's a padding pixel
             // If the read is done conditionally it causes scheduling issues.
-            data_t in_data_elem = in_data[in_data_idx];
-            ifmap_vec[vec_idx] = is_padding ? (data_t)0 : in_data_elem;
+            data_t in_data_elem = in_data[row_coord_int][col_coord_int][kk];
+            ifmap_vec[ii][jj][kk] = is_padding ? (data_t)0 : in_data_elem;
          }
       }
    }
 }
 
+
 // Reads filters into internal buffers (weight_vecs)
 // It reads all the elements of OCHAN_SCALE_FACTOR filter(s)
-// Like with readInputs the assertions enable compiler optimizations
 void ${lname}_readFilters (
-   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER],
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
    int k,
-   data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE]
+   data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
 ) {
    FL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       FL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
-         int idx_base = (ii*FILTER_SIZE + jj) * INPUT_CHANS;
          FL6: for (int kk = 0; kk < INPUT_CHANS; ++kk) {
-            int idx = idx_base + kk;
-            assert(idx < WORDS_PER_FILTER);
             FL7: for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
                // This loop should always be unrolled completely.
                #pragma HLS unroll
-               int ochan = (k*OCHAN_SCALE_FACTOR) + o;
+               int ochan = k*OCHAN_SCALE_FACTOR + o;
                assert(ochan < OUTPUT_CHANS);
-               weight_vecs[o][idx] = filter_data[ochan][idx];
+               weight_vecs[o][ii][jj][kk] = filter_data[ochan][ii][jj][kk];
             }
          }
       }
@@ -75,11 +71,12 @@ void ${lname}_readFilters (
 // pipelined. This is not a big deal because in most cases, OCHAN_SCALE_FACTOR will
 // be either 1 or 2, so pipelining would not even make sense.
 void ${lname}_writeOutputs_unaligned(
+   int i, int j, int k,
    data_t outputs[OCHAN_SCALE_FACTOR],
-   data_t out_data[OUTPUT_RAM_SIZE]
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
-   static int outputCount = 0;
-   static int outputIdx   = 0;
+   static int outputCount   = 0;
+   static int outputChanIdx = 0;
    static data_t outputRow[$output_words_per_uram_row];
    #pragma HLS array_partition variable=outputRow complete
    for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
@@ -89,32 +86,38 @@ void ${lname}_writeOutputs_unaligned(
          outputCount = 0;
          for (int w = 0; w < $output_words_per_uram_row; w++) {
             #pragma HLS unroll
-            out_data[(outputIdx*$output_words_per_uram_row) + w] = outputRow[w];
+            int ochan = (outputChanIdx*$output_words_per_uram_row) + w;
+            assert(ochan < OUTPUT_CHANS);
+            out_data[i][j][ochan] = outputRow[w];
          }
-         outputIdx++;
+         outputChanIdx++;
+         if (outputChanIdx*$output_words_per_uram_row == OUTPUT_CHANS) {
+            outputChanIdx = 0;
+         }
       }
    }
 }
+
 
 // This is the aligned version of writeOutputs
 // In this version, we are guaranteed that OCHAN_SCALE_FACTOR is either exactly
 // 4 or a multiple of 4. This enables us to avoid the use of static variables
 // outputRow and outputCount and process 4 words at once in the outer loop.
 void ${lname}_writeOutputs_aligned(
+   int i, int j, int k,
    data_t outputs[OCHAN_SCALE_FACTOR],
-   data_t out_data[OUTPUT_RAM_SIZE]
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
-   static int row_count = 0;
-   for (int o = 0; o < (OCHAN_SCALE_FACTOR/$output_words_per_uram_row); o++) {
+   static const int OUTER_ITERS = (OCHAN_SCALE_FACTOR/$output_words_per_uram_row);
+   for (int o = 0; o < OUTER_ITERS; o++) {
       for (int w = 0; w < $output_words_per_uram_row; w++) {
          #pragma HLS unroll
-         int outputs_idx  = (o*$output_words_per_uram_row) + w;
-         int out_data_idx = (row_count*$output_words_per_uram_row) + w;
-         assert(outputs_idx < OCHAN_SCALE_FACTOR);
-         assert(out_data_idx < OUTPUT_RAM_SIZE);
-         out_data[out_data_idx] = outputs[outputs_idx];
+         int out_data_ochan = w + $output_words_per_uram_row * (o + OUTER_ITERS * k);
+         int outputs_ochan  = (o*$output_words_per_uram_row) + w;
+         assert(out_data_ochan < OUTPUT_CHANS);
+         assert(outputs_ochan < OCHAN_SCALE_FACTOR);
+         out_data[i][j][out_data_ochan] = outputs[outputs_ochan];
       }
-      row_count++;
    }
 }
 
@@ -127,8 +130,8 @@ void ${lname}_writeOutputs_aligned(
 // function so that the synthesizer can take advantage of only reading 
 // each input data once.
 void ${lname}_dot_product (
-   data_t ifmap_vec[VECTOR_SIZE],
-   data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE],
+   data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
    data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE]
 ) { 
    // Sometimes the synthesizer is unable to figure out there are no  
@@ -137,9 +140,15 @@ void ${lname}_dot_product (
    // But luckily we can explicitly tell it there are no dependencies.  
    #pragma HLS dependence variable=products inter WAW false 
    #pragma HLS dependence variable=products intra WAW false 
-   DP_OUTER: for (int p = 0; p < VECTOR_SIZE; p++) {
-      DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
-         products[oc][p] = ifmap_vec[p] * weight_vecs[oc][p];
+   DP_OUTER_1: for (int ii = 0; ii < FILTER_SIZE; ii++) {
+      DP_OUTER_2: for (int jj = 0; jj < FILTER_SIZE; jj++) {
+         DP_OUTER_3: for (int ic = 0; ic < INPUT_CHANS; ic++) {
+            DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
+               int p = ic + INPUT_CHANS * (jj + FILTER_SIZE*ii);
+               assert(p < VECTOR_SIZE);
+               products[oc][p] = ifmap_vec[ii][jj][ic] * weight_vecs[oc][ii][jj][ic];
+            }
+         }
       }
    }
 }

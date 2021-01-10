@@ -42,9 +42,9 @@ void ${lname}_get_next_ijk (int indices[3]) {
 
 
 void $lname (
-   data_t in_data[INPUT_RAM_SIZE],
-   data_t out_data[OUTPUT_RAM_SIZE],
-   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER]
+   data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
 ) {
    // Ideally, this single for loop would be split into three nested loops like this,
    // where the dataflow directive would be applied to L3:
@@ -72,8 +72,8 @@ void $lname (
    TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
       #pragma HLS stable variable=in_data
       #pragma HLS stable variable=filter_data
-      data_t ifmap_vec[VECTOR_SIZE];
-      data_t weight_vecs[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
+      data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
+      data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
       data_t outputs[OCHAN_SCALE_FACTOR];
       #pragma HLS array_partition variable=outputs complete
@@ -95,15 +95,15 @@ void $lname (
       ${lname}_readFilters(filter_data, k_int, weight_vecs);
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
 $accum_function_calls
-      ${lname}_writeOutputs_${writeFuncType}(outputs, out_data);
+      ${lname}_writeOutputs_${writeFuncType}(i_int, j_int, k_int, outputs, out_data);
    }
 }
 
 // Top-level wrapper function for $lname
 void ${lname}_top() {
-   data_t in_data[INPUT_RAM_SIZE];
-   data_t out_data[OUTPUT_RAM_SIZE];
-   data_t filter_data[OUTPUT_CHANS][WORDS_PER_FILTER];
+   data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS];
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
    ${lname}(in_data, out_data, filter_data);
 }
 
