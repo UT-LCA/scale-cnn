@@ -160,7 +160,7 @@ def InterleavedStage(target_latency, curr_IL, input_read_bw):
    accum_stage = {}
    accum_stage['type'] = 'interleaved'
    # The stage will reduce the inputs to 4*input_read_bw outputs.
-   interleave_factor = 4 # TODO try with 3 instead?
+   interleave_factor = 4
    ol = interleave_factor*input_read_bw 
    accum_stage['OL'] = ol
    # The accumulators form a pipeline, but the pipeline II is equal to
@@ -168,10 +168,16 @@ def InterleavedStage(target_latency, curr_IL, input_read_bw):
    # Due to the interleaving, it's really an effective II of 1, but the 
    # synthesizer doesn't know that.
    trip_count = math.ceil(curr_IL / ol)
-   # Add 2 cycles to wait for the final addition to finish (latency of the pipeline)
-   # And another two cycles for overall function overhead.
-   # This equation was validated empirically through experimentation.
-   estimated_latency = interleave_factor*trip_count + 2 + 2
+   # This stage stores its outputs in a single BRAM
+   # It always has at least 8 outputs, and since it has twice the read bandwidth
+   # of the dot_product stage, the additional time it takes to write everything to 
+   # the BRAM should not exceed the target latency.
+   accum_stage['output_storage_type'] = 'bram'
+   accum_stage['bram_part_factor']    = 1
+   accum_stage['next_read_bw']        = 2
+   # Add 3 cycles to wait for the final addition to finish (latency of the pipeline)
+   # Then another OL/2 + 1 cycles for writing the outputs.
+   estimated_latency = interleave_factor*trip_count + 3 + int(ol/2) + 1
    accum_stage['est_lat'] = estimated_latency
    return accum_stage
 
