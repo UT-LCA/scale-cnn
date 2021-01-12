@@ -76,6 +76,7 @@ void ${lname}_writeOutputs_unaligned(
    data_t outputs[OCHAN_SCALE_FACTOR],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
+   #pragma HLS inline off
    static uint16_t outputCount   = 0;
    static uint16_t outputChanIdx = 0;
    static data_t outputRow[$output_words_per_uram_row];
@@ -109,6 +110,7 @@ void ${lname}_writeOutputs_aligned(
    data_t outputs[OCHAN_SCALE_FACTOR],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
+   #pragma HLS inline off
    static const uint16_t OUTER_ITERS = (OCHAN_SCALE_FACTOR/$output_words_per_uram_row);
    for (uint16_t o = 0; o < OUTER_ITERS; o++) {
       for (uint16_t w = 0; w < $output_words_per_uram_row; w++) {

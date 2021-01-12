@@ -77,7 +77,7 @@ void $lname (
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
       data_t outputs[OCHAN_SCALE_FACTOR];
       #pragma HLS array_partition variable=outputs complete
-      int indices[3];
+      uint16_t indices[3];
       #pragma HLS array_partition variable=indices complete
       ${lname}_get_next_ijk(indices);
       uint16_t i_int = indices[0];
