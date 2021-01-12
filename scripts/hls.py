@@ -46,6 +46,8 @@ def synthesize_layer(layer_name, impl_path):
 def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
    true_iters  = layer_spec['output_height'] * layer_spec['output_width'] * \
                  layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
+   if layer_spec['layer_type'] == 'conv-max':
+      true_iters = true_iters * (layer_spec['pooling_factor'] ** 2)
    synth_iters = 50 * layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
    return int(report_latency + (true_iters - synth_iters) * dataflow_ii)
 
@@ -153,8 +155,13 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          rpt.write("Directory: {}\n".format(impl['dir']))
          # Report Info
          # Total latency
+         true_latency = report_info['true_latency']
+         est_latency  = impl['estimated_latency']
+         latency_error = abs(est_latency - true_latency) / true_latency 
          rpt.write("\nTotal latency (raw)  : {} cycles\n".format('{:,}'.format(report_info['latency'])))
-         rpt.write("Total latency (true) : {} cycles\n\n".format('{:,}'.format(report_info['true_latency'])))
+         rpt.write("Total latency (true) : {} cycles\n".format('{:,}'.format(true_latency)))
+         rpt.write("Estimated total latency: {} cycles\n".format('{:,}'.format(impl['estimated_latency'])))
+         rpt.write("Estimation error: {:.2%}\n\n".format(latency_error))
          # Cost info
          cost_info = report_info['cost_info']
          rpt.write("Cost info:\n")

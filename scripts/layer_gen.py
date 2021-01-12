@@ -80,6 +80,30 @@ def GetUramWordsPerRow(chans):
    else:
       raise Exception('Invalid # channels: {}'.format(chans))
 
+# Estimates the total execution time of a convolution layer
+# given its dimensions and scale factors
+def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
+   # Total latency = II * top loop iterations + pipeline depth
+   # The number of top loop iterations is:
+   #  O_H * O_W * O_CHANS / OCHAN_SF for ordinary conv layers
+   #  O_H * O_W * O_CHANS * (POOLING_FACTOR^2) / OCHAN_SF for fused conv-max layers
+   OH = layer_spec['output_height']
+   OW = layer_spec['output_width']
+   OC = layer_spec['output_chans']
+   P  = 1 if layer_spec['layer_type'] != 'conv-max' else layer_spec['pooling_factor']
+   top_loop_iters = int(OH*OW*OC*P*P / ochan_sf)
+   # The initiation interval is the latency of the longest stage, plus one for dataflow
+   # pipeline overhead. If everything synthesizes correctly, the longest stage should 
+   # always be dot_product which should take exactly INPUT_CHANS*(FILTER_SIZE^2) / read_sf + 3 cycles.
+   IC = layer_spec['input_chans']
+   FS = layer_spec['filter_size']
+   II = int(FS*FS*IC / read_sf) + 3 + 1
+   # The pipeline depth is harder to estimate, but it doesn't really matter, because since
+   # the total number of iterations is typically very large, it is very small in comparison,
+   # so a poor estimation will barely harm the overall estimate accuracy.
+   # I will estimate that the latency is II*3
+   pipeline_depth = II*3
+   return II*top_loop_iters + pipeline_depth
 
 # To avoid using an ungodly amount of resources, we must put a reasonable limit on how
 # much scaling we can allow in a single layer.
@@ -133,6 +157,9 @@ def gen_conv_layer(layer_spec, odir):
          # Use the aligned writeOutputs if OCHAN_SCALE_FACTOR is a multiple of 4,
          # otherwise use unaligned.
          impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
+
+         # Calculate the estimated latency of the layer
+         impl['estimated_latency'] = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
 
          # Generate the custom code for the accumulation functions for this layer.
          # Target latency is the estimated latency of the dot_product stage, which
