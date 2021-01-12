@@ -19,10 +19,10 @@ $accum_functions
 // mutliple output channels for the same output XY coordinate. 
 // For example, if OCHAN_SCALE_FACTOR = 4 (meaning we process 4 output channels
 // at the same time), then k = 1 represents output channels 4,5,6,7.
-void ${lname}_get_next_ijk (int indices[3]) {
-   static int i = 0;
-   static int j = 0;
-   static int k = 0;
+void ${lname}_get_next_ijk (uint16_t indices[3]) {
+   static uint16_t i = 0;
+   static uint16_t j = 0;
+   static uint16_t k = 0;
    indices[0] = i;
    indices[1] = j;
    indices[2] = k;
@@ -80,9 +80,9 @@ void $lname (
       int indices[3];
       #pragma HLS array_partition variable=indices complete
       ${lname}_get_next_ijk(indices);
-      int i_int = indices[0];
-      int j_int = indices[1];
-      int k_int = indices[2];
+      uint16_t i_int = indices[0];
+      uint16_t j_int = indices[1];
+      uint16_t k_int = indices[2];
       // FOR EACH OUTPUT ELEMENT:
       //  - Read the convolution window of inputs
       //  - Read the filters

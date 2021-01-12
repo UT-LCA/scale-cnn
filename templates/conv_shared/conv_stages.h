@@ -12,16 +12,16 @@
 // arithmetic logic.
 void ${lname}_readInputs ( 
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
-   int i, int j,
+   uint16_t i, uint16_t j,
    data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS] 
 ) {
    IL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
       IL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
-         int row_coord = (i*STRIDE) + ii - PAD;
-         int col_coord = (j*STRIDE) + jj - PAD;
+         int row_coord = ((int)i*STRIDE) + ii - PAD;
+         int col_coord = ((int)j*STRIDE) + jj - PAD;
          bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                            (col_coord < 0) || (col_coord >= INPUT_WIDTH);
-         IL6: for (int kk = 0; kk < INPUT_CHANS; kk++) {
+         IL6: for (uint16_t kk = 0; kk < INPUT_CHANS; kk++) {
             int row_coord_int = is_padding ? 0 : row_coord;
             int col_coord_int = is_padding ? 0 : col_coord;
             assert(row_coord_int < INPUT_HEIGHT);
@@ -40,16 +40,16 @@ void ${lname}_readInputs (
 // It reads all the elements of OCHAN_SCALE_FACTOR filter(s)
 void ${lname}_readFilters (
    data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
-   int k,
+   uint16_t k,
    data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
 ) {
-   FL4: for (int ii = 0; ii < FILTER_SIZE; ++ii) {
-      FL5: for (int jj = 0; jj < FILTER_SIZE; ++jj) {
-         FL6: for (int kk = 0; kk < INPUT_CHANS; ++kk) {
-            FL7: for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
+   FL4: for (uint16_t ii = 0; ii < FILTER_SIZE; ++ii) {
+      FL5: for (uint16_t jj = 0; jj < FILTER_SIZE; ++jj) {
+         FL6: for (uint16_t kk = 0; kk < INPUT_CHANS; ++kk) {
+            FL7: for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
                // This loop should always be unrolled completely.
                #pragma HLS unroll
-               int ochan = k*OCHAN_SCALE_FACTOR + o;
+               uint16_t ochan = k*OCHAN_SCALE_FACTOR + o;
                assert(ochan < OUTPUT_CHANS);
                weight_vecs[o][ii][jj][kk] = filter_data[ochan][ii][jj][kk];
             }
@@ -72,22 +72,22 @@ void ${lname}_readFilters (
 // pipelined. This is not a big deal because in most cases, OCHAN_SCALE_FACTOR will
 // be either 1 or 2, so pipelining would not even make sense.
 void ${lname}_writeOutputs_unaligned(
-   int i, int j, int k,
+   uint16_t i, uint16_t j, uint16_t k,
    data_t outputs[OCHAN_SCALE_FACTOR],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
-   static int outputCount   = 0;
-   static int outputChanIdx = 0;
+   static uint16_t outputCount   = 0;
+   static uint16_t outputChanIdx = 0;
    static data_t outputRow[$output_words_per_uram_row];
    #pragma HLS array_partition variable=outputRow complete
-   for (int o = 0; o < OCHAN_SCALE_FACTOR; o++) {
+   for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
       outputRow[outputCount] = outputs[o];
       outputCount++;
       if (outputCount == $output_words_per_uram_row) {
          outputCount = 0;
-         for (int w = 0; w < $output_words_per_uram_row; w++) {
+         for (uint16_t w = 0; w < $output_words_per_uram_row; w++) {
             #pragma HLS unroll
-            int ochan = (outputChanIdx*$output_words_per_uram_row) + w;
+            uint16_t ochan = (outputChanIdx*$output_words_per_uram_row) + w;
             assert(ochan < OUTPUT_CHANS);
             out_data[i][j][ochan] = outputRow[w];
          }
@@ -105,16 +105,16 @@ void ${lname}_writeOutputs_unaligned(
 // 4 or a multiple of 4. This enables us to avoid the use of static variables
 // outputRow and outputCount and process 4 words at once in the outer loop.
 void ${lname}_writeOutputs_aligned(
-   int i, int j, int k,
+   uint16_t i, uint16_t j, uint16_t k,
    data_t outputs[OCHAN_SCALE_FACTOR],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
-   static const int OUTER_ITERS = (OCHAN_SCALE_FACTOR/$output_words_per_uram_row);
-   for (int o = 0; o < OUTER_ITERS; o++) {
-      for (int w = 0; w < $output_words_per_uram_row; w++) {
+   static const uint16_t OUTER_ITERS = (OCHAN_SCALE_FACTOR/$output_words_per_uram_row);
+   for (uint16_t o = 0; o < OUTER_ITERS; o++) {
+      for (uint16_t w = 0; w < $output_words_per_uram_row; w++) {
          #pragma HLS unroll
-         int out_data_ochan = w + $output_words_per_uram_row * (o + OUTER_ITERS * k);
-         int outputs_ochan  = (o*$output_words_per_uram_row) + w;
+         uint16_t out_data_ochan = w + $output_words_per_uram_row * (o + OUTER_ITERS * k);
+         uint16_t outputs_ochan  = (o*$output_words_per_uram_row) + w;
          assert(out_data_ochan < OUTPUT_CHANS);
          assert(outputs_ochan < OCHAN_SCALE_FACTOR);
          out_data[i][j][out_data_ochan] = outputs[outputs_ochan];
@@ -141,12 +141,12 @@ void ${lname}_dot_product (
    // But luckily we can explicitly tell it there are no dependencies.  
    #pragma HLS dependence variable=products inter WAW false 
    #pragma HLS dependence variable=products intra WAW false 
-   DP_OUTER_1: for (int ii = 0; ii < FILTER_SIZE; ii++) {
-      DP_OUTER_2: for (int jj = 0; jj < FILTER_SIZE; jj++) {
-         DP_OUTER_3: for (int ic = 0; ic < INPUT_CHANS; ic++) {
-            DP_INNER: for (int oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
-               uint16_t p = ic + INPUT_CHANS * (jj + FILTER_SIZE*ii);
-               assert(p < VECTOR_SIZE);
+   DP_OUTER_1: for (uint16_t ii = 0; ii < FILTER_SIZE; ii++) {
+      DP_OUTER_2: for (uint16_t jj = 0; jj < FILTER_SIZE; jj++) {
+         DP_OUTER_3: for (uint16_t ic = 0; ic < INPUT_CHANS; ic++) {
+            uint16_t p = ic + INPUT_CHANS * (jj + FILTER_SIZE*ii);
+            assert(p < VECTOR_SIZE);
+            DP_INNER: for (uint16_t oc = 0; oc < OCHAN_SCALE_FACTOR; oc++) { 
                products[oc][p] = ifmap_vec[ii][jj][ic] * weight_vecs[oc][ii][jj][ic];
             }
          }

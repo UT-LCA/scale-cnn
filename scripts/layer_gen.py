@@ -8,7 +8,7 @@ import string
 import accum
 import math
 
-def get_layer_files(layer_name):
+def get_conv_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
    # List of once-per-layer files
    layer_files = [('{}_common_defines.h'.format(layer_name), 'common_defines.h'), \
@@ -18,7 +18,7 @@ def get_layer_files(layer_name):
 
    return layer_files
 
-def get_layer_impl_files(layer_name, layer_type):
+def get_conv_layer_impl_files(layer_name, layer_type):
    # List of once-per-layer-implementation files
    impl_files = [('{}.cpp'.format(layer_name), '{}.cpp'.format(layer_type)), \
                  ('{}_conv_stages.h'.format(layer_name), '../../conv_shared/conv_stages.h'), \
@@ -42,21 +42,16 @@ def make_file_from_template(template_fp, output_fp, substitutions):
    if output_fp.endswith('.sh'):
       os.system('chmod +x ' + output_fp)
 
-def gen_layer_files(layer_spec, odir, template_path):
-   layer_name = layer_spec['layer_name']
-   layer_files = get_layer_files(layer_name)
+def gen_layer_files(layer_spec, layer_files, odir, template_path):
    for layer_file, template_fname in layer_files:
       template_fp = os.path.join(template_path, template_fname)
       output_fp = os.path.join(odir, layer_file)
       make_file_from_template(template_fp, output_fp, layer_spec)
 
-def gen_layer_impl_files(layer_spec, impl, odir, template_path):
+def gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path):
    impl_dir = os.path.join(odir, impl['name'])
    if not os.path.isdir(impl_dir):
       os.mkdir(impl_dir)
-   layer_name = layer_spec['layer_name']
-   layer_type = layer_spec['layer_type']
-   impl_files = get_layer_impl_files(layer_name, layer_type)
    for impl_file, template_fname in impl_files:
       template_fp = os.path.join(template_path, 'impl', template_fname)
       output_fp = os.path.join(odir, impl['name'], impl_file)
@@ -95,7 +90,8 @@ MAX_TOTAL_SCALE_FACTOR = 200
 # Returns a list of dicts that describe each implementation, including their directory.
 def gen_conv_layer(layer_spec, odir):
    global MAX_TOTAL_SCALE_FACTOR
-   template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/conv/"
+   layer_type = layer_spec['layer_type']
+   template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/{}/".format(layer_type)
 
    # Determine input and output words per URAM row.
    ichans = layer_spec['input_chans']
@@ -105,7 +101,10 @@ def gen_conv_layer(layer_spec, odir):
    layer_spec['input_chans_padded'] = 4 * math.ceil(ichans / 4)
 
    # Generate the layer-specific files once
-   gen_layer_files(layer_spec, odir, template_path)
+   layer_name  = layer_spec['layer_name']
+   layer_files = get_conv_layer_files(layer_name)
+   impl_files  = get_conv_layer_impl_files(layer_name, layer_type)
+   gen_layer_files(layer_spec, layer_files, odir, template_path)
    
    # Different implementations for conv layers:
    # - Read Scale factor: Factors of input chans
@@ -136,15 +135,16 @@ def gen_conv_layer(layer_spec, odir):
          impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
 
          # Generate the custom code for the accumulation functions for this layer.
-         # Target latency is the estimated latency of the readInputs stage.
+         # Target latency is the estimated latency of the dot_product stage, which
+         # is expected to be the critical path.
          # Read bandwidth is twice the read scale factor because each BRAM has 
          # two separate read ports.
          vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
-         rdInp_latency = math.ceil(vec_size / read_sf) + 3
+         dp_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
          accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                           layer_name = layer_spec['layer_name'],
                                           ochan_sf = ochan_sf,
-                                          target_latency=rdInp_latency, 
+                                          target_latency=dp_latency, 
                                           input_length=vec_size,
                                           read_bw = read_sf*2 )
 
@@ -157,7 +157,7 @@ def gen_conv_layer(layer_spec, odir):
 
    # Now, generate the files for each implementation
    for impl in layer_impls:
-      impl_dir = gen_layer_impl_files(layer_spec, impl, odir, template_path)
+      impl_dir = gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path)
       impl['dir'] = os.path.abspath(impl_dir)
 
    return layer_impls
@@ -189,9 +189,10 @@ def generate_layer(layer_spec, odir):
    layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
    if not os.path.isdir(odir):
       os.mkdir(odir)
-   if layer_type == 'conv':
+   if layer_type == 'conv' or layer_type == 'conv-max':
       implementations = gen_conv_layer(layer_spec, odir)
    else:
       raise Exception('Unknown layer type: {}'.format(layer_type))
 
    gen_layer_impl_list(odir, layer_spec, implementations)
+
