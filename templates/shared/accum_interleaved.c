@@ -20,10 +20,12 @@ void ${lname}_accum_${stage_num} (
       }
    }
    OUTPUT_LOOP: for(int q = 0; q < PSUM_LEN; q++) {
-      // There is one BRAM to store the outputs and it has two write ports.
-      // Therefore we can write two words per cycle.
+      // The outputs of this stage are stored in BRAMs.
+      // This loop takes the registers and writes them into a BRAM
+      // (or multiple BRAMs). Ideally there is just one BRAM but sometimes
+      // we need more to prevent this stage from being the bottleneck.
       #pragma HLS pipeline
-      #pragma HLS unroll factor=2
+      #pragma HLS unroll factor=$next_read_bw
       accum_out[q] = psum[q];
    }
 }

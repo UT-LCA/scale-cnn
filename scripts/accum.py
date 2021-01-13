@@ -167,17 +167,23 @@ def InterleavedStage(target_latency, curr_IL, input_read_bw):
    # the interleave factor, not 1.
    # Due to the interleaving, it's really an effective II of 1, but the 
    # synthesizer doesn't know that.
-   trip_count = math.ceil(curr_IL / ol)
-   # This stage stores its outputs in a single BRAM
-   # It always has at least 8 outputs, and since it has twice the read bandwidth
-   # of the dot_product stage, the additional time it takes to write everything to 
-   # the BRAM should not exceed the target latency.
+   loop1_trip_count = math.ceil(curr_IL / ol)
+   # This stage stores its outputs in BRAMs
+   # In most cases, a single BRAM will be enough. But sometimes, the output
+   # loop can be so long that it makes this stage the longest stage. We don't
+   # want this, so calculate the minimum partition factor needed so that this
+   # stage does not exceed the target latency.
+   loop1_latency = 6
+   loop1_ii = interleave_factor
+   loop1_total_latency = loop1_latency + (loop1_trip_count-1)*loop1_ii
+   stage_overhead = 3
+   part_factor = math.ceil((ol/2) / (target_latency - loop1_total_latency - stage_overhead))
    accum_stage['output_storage_type'] = 'bram'
-   accum_stage['bram_part_factor']    = 1
-   accum_stage['next_read_bw']        = 2
+   accum_stage['bram_part_factor']    = part_factor
+   accum_stage['next_read_bw']        = part_factor * 2
    # Add 3 cycles to wait for the final addition to finish (latency of the pipeline)
    # Then another OL/2 + 1 cycles for writing the outputs.
-   estimated_latency = interleave_factor*trip_count + 3 + int(ol/2) + 1
+   estimated_latency = loop1_total_latency + int(ol/(2*part_factor)) + stage_overhead
    accum_stage['est_lat'] = estimated_latency
    return accum_stage
 
