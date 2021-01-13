@@ -23,6 +23,7 @@ set top ${lname}_top
 set in_data in_data
 set out_data out_data
 set filter_data filter_data
+set final_layer 1
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"

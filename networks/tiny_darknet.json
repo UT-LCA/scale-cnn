@@ -1,0 +1,16 @@
+{
+   "name": "tiny_darknet",
+   "shorthand_name": "td",
+   "common_params": {
+      "stride": 1,
+      "pad": 1,
+      "filter_size": 3,
+      "pooling_factor": 2
+   },
+   "layers": [
+      {"type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3},
+      {"type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16},
+      {"type": "conv", "input_height": 56, "input_width": 56, "input_chans": 32},
+      {"type": "conv", "input_height": 56, "input_width": 56, "input_chans": 16}
+   ]
+}

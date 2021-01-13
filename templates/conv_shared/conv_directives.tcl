@@ -12,7 +12,9 @@
 # RAM_S2P means 2-port RAM where one only does write operations and the other
 # only does read operations.
 set_directive_bind_storage -type RAM_S2P -impl uram $$top $$in_data
-set_directive_bind_storage -type RAM_S2P -impl uram $$top $$out_data
+if {$$final_layer} {
+   set_directive_bind_storage -type RAM_S2P -impl uram $$top $$out_data
+}
 
 # Implement filter data as Block RAMs.
 set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data
@@ -29,8 +31,9 @@ set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do.
 # For right now just set it to to output words per URAM row
-# Eventually will need to put this elsewhere once I start synthesizing entire networks
-set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row $$top $$out_data -dim 3
+if {$$final_layer} {
+   set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row $$top $$out_data -dim 3
+}
 
 # Filters / vectors / products partitioning
 # ifmap_vec dimensions are [FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
