@@ -5,7 +5,7 @@
 #  Top-level TCL file for synthesizing the layer
 #  Run this TCL file if you just want to synthesize this one layer.
 #  To execute this, use this command:
-#     vivado_hls -f run_hls.tcl
+#     vitis_hls -f ${lname}.tcl
 #
 ###############################################################################
 
