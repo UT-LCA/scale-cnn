@@ -9,7 +9,6 @@
 ###############################################################################
 
 set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
-set COMMON_TEST_DIR $$env(SCALE_CNN_ROOT)/common/test
 
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
@@ -17,7 +16,6 @@ add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ../${n
 set_top ${lname}_top
 
 set top ${name}
-
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"

@@ -22,5 +22,6 @@ for {set i 0} {$$i < $$num_layers} {incr i} {
    add_files -cflags "-I $$layer_impl_path -I $$layer_impl_path/.." "$${layer_name}.cpp"
    # Source the TCL files for this layer.
    source $${layer_impl_path}/$${layer_name}_impl_directives.tcl
+   # TODO: This won't work when we have other layer types.
    source $${layer_impl_path}/../$${layer_name}_conv_directives.tcl
 }

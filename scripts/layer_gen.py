@@ -110,9 +110,39 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
 # For right now, choosing 200 as the maximum.
 MAX_TOTAL_SCALE_FACTOR = 200
 
+# Return a list of all possible configurations for a conv layer
+# It eliminates options that either have too large total scaling, or are outside
+# a specified range of latencies.
+# min and max latencies are in cycles, -1 if no limit.
+# Each element is (read_sf, ochan_sf, estimated_latency)
+def get_conv_impl_options(layer_spec, min_latency, max_latency):
+   # Different implementations for conv layers:
+   # - Read Scale factor: Factors of input chans
+   # - Output channel scale factor: Factors of output chans
+   ichans_factors = factors(layer_spec['input_chans'])
+   ochans_factors = factors(layer_spec['output_chans'])
+   # Sort and remove duplicates
+   read_scale_factors  = sorted(list(set(ichans_factors)))
+   ochan_scale_factors = sorted(list(set(ochans_factors)))
+   options = []
+   for read_sf in read_scale_factors:
+      for ochan_sf in ochan_scale_factors:
+         # Make sure the total scaling is less than the max.
+         total_scale = read_sf * ochan_sf
+         if total_scale > MAX_TOTAL_SCALE_FACTOR:
+            continue
+         # Estimate the latency given the scale factors.
+         est_lat = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
+         if (min_latency != -1 and est_lat < min_latency) or \
+            (max_latency != -1 and est_lat > max_latency):
+            continue
+         options.append((read_sf, ochan_sf, est_lat))
+   return options
+   
+
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
-def gen_conv_layer(layer_spec, odir):
+def gen_conv_layer(layer_spec, odir, min_latency, max_latency):
    global MAX_TOTAL_SCALE_FACTOR
    layer_type = layer_spec['layer_type']
    template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/{}/".format(layer_type)
@@ -130,57 +160,38 @@ def gen_conv_layer(layer_spec, odir):
    impl_files  = get_conv_layer_impl_files(layer_name, layer_type)
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    
-   # Different implementations for conv layers:
-   # - Read Scale factor: Factors of input chans
-   # - Output channel scale factor: Factors of output chans
-   ichans_factors = factors(ichans)
-   ochans_factors = factors(ochans)
-   read_scale_factors = copy.copy(ichans_factors)
-   # Sort and remove duplicates
-   read_scale_factors = list(set(read_scale_factors))
-   read_scale_factors.sort()
-   ochan_scale_factors = list(set(ochans_factors))
-   ochan_scale_factors.sort()
-
    # Generate all of the possible conv implementations
+   impl_options = get_conv_impl_options(layer_spec, min_latency, max_latency)
    layer_impls = []
-   for read_sf in read_scale_factors:
-      for ochan_sf in ochan_scale_factors:
-         # Make sure the total scaling is less than the max.
-         total_scale = read_sf * ochan_sf
-         if total_scale > MAX_TOTAL_SCALE_FACTOR:
-            continue
+   for read_sf, ochan_sf, est_lat in impl_options:
+      impl = {}
+      impl['read_scale_factor'] = read_sf
+      impl['ochan_scale_factor'] = ochan_sf
+      # Use the aligned writeOutputs if OCHAN_SCALE_FACTOR is a multiple of 4,
+      # otherwise use unaligned.
+      impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
+      impl['estimated_latency'] = est_lat
 
-         impl = {}
-         impl['read_scale_factor'] = read_sf
-         impl['ochan_scale_factor'] = ochan_sf
-         # Use the aligned writeOutputs if OCHAN_SCALE_FACTOR is a multiple of 4,
-         # otherwise use unaligned.
-         impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
+      # Generate the custom code for the accumulation functions for this layer.
+      # Target latency is the estimated latency of the dot_product stage, which
+      # is expected to be the critical path.
+      # Read bandwidth is twice the read scale factor because each BRAM has 
+      # two separate read ports.
+      vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
+      dp_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
+      accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
+                                       layer_name = layer_spec['layer_name'],
+                                       ochan_sf = ochan_sf,
+                                       target_latency=dp_latency, 
+                                       input_length=vec_size,
+                                       read_bw = read_sf*2 )
 
-         # Calculate the estimated latency of the layer
-         impl['estimated_latency'] = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
+      impl['accum_functions']      = accum_funcs
+      impl['accum_function_calls'] = accum_func_calls
 
-         # Generate the custom code for the accumulation functions for this layer.
-         # Target latency is the estimated latency of the dot_product stage, which
-         # is expected to be the critical path.
-         # Read bandwidth is twice the read scale factor because each BRAM has 
-         # two separate read ports.
-         vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
-         dp_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
-         accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
-                                          layer_name = layer_spec['layer_name'],
-                                          ochan_sf = ochan_sf,
-                                          target_latency=dp_latency, 
-                                          input_length=vec_size,
-                                          read_bw = read_sf*2 )
-
-         impl['accum_functions']      = accum_funcs
-         impl['accum_function_calls'] = accum_func_calls
-
-         # Pick a name for the implementation
-         impl['name'] = "r{}_o{}".format(read_sf, ochan_sf)
-         layer_impls.append(impl)
+      # Pick a name for the implementation
+      impl['name'] = "r{}_o{}".format(read_sf, ochan_sf)
+      layer_impls.append(impl)
 
    # Now, generate the files for each implementation
    for impl in layer_impls:
@@ -198,26 +209,35 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
    fp = os.path.abspath(os.path.join(odir, lname + "_implementations.txt"))
    # Delete these keys, we don't need them anymore
    del_keys = ['accum_functions', 'accum_function_calls']
+   latencies = []
    with open(fp, 'w') as f:
       for impl in implementations:
+         latencies.append(impl['estimated_latency'])
          for k in del_keys:
             impl.pop(k, None)
          f.write(str(impl))
          f.write("\n")
-   print("Generated {} implementations for {}".format(len(implementations), lname))
-   print("Generated implementation list at {}".format(fp))
+   in_dims = "{}x{}x{}".format(layer_spec['input_height'], \
+                               layer_spec['input_width'],  \
+                               layer_spec['input_chans'])
+   out_dims = "{}x{}x{}".format(layer_spec['output_height'], \
+                                layer_spec['output_width'],  \
+                                layer_spec['output_chans'])
+   print("{} ({}): {} -> {}, {} implementations, estimated latency range {:,} to {:,} cycles".format( \
+      lname, layer_spec['layer_type'], in_dims, out_dims, len(implementations), min(latencies), max(latencies)))
 
 
 # Given a path to a layer config file, generates all the files needed
 # for that layer in the specified output directory.
-def generate_layer(layer_spec, odir):
+def generate_layer(layer_spec, odir, min_latency, max_latency):
+   layer_spec['lname'] = layer_spec['layer_name'] # shorthand
    layer_type = layer_spec['layer_type']
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
    if not os.path.isdir(odir):
       os.mkdir(odir)
    if layer_type == 'conv' or layer_type == 'conv-max':
-      implementations = gen_conv_layer(layer_spec, odir)
+      implementations = gen_conv_layer(layer_spec, odir, min_latency, max_latency)
    else:
       raise Exception('Unknown layer type: {}'.format(layer_type))
 
