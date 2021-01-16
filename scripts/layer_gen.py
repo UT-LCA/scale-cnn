@@ -138,7 +138,18 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency):
             continue
          options.append((read_sf, ochan_sf, est_lat))
    return options
-   
+
+# Layer type generic function for getting options for a layer
+def GetLayerImplOptions(layer_spec, min_latency, max_latency):
+   ltype = layer_spec['layer_type']
+   if ltype == 'conv' or ltype == 'conv-max':
+      options = get_conv_impl_options(layer_spec, min_latency, max_latency)
+   else:
+      raise Exception('Unknown layer type: {}'.format(ltype))
+   if len(options) == 0:
+      raise Exception('No layer options for layer {} met latency requirements: min {}, max {}'.format( \
+         layer_spec['layer_name'], min_latency, max_latency))
+   return options
 
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
@@ -161,7 +172,7 @@ def gen_conv_layer(layer_spec, odir, min_latency, max_latency):
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    
    # Generate all of the possible conv implementations
-   impl_options = get_conv_impl_options(layer_spec, min_latency, max_latency)
+   impl_options = GetLayerImplOptions(layer_spec, min_latency, max_latency)
    layer_impls = []
    for read_sf, ochan_sf, est_lat in impl_options:
       impl = {}
@@ -235,7 +246,7 @@ def generate_layer(layer_spec, odir, min_latency, max_latency):
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
    if not os.path.isdir(odir):
-      os.mkdir(odir)
+      os.makedirs(odir)
    if layer_type == 'conv' or layer_type == 'conv-max':
       implementations = gen_conv_layer(layer_spec, odir, min_latency, max_latency)
    else:

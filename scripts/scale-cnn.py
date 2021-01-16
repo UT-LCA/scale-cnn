@@ -1,6 +1,7 @@
 import os
 import argparse
 import layer_gen
+import network_gen
 import hls
 import json
 
