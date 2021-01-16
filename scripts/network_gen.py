@@ -35,10 +35,10 @@ def gen_network_layers(network_spec, odir, min_ii, max_ii):
       adjusted_min_ii = min_ii
 
    # Put all the layers under "layers" subdirectory
-   layer_odir = os.path.join(odir, "layers")
 
    # Generate the layers
    for layer in layers:
+      layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
       layer_gen.generate_layer(layer, layer_odir, adjusted_min_ii, max_ii)
 
    print("Layer generation complete.")
