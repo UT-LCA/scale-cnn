@@ -4,18 +4,20 @@ import os
 import hls_reports
 import ast
 import math
+import subprocess
+import network_gen
 
 # Given a layer name and a path to an implementation of that layer,
 # calls vitis_hls to synthesize it.
 def synthesize_layer(layer_name, impl_path):
-   print("Synthesizing layer implementation at {}".format(impl_path))
+   print("Synthesizing layer implementation at {}".format(impl_path), flush=True)
    cwd = os.getcwd()
    os.chdir(impl_path)
    exitcode = os.WEXITSTATUS(os.system('vitis_hls -f {}.tcl > /dev/null'.format(layer_name)))
    os.chdir(cwd)
    if exitcode != 0:
       raise Exception('Vitis HLS failed with exit code {} at {}'.format(exitcode, impl_path))
-   print("Done.")
+   print("Done.", flush=True)
 
 
 # Also calculate the memory read bandwidth utilization of the layer implementation
@@ -185,6 +187,15 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
    print("Generated CSV summary at {}\n".format(csv_filepath))
 
 
+def read_layer_implementations(impl_list_path):
+   # Read the file with the implementation paths to explore.
+   implementations = []
+   with open(impl_list_path, 'r') as f:
+      lines = f.readlines()
+      for line in lines:
+         implementations.append(ast.literal_eval(line.rstrip('\n')))
+   return implementations
+
 # Top-level function called from scale-cnn.py to explore the different
 # implementations for a layer.
 #
@@ -192,18 +203,11 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
 # Then it will analyze the results of all the implementations and report a summary.
 def explore_layer_implementations(layer_spec, impl_list_path, cost_func, skip_synthesis):
 
-   # Read the file with the implementation paths to explore.
-   implementations = []
-   with open(impl_list_path, 'r') as f:
-      lines = f.readlines()
-      for line in lines:
-         implementations.append(ast.literal_eval(line.rstrip('\n')))
-
+   implementations = read_layer_implementations(impl_list_path)
    layer_name = layer_spec['layer_name']
    print("Exploring {} layer implementations for {}.".format(len(implementations), layer_name))
 
    implementation_results = []
-
    # For each implementation...
    for impl in implementations:
       if not os.path.isdir(impl['dir']):
@@ -220,3 +224,17 @@ def explore_layer_implementations(layer_spec, impl_list_path, cost_func, skip_sy
    summary_filepath = os.path.join(os.path.dirname(impl_list_path), summary_filename)
    generate_layer_summary(layer_spec, summary_filepath, implementation_results)
 
+
+# Entry point for synthesizing all implementations for a network
+def synth_network_layers(network_spec, network_root_dir):
+   print("Synthesizing all implementations for all layers in network {}".format(network_spec['name']))
+   print("This may take several hours...", flush=True)
+   layers = network_spec['layers']
+   network_gen.complete_layer_specs(layers, network_spec)
+   for layer in layers:
+     lname = layer['layer_name']
+     impl_list_path = os.path.join(network_root_dir, 'layers', lname, lname + "_implementations.txt")
+     implementations = read_layer_implementations(impl_list_path)
+     print("Synthesizing {} implementations for layer {}...".format(len(implementations), lname), flush=True)
+     for impl in implementations:
+        synthesize_layer(lname, impl['dir'])

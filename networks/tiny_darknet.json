@@ -4,12 +4,11 @@
    "common_params": {
       "stride": 1,
       "pad": 1,
-      "filter_size": 3,
-      "pooling_factor": 2
+      "filter_size": 3
    },
    "layers": [
-      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3},
-      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16},
+      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3, "pooling_factor": 2},
+      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16, "pooling_factor": 2},
       {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 32},
       {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 16, "output_height": 56, "output_width": 56, "output_chans": 128}
    ]

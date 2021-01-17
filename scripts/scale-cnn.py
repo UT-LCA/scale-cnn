@@ -16,10 +16,11 @@ def read_json_spec(json_path):
 
 if __name__ == '__main__':
    parser = argparse.ArgumentParser()
-   parser.add_argument('mode', choices=['gen_layer', 'explore_layer', 'gen_network_layers']) # positional
+   mode_options = ['gen_layer', 'explore_layer', 'gen_network_layers', 'synth_network_layers']
+   parser.add_argument('mode', choices=mode_options) # positional
    parser.add_argument('-l', '--layerspec', help="Path to a layer specification")
    parser.add_argument('-n', '--networkspec', help="Path to a network specification")
-   parser.add_argument('-i', '--input', help="Path to input file (not layer or network spec)")
+   parser.add_argument('-i', '--input', help="Path to input file / directory (not layer or network spec)")
    parser.add_argument('-o', '--output', help="Output directory")
    parser.add_argument('-ss', '--skip_synth', action='store_true', help="Skip synthesis, just analyze reports")
    parser.add_argument('-cf', '--cost_function', choices=['default', 'no_luts', 'dsp_only'], default='default', help="Cost function")
@@ -47,6 +48,8 @@ if __name__ == '__main__':
       hls.explore_layer_implementations(spec, args.input, args.cost_function, args.skip_synth)
    elif mode == 'gen_network_layers':
       network_gen.gen_network_layers(spec, args.output, min_ii, max_ii)
+   elif mode == 'synth_network_layers':
+      hls.synth_network_layers(spec, args.input)
    else:
       print("Unrecognized mode argument.")
 

@@ -3,15 +3,7 @@
 import os
 import layer_gen
 
-def gen_network_layers(network_spec, odir, min_ii, max_ii):
-   print("Generating layers for {} network.".format(network_spec['name']))
-   layers = network_spec['layers']
-
-   # Before generating all the layers, we might be able to speed things up by
-   # increasing the minimum II to the largest minimum layer latency. This enables
-   # us to eliminate certain design points for certain layers so we don't have to 
-   # synthesize them.
-   max_min_latency = -1
+def complete_layer_specs(layers, network_spec):
    for i, layer in enumerate(layers):
       # Copy common params to each layer (this is for brevity in the JSON)
       if 'common_params' in network_spec:
@@ -23,6 +15,17 @@ def gen_network_layers(network_spec, odir, min_ii, max_ii):
          layer['output_chans']  = layers[i+1]['input_chans']
       # Give the layer a name
       layer['layer_name'] = network_spec['shorthand_name'] + str(i+1)
+
+def gen_network_layers(network_spec, odir, min_ii, max_ii):
+   print("Generating layers for {} network.".format(network_spec['name']))
+   layers = network_spec['layers']
+   complete_layer_specs(layers, network_spec)
+   # Before generating all the layers, we might be able to speed things up by
+   # increasing the minimum II to the largest minimum layer latency. This enables
+   # us to eliminate certain design points for certain layers so we don't have to 
+   # synthesize them.
+   max_min_latency = -1
+   for layer in layers:
       options = layer_gen.GetLayerImplOptions(layer, min_ii, max_ii)
       min_l = min([l for (r, o, l) in options])
       if min_l > max_min_latency:
@@ -35,8 +38,6 @@ def gen_network_layers(network_spec, odir, min_ii, max_ii):
       adjusted_min_ii = min_ii
 
    # Put all the layers under "layers" subdirectory
-
-   # Generate the layers
    for layer in layers:
       layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
       layer_gen.generate_layer(layer, layer_odir, adjusted_min_ii, max_ii)
