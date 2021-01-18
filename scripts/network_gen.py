@@ -80,7 +80,7 @@ def get_network_substitutions(network_spec, layer_impls):
       layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
          .format(name, in_dims, out_dims, filt_dims)
       # TCL declaration of path to layer implementation
-      layer_dicts += s + '[dict create name {} path {}] \\'.format(name, layer_impls[name])
+      layer_dicts += s + '[dict create name {} path {}] \\\n'.format(name, layer_impls[name])
 
    # Final feature maps
    fmap_decls += s + 'data_t final_fmaps[{}][{}][{}];\n'.format( \
@@ -89,7 +89,7 @@ def get_network_substitutions(network_spec, layer_impls):
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    substitutions = {
       "fpga_part"           : 'xcku11p-ffva1156-2-e',
-      "name"                : name,
+      "name"                : network_spec['name'],
       "fmap_declarations"   : fmap_decls,
       "filter_declarations" : filter_decls,
       "layer_calls"         : layer_calls,
@@ -119,10 +119,11 @@ def gen_network_implementations(network_spec, network_root_dir):
    complete_layer_specs(network_spec)
    impl_name = "im1"
    layer_impls = {}
+   network_root_abs = os.path.abspath(network_root_dir)
    for layer in network_spec['layers']:
       lname = layer['layer_name']
-      layer_impls[lname] = os.path.join(network_root_dir, 'layers', lname, 'r1_o1')
-   impl_top_dir = os.path.join(network_root_dir, 'impls')
+      layer_impls[lname] = os.path.join(network_root_abs, 'layers', lname, 'r1_o1')
+   impl_top_dir = os.path.join(network_root_abs, 'impls')
    gen_network_impl(network_spec, impl_top_dir, impl_name, layer_impls)
    print("Generation complete.")
 

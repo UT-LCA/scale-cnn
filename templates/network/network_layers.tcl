@@ -14,12 +14,12 @@ for {set i 0} {$$i < $$num_layers} {incr i} {
    # Set memory array names and other variables
    set in_data "$${layer_name}_fmaps"
    set filter_data "$${layer_name}_filters"
-   set final_layer [expr i == ($$num_layers-1)]
+   set final_layer [expr $$i == ($$num_layers-1)]
    if {$$final_layer == 1} {
       set out_data final_fmaps
    }
    # Add the CPP file for this layer.
-   add_files -cflags "-I $$layer_impl_path -I $$layer_impl_path/.." "$${layer_name}.cpp"
+   add_files -cflags "-I $$layer_impl_path -I $$COMMON_DIR" "$$COMMON_DIR/global_defines.h $$layer_impl_path/$${layer_name}.cpp"
    # Source the TCL files for this layer.
    source $${layer_impl_path}/$${layer_name}_impl_directives.tcl
    # TODO: This won't work when we have other layer types.

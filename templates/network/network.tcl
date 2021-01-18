@@ -12,7 +12,7 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
-add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ../${name}.cpp"
+add_files -cflags "-I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ${name}.cpp"
 set_top $name
 
 set top $name
