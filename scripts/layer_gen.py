@@ -4,9 +4,9 @@
 from functools import reduce
 import copy
 import os
-import string
 import accum
 import math
+import utils
 
 def get_conv_layer_files(layer_name):
    # Each tuple is ([name of file to be created], [name of template file])
@@ -29,24 +29,11 @@ def get_conv_layer_impl_files(layer_name, layer_type):
                  ('viewreport.sh', 'viewreport.sh')]
    return impl_files
    
-# Given a template file, substitutions, and output file path,
-# copies the template file to the output file making the appropriate substitutions.
-# If it is a .sh file, it also makes it executable.
-def make_file_from_template(template_fp, output_fp, substitutions):
-   output_fp_dir = os.path.dirname(output_fp)
-   if not os.path.isdir(output_fp_dir):
-      os.mkdir(output_fp_dir)
-   with open(template_fp, 'r') as ifile, open(output_fp, 'w') as ofile:
-      template = string.Template(ifile.read())
-      ofile.write(template.substitute(substitutions))
-   if output_fp.endswith('.sh'):
-      os.system('chmod +x ' + output_fp)
-
 def gen_layer_files(layer_spec, layer_files, odir, template_path):
    for layer_file, template_fname in layer_files:
       template_fp = os.path.join(template_path, template_fname)
       output_fp = os.path.join(odir, layer_file)
-      make_file_from_template(template_fp, output_fp, layer_spec)
+      utils.make_file_from_template(template_fp, output_fp, layer_spec)
 
 def gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path):
    impl_dir = os.path.join(odir, impl['name'])
@@ -57,7 +44,7 @@ def gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path):
       output_fp = os.path.join(odir, impl['name'], impl_file)
       substitutions = copy.copy(layer_spec)
       substitutions.update(impl)
-      make_file_from_template(template_fp, output_fp, substitutions)
+      utils.make_file_from_template(template_fp, output_fp, substitutions)
    return impl_dir
 
 # Return a sorted list of all the integer factors of a positive integer

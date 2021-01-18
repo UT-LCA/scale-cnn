@@ -56,6 +56,8 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
    if (low_error_count > MAX_LOW_ERROR_COUNT) {
       printf("Too many points (%d out of %d) exceeded low error threshold.\n", low_error_count, num_els);
       return -1;
+   } else {
+      printf("%d out of %d points exceeded low error threshold.\n", low_error_count, num_els);
    }
 
    return 0;

@@ -13,9 +13,9 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
 add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ../${name}.cpp"
-set_top ${lname}_top
+set_top $name
 
-set top ${name}
+set top $name
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"
@@ -24,6 +24,9 @@ create_clock -period 10
 
 # For each layer, add its files and source its directives.
 source ${name}_layers.tcl
+
+# Set the whole network to use dataflow
+set_directive_dataflow $name
 
 # Run Synthesis
 # Disable dataflow canonical form warnings
