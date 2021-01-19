@@ -137,7 +137,6 @@ void $lname (
    //
    // TODO: Figure out if this is fixed in Vitis.
    TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
-      #pragma HLS stable variable=in_data
       #pragma HLS stable variable=filter_data
       data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
