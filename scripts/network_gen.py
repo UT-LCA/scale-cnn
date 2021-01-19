@@ -62,6 +62,7 @@ def get_network_substitutions(network_spec, layer_impls):
       ih = l['input_height']
       iw = l['input_width']
       ic = l['input_chans']
+      icp = 4 if ic == 3 else ic
       oh = l['output_height']
       ow = l['output_width']
       oc = l['output_chans']
@@ -70,7 +71,7 @@ def get_network_substitutions(network_spec, layer_impls):
       ifmaps  = '{}_fmaps'.format(name)
       ofmaps  = 'final_fmaps' if last else '{}_fmaps'.format(layers[i+1]['layer_name'])
       filters = '{}_filters'.format(name)
-      in_dims   = '[{}][{}][{}]'.format(ih, iw, ic)
+      in_dims   = '[{}][{}][{}]'.format(ih, iw, icp)
       out_dims  = '[{}][{}][{}]'.format(oh, ow, oc)
       filt_dims = '[{}][{}][{}][{}]'.format(oc, fs, fs, ic)
       fmap_decls   += s + 'data_t {}{};\n'.format(ifmaps, in_dims)
