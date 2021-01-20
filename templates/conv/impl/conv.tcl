@@ -14,8 +14,8 @@ set COMMON_TEST_DIR $$env(SCALE_CNN_ROOT)/common/test
 
 # Create a Vivado HLS project
 open_project -reset ${lname}_prj
-add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ${lname}.cpp"
-add_files -tb -cflags "-I .. -I $$COMMON_TEST_DIR" "$$COMMON_TEST_DIR/tb_utils.cpp ../test/golden.cpp ../test/tb_${lname}.cpp"
+add_files -cflags "-I .. -I $$COMMON_DIR -D FAST_COMPILE=$fast_compile"  "$$COMMON_DIR/global_defines.h ${lname}.cpp"
+add_files -tb -cflags "-I .. -I $$COMMON_TEST_DIR -I $$COMMON_DIR" "$$COMMON_TEST_DIR/tb_utils.cpp ../test/golden.cpp ../test/tb_${lname}.cpp"
 set_top ${lname}_top
 
 # Set variables for the optimization directives

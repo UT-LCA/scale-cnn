@@ -13,7 +13,7 @@ static const int OCHAN_SCALE_FACTOR = $ochan_scale_factor;
 // a much smaller number, it is very fast, typically less than a minute.
 // Eventually I will need to remove this once everything else is working correctly.
 // TODO: Remove this hack
-#ifdef __SYNTHESIS__
+#if defined __SYNTHESIS__ && FAST_COMPILE == 1
 static const int TOP_LOOP_ITERATIONS = 50 * OUTPUT_CHANS / OCHAN_SCALE_FACTOR;
 #else
 static const int TOP_LOOP_ITERATIONS = NUM_OUTPUTS / OCHAN_SCALE_FACTOR;

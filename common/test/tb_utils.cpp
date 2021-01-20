@@ -38,6 +38,8 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
    const float LOW_ERROR_PCT  = 0.01;
    int MAX_LOW_ERROR_COUNT = (num_els / 100) + 1; // Only 1% of points can exceed the low error threshold.
    int low_error_count = 0;
+   int exactly_equal_count = 0;
+   int exactly_zero_count = 0;
    for (int k = 0; k < num_els; k++) {
       float abs_error = abs(actual_data[k] - expected_data[k]);
       float pct_error = abs_error / abs(expected_data[k]);
@@ -51,6 +53,8 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
       if (abs_error > LOW_ERROR_ABS && pct_error > LOW_ERROR_PCT) {
          ++low_error_count;
       }
+      if (actual_data[k] == expected_data[k]) ++exactly_equal_count;
+      if (actual_data[k] == (data_t)0) ++exactly_zero_count;
    }
 
    if (low_error_count > MAX_LOW_ERROR_COUNT) {
@@ -58,6 +62,22 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
       return -1;
    } else {
       printf("%d out of %d points exceeded low error threshold.\n", low_error_count, num_els);
+   }
+
+   int MAX_EXACT_EQUAL_COUNT = num_els * 2 / 3;
+   if (exactly_equal_count > MAX_EXACT_EQUAL_COUNT) {
+      printf("Too many points (%d out of %d) equaled their exact expected values.\n", exactly_equal_count, num_els);
+      return -1;
+   } else {
+      printf("%d out of %d points equaled their exact expected values.\n", exactly_equal_count, num_els);
+   }
+
+   int MAX_EXACTLY_ZERO_COUNT = MAX_LOW_ERROR_COUNT;
+   if (exactly_zero_count > MAX_EXACTLY_ZERO_COUNT) {
+      printf("Too many points (%d out of %d) were exactly zero.\n", exactly_zero_count, num_els);
+      return -1;
+   } else {
+      printf("%d out of %d points were exactly zero.\n", exactly_zero_count, num_els);
    }
 
    return 0;

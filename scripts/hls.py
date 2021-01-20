@@ -80,7 +80,7 @@ def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
 #
 # Additionally, a summary file with this data will be generated in the 
 # implementation's root directory.
-def analyze_reports(layer_spec, impl, cost_func, skip_synthesis):
+def analyze_reports(layer_spec, impl, args):
 
    layer_name = layer_spec['layer_name']
    impl_dir = impl['dir']
@@ -109,8 +109,11 @@ def analyze_reports(layer_spec, impl, cost_func, skip_synthesis):
    top_level_rpt_filepath = os.path.join(report_dir, '{}_top_csynth.xml'.format(layer_name))
    top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
    top_latency_raw   = hls_reports.GetWorstCaseLatency(top_level_xml)
-   top_latency_true  = CalcTrueLatency(layer_spec, impl, top_latency_raw, dataflow_ii)
-   top_cost_info = hls_reports.GetCostInfo(top_level_xml, cost_func, min_urams)
+   if layer_spec['fast_compile'] == 1:
+      top_latency_true  = CalcTrueLatency(layer_spec, impl, top_latency_raw, dataflow_ii)
+   else:
+      top_latency_true = top_latency_raw
+   top_cost_info = hls_reports.GetCostInfo(top_level_xml, args.cost_function, min_urams)
 
    report_info = {}
    report_info['latency']      = top_latency_raw
@@ -160,6 +163,8 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          rpt.write("Total latency (true) : {} cycles\n".format('{:,}'.format(true_latency)))
          rpt.write("Estimated total latency: {} cycles\n".format('{:,}'.format(impl['estimated_latency'])))
          rpt.write("Estimation error: {:.2%}\n\n".format(latency_error))
+         if latency_error > 0.05:
+            rpt.write("WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.\n\n")
          # Cost info
          cost_info = report_info['cost_info']
          rpt.write("Cost info:\n")
@@ -186,20 +191,22 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
 def read_layer_implementations(impl_list_path):
    # Read the file with the implementation paths to explore.
    implementations = []
+   layer_spec = {}
    with open(impl_list_path, 'r') as f:
       lines = f.readlines()
-      for line in lines:
+      layer_spec = ast.literal_eval(lines[0].rstrip('\n'))
+      for line in lines[1:]:
          implementations.append(ast.literal_eval(line.rstrip('\n')))
-   return implementations
+   return layer_spec, implementations
 
 # Top-level function called from scale-cnn.py to explore the different
 # implementations for a layer.
 #
 # For each implementation, it synthesizes the layer and parses the report.
 # Then it will analyze the results of all the implementations and report a summary.
-def explore_layer_implementations(layer_spec, impl_list_path, cost_func, skip_synthesis):
+def explore_layer_implementations(impl_list_path, args):
 
-   implementations = read_layer_implementations(impl_list_path)
+   layer_spec, implementations = read_layer_implementations(impl_list_path)
    layer_name = layer_spec['layer_name']
    print("Exploring {} layer implementations for {}.".format(len(implementations), layer_name))
 
@@ -209,10 +216,10 @@ def explore_layer_implementations(layer_spec, impl_list_path, cost_func, skip_sy
       if not os.path.isdir(impl['dir']):
          raise Exception('Invalid implementation path at {}'.format(impl_dir))
       # Synthesize the layer
-      if not skip_synthesis:
+      if not args.skip_synth:
          synthesize_layer(layer_name, impl['dir'])
       # Parse the reports to get performance and cost info
-      report_info = analyze_reports(layer_spec, impl, cost_func, skip_synthesis)
+      report_info = analyze_reports(layer_spec, impl, args)
       implementation_results.append((impl, report_info))
       
    # Summarize the results

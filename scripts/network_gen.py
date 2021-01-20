@@ -19,7 +19,7 @@ def complete_layer_specs(network_spec):
       layer['layer_name'] = network_spec['shorthand_name'] + str(i+1)
       layer['lname'] = layer['layer_name']
 
-def gen_network_layers(network_spec, odir, min_ii, max_ii):
+def gen_network_layers(network_spec, odir, args):
    print("Generating layers for {} network.".format(network_spec['name']))
    complete_layer_specs(network_spec)
    layers = network_spec['layers']
@@ -29,21 +29,21 @@ def gen_network_layers(network_spec, odir, min_ii, max_ii):
    # synthesize them.
    max_min_latency = -1
    for layer in layers:
-      options = layer_gen.GetLayerImplOptions(layer, min_ii, max_ii)
+      options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii)
       min_l = min([l for (r, o, l) in options])
       if min_l > max_min_latency:
          max_min_latency = min_l
 
-   if max_min_latency > min_ii:
+   if max_min_latency > args.min_ii:
       print("Adjusting minimum ii to {} cycles".format(max_min_latency))
       adjusted_min_ii = max_min_latency
    else:
-      adjusted_min_ii = min_ii
+      adjusted_min_ii = args.min_ii
 
    # Put all the layers under "layers" subdirectory
    for layer in layers:
       layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
-      layer_gen.generate_layer(layer, layer_odir, adjusted_min_ii, max_ii)
+      layer_gen.generate_layer(layer, layer_odir, adjusted_min_ii, args.max_ii)
 
    print("Layer generation complete.")
 

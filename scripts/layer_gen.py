@@ -140,7 +140,7 @@ def GetLayerImplOptions(layer_spec, min_latency, max_latency):
 
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
-def gen_conv_layer(layer_spec, odir, min_latency, max_latency):
+def gen_conv_layer(layer_spec, odir, args):
    global MAX_TOTAL_SCALE_FACTOR
    layer_type = layer_spec['layer_type']
    template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/{}/".format(layer_type)
@@ -151,6 +151,9 @@ def gen_conv_layer(layer_spec, odir, min_latency, max_latency):
    layer_spec['input_words_per_uram_row']  = 4   # Currently just always 4 since we pad to 4 if there are 3.
    layer_spec['output_words_per_uram_row'] = GetUramWordsPerRow(ochans)     
    layer_spec['input_chans_padded'] = 4 * math.ceil(ichans / 4)
+   
+   # Set the fast compile key
+   layer_spec['fast_compile'] = int(args.fast_compile)
 
    # Generate the layer-specific files once
    layer_name  = layer_spec['layer_name']
@@ -159,6 +162,8 @@ def gen_conv_layer(layer_spec, odir, min_latency, max_latency):
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    
    # Generate all of the possible conv implementations
+   min_latency = args.min_ii
+   max_latency = args.max_ii
    impl_options = GetLayerImplOptions(layer_spec, min_latency, max_latency)
    layer_impls = []
    for read_sf, ochan_sf, est_lat in impl_options:
@@ -209,6 +214,7 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
    del_keys = ['accum_functions', 'accum_function_calls']
    latencies = []
    with open(fp, 'w') as f:
+      f.write(str(layer_spec) + "\n")
       for impl in implementations:
          latencies.append(impl['estimated_latency'])
          for k in del_keys:
@@ -227,7 +233,7 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
 
 # Given a path to a layer config file, generates all the files needed
 # for that layer in the specified output directory.
-def generate_layer(layer_spec, odir, min_latency, max_latency):
+def generate_layer(layer_spec, odir, args):
    layer_spec['lname'] = layer_spec['layer_name'] # shorthand
    layer_type = layer_spec['layer_type']
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
@@ -235,7 +241,7 @@ def generate_layer(layer_spec, odir, min_latency, max_latency):
    if not os.path.isdir(odir):
       os.makedirs(odir)
    if layer_type == 'conv' or layer_type == 'conv-max':
-      implementations = gen_conv_layer(layer_spec, odir, min_latency, max_latency)
+      implementations = gen_conv_layer(layer_spec, odir, args)
    else:
       raise Exception('Unknown layer type: {}'.format(layer_type))
 
