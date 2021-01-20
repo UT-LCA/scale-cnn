@@ -36,14 +36,12 @@ def gen_network_layers(network_spec, odir, args):
 
    if max_min_latency > args.min_ii:
       print("Adjusting minimum ii to {} cycles".format(max_min_latency))
-      adjusted_min_ii = max_min_latency
-   else:
-      adjusted_min_ii = args.min_ii
+      args.min_ii = max_min_latency
 
    # Put all the layers under "layers" subdirectory
    for layer in layers:
       layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
-      layer_gen.generate_layer(layer, layer_odir, adjusted_min_ii, args.max_ii)
+      layer_gen.generate_layer(layer, layer_odir, args)
 
    print("Layer generation complete.")
 

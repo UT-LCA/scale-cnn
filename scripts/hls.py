@@ -237,7 +237,7 @@ def synth_network_layers(network_spec, network_root_dir):
    for layer in layers:
      lname = layer['layer_name']
      impl_list_path = os.path.join(network_root_dir, 'layers', lname, lname + "_implementations.txt")
-     implementations = read_layer_implementations(impl_list_path)
+     layer_spec, implementations = read_layer_implementations(impl_list_path)
      print("Synthesizing {} implementations for layer {}...".format(len(implementations), lname), flush=True)
      for impl in implementations:
         synthesize_layer(lname, impl['dir'])
