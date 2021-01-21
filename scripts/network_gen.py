@@ -3,6 +3,7 @@
 import os
 import layer_gen
 import utils
+import hls
 
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
@@ -126,4 +127,82 @@ def gen_network_implementations(network_spec, network_root_dir):
    gen_network_impl(network_spec, impl_top_dir, impl_name, layer_impls)
    print("Generation complete.")
 
-   
+
+# Compare function for design points to decide which are Pareto-optimal and which are not.
+# It takes in two design points, a and b, that have 'cost' and 'cycles' attributes.
+# It returns True if point A has lower cost and lower cycles than point B. Otherwise,
+# it returns False.
+def cost_perf_compare(a, b):
+   return a['cost'] <= b['cost'] and a['cycles'] <= b['cycles']
+
+# Analyzes the synthesized layer results and outputs a list of intelligently-chosen
+# design points of different layer implementations to get overall network implementations
+# that have a cost/performance trade-off.
+def analyze_network_options(network_spec, network_root_dir, args):
+   print("Analyzing layer synthesis results to create network implementation options.\n")
+   complete_layer_specs(network_spec)
+   layers = network_spec['layers']
+
+   # layer_implems is a dict of lists of dicts where each list pertains to 
+   # one layer and each dict pertains to one Pareto-optimal implementation of it.
+   # The keys of layer_impls are the layer names.
+   layer_impls = {}
+   for layer in layers:
+      lname = layer['layer_name']
+      print("Layer: {}".format(lname))
+      impl_list_path = os.path.join(network_root_dir, 'layers', lname, lname + str('_implementations.txt'))
+      layer_spec, implementations = hls.read_layer_implementations(impl_list_path)
+      print("{} implementations".format(len(implementations)))
+      layer_options = []
+      for impl in implementations:
+         report_info = hls.analyze_reports(layer_spec, impl, args)
+         layer_options.append({'name'  : impl['name'], \
+                               'cost'  : report_info['cost_info']['total'], \
+                               'cycles': report_info['true_latency']})
+      # Separate the layer design points into Pareto and non-Pareto optimal points.
+      pareto_points, non_pareto_points = utils.pareto_sort(layer_options, cost_perf_compare)
+      # Sort the layer options by execution time, highest to lowest.
+      pareto_points.sort(key=lambda p: p['cycles'])
+      pareto_points.reverse()
+      non_pareto_points.sort(key=lambda p: p['cycles'])
+      non_pareto_points.reverse()
+      print("Pareto-optimal ({}):".format(len(pareto_points)))
+      for p in pareto_points:
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']))
+      print("\nNot Pareto-optimal ({}):".format(len(non_pareto_points)))
+      for p in non_pareto_points:
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']))
+      print('\n')
+      # When choosing combinations of layer implementations to form entire networks,
+      # we only want to consider the points that are Pareto-optimal.
+      layer_impls[lname] = pareto_points
+
+   # Now we must put all the layer implementation options together to come up with network
+   # implementation options. Each list is a list of options for one layer from slowest to fastest.
+   # The algorithm is as follows:
+   # 1. Pick the slowest remaining implementation option of each layer. 
+   #    This becomes a new design point for the network.
+   # 2. Find the maximum latency of all the layers in this design point. 
+   #    This value (+1) will be the II of the network pipeline.
+   # 3. For each list whose slowest design point is exactly equal to that value,
+   #    remove that design point from the list.
+   # 4. Repeat until there is a layer whose list of design points is now empty.
+   print('\nGenerating network implementation options...')
+   network_implementations = []
+   stop = False
+   while not stop:
+      network_impl = {}
+      max_latency = -1
+      for l in layer_impls.keys():
+         network_impl[l] = layer_impls[l][0]
+         cycles = layer_impls[l][0]['cycles']
+         max_latency = max(max_latency, cycles)
+      network_impl['max_latency'] = max_latency
+      for l in layer_impls.keys():
+         if layer_impls[l][0]['cycles'] == max_latency:
+            layer_impls[l].pop(0)
+            if len(layer_impls[l]) == 0:
+               stop = True
+      # TODO finish this, just print the options right now.
+      print(str(network_impl))
+

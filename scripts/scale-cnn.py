@@ -17,7 +17,7 @@ def read_json_spec(json_path):
 if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    mode_options = ['gen_layer', 'explore_layer', 'gen_network_layers', 'synth_network_layers', \
-                   'gen_network_implementations']
+                   'gen_network_implementations', 'analyze_network_options']
    parser.add_argument('mode', choices=mode_options) # positional
    parser.add_argument('-l', '--layerspec', help="Path to a layer specification")
    parser.add_argument('-n', '--networkspec', help="Path to a network specification")
@@ -54,6 +54,8 @@ if __name__ == '__main__':
       hls.synth_network_layers(spec, args.input)
    elif mode == 'gen_network_implementations':
       network_gen.gen_network_implementations(spec, args.output)
+   elif mode == 'analyze_network_options':
+      network_gen.analyze_network_options(spec, args.input, args)
    else:
       print("Unrecognized mode argument.")
 

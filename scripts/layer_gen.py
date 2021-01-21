@@ -103,6 +103,14 @@ MAX_TOTAL_SCALE_FACTOR = 200
 # min and max latencies are in cycles, -1 if no limit.
 # Each element is (read_sf, ochan_sf, estimated_latency)
 def get_conv_impl_options(layer_spec, min_latency, max_latency):
+   # Sometimes, when different layers of a network are particularly imbalanced,
+   # we can encounter a situation where even the slowest implementation of one layer (r1_o1)
+   # is faster than the fastest possible implementation of another layer. In this case, we would
+   # return 0 options for the faster layer. If this happens, then make r1_o1 the only option to
+   # consider for this layer and don't consider any other points.
+   r1_o1_latency = GetConvEstimatedLatency(layer_spec, 1, 1)
+   if r1_o1_latency < min_latency:
+      return [(1, 1, r1_o1_latency)]
    # Different implementations for conv layers:
    # - Read Scale factor: Factors of input chans
    # - Output channel scale factor: Factors of output chans
