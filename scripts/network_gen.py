@@ -156,9 +156,13 @@ def analyze_network_options(network_spec, network_root_dir, args):
       layer_options = []
       for impl in implementations:
          report_info = hls.analyze_reports(layer_spec, impl, args)
+         true_latency = report_info['true_latency']
+         est_latency  = impl['estimated_latency']
+         latency_error = abs(est_latency - true_latency) / true_latency 
          layer_options.append({'name'  : impl['name'], \
                                'cost'  : report_info['cost_info']['total'], \
-                               'cycles': report_info['true_latency']})
+                               'cycles': true_latency,
+                               'latency_error': latency_error})
       # Separate the layer design points into Pareto and non-Pareto optimal points.
       pareto_points, non_pareto_points = utils.pareto_sort(layer_options, cost_perf_compare)
       # Sort the layer options by execution time, highest to lowest.
@@ -168,10 +172,14 @@ def analyze_network_options(network_spec, network_root_dir, args):
       non_pareto_points.reverse()
       print("Pareto-optimal ({}):".format(len(pareto_points)))
       for p in pareto_points:
-         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']))
+         le = p['latency_error']
+         s = "  (HIGH LATENCY ERROR: {:.2%})".format(le) if le > 0.05 else ""
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']) + s)
       print("\nNot Pareto-optimal ({}):".format(len(non_pareto_points)))
       for p in non_pareto_points:
-         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']))
+         le = p['latency_error']
+         s = "  (HIGH LATENCY ERROR: {:.2%})".format(le) if le > 0.05 else ""
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']) + s)
       print('\n')
       # When choosing combinations of layer implementations to form entire networks,
       # we only want to consider the points that are Pareto-optimal.
@@ -193,16 +201,21 @@ def analyze_network_options(network_spec, network_root_dir, args):
    while not stop:
       network_impl = {}
       max_latency = -1
+      cost = 0
       for l in layer_impls.keys():
-         network_impl[l] = layer_impls[l][0]
-         cycles = layer_impls[l][0]['cycles']
+         layer_choice = layer_impls[l][0]
+         network_impl[l] = layer_choice
+         cycles = layer_choice['cycles']
+         cost += layer_choice['cost']
          max_latency = max(max_latency, cycles)
       network_impl['max_latency'] = max_latency
+      network_impl['cost'] = cost
       for l in layer_impls.keys():
          if layer_impls[l][0]['cycles'] == max_latency:
             layer_impls[l].pop(0)
             if len(layer_impls[l]) == 0:
                stop = True
+
       # TODO finish this, just print the options right now.
       print(str(network_impl))
 
