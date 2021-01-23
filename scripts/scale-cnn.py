@@ -28,6 +28,7 @@ if __name__ == '__main__':
    parser.add_argument('-cf', '--cost_function', choices=['default', 'no_luts', 'dsp_only'], default='default', help="Cost function")
    parser.add_argument('--min_ii', help="Minimum II for network dataflow pipeline / latency of one layer")
    parser.add_argument('--max_ii', help="Maximum II for network dataflow pipeline / latency of one layer")
+   parser.add_argument('--network_options', type=int, default=10, help="Maximum number of network options to generate")
    args = parser.parse_args()
 
    mode  = args.mode

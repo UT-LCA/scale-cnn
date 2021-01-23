@@ -135,15 +135,11 @@ def gen_network_implementations(network_spec, network_root_dir):
 def cost_perf_compare(a, b):
    return a['cost'] <= b['cost'] and a['cycles'] <= b['cycles']
 
-# Analyzes the synthesized layer results and outputs a list of intelligently-chosen
-# design points of different layer implementations to get overall network implementations
-# that have a cost/performance trade-off.
-def analyze_network_options(network_spec, network_root_dir, args):
-   print("Analyzing layer synthesis results to create network implementation options.\n")
-   complete_layer_specs(network_spec)
-   layers = network_spec['layers']
 
-   # layer_implems is a dict of lists of dicts where each list pertains to 
+# Given a list of layers, analyzes all of their synthesis results for the different 
+# implementations. Prints out a summary and returns a data structure with all the information.
+def analyze_layer_synth_results(layers, network_root_dir, args):
+   # layer_impls is a dict of lists of dicts where each list pertains to 
    # one layer and each dict pertains to one Pareto-optimal implementation of it.
    # The keys of layer_impls are the layer names.
    layer_impls = {}
@@ -185,8 +181,15 @@ def analyze_network_options(network_spec, network_root_dir, args):
       # we only want to consider the points that are Pareto-optimal.
       layer_impls[lname] = pareto_points
 
-   # Now we must put all the layer implementation options together to come up with network
-   # implementation options. Each list is a list of options for one layer from slowest to fastest.
+   return layer_impls
+
+
+# Given all of the implementation results of the network layers, generates every possible
+# network design point that "makes sense" given their latency. For each design point, changing
+# any layer implementation to the next-slowest version would make the overall network 
+# implementation slower.
+def get_network_design_points(layer_impls):
+   # Each list in layer_impls is a list of options for one layer sorted from slowest to fastest.
    # The algorithm is as follows:
    # 1. Pick the slowest remaining implementation option of each layer. 
    #    This becomes a new design point for the network.
@@ -208,7 +211,7 @@ def analyze_network_options(network_spec, network_root_dir, args):
          cycles = layer_choice['cycles']
          cost += layer_choice['cost']
          max_latency = max(max_latency, cycles)
-      network_impl['max_latency'] = max_latency
+      network_impl['ii'] = max_latency + 1
       network_impl['cost'] = cost
       for l in layer_impls.keys():
          if layer_impls[l][0]['cycles'] == max_latency:
@@ -216,6 +219,53 @@ def analyze_network_options(network_spec, network_root_dir, args):
             if len(layer_impls[l]) == 0:
                stop = True
 
-      # TODO finish this, just print the options right now.
-      print(str(network_impl))
+      network_implementations.append(network_impl)
+
+   # Filter out any implementations that are not Pareto-optimal
+   def network_design_point_compare(a, b):
+      return a['cost'] <= b['cost'] and a['ii'] <= b['ii']
+   optimal_points, non_optimal_points = utils.pareto_sort(network_implementations, network_design_point_compare)
+   return optimal_points
+
+
+# Given a large set of design points for an overall network, 
+def select_network_options(network_options, num_options):
+   # TODO: Add comments explaining this code
+   from sklearn.cluster import KMeans
+   import numpy as np
+   print("Grouping {} network implementation options into {} clusters.".format( \
+      len(network_options), num_options))
+   iis = []
+   ii_lookup = {}
+   for option in network_options:
+      iis.append(option['ii'])
+      ii_lookup[option['ii']] = option
+   iis_log_np = np.log(np.array(iis)).reshape(-1, 1)
+   cluster_indices = KMeans(n_clusters=num_options).fit_predict(iis_log_np)
+   clusters = [[] for _ in range(num_options)]
+   for index, ii in enumerate(iis):
+      clusters[cluster_indices[index]].append(ii_lookup[ii])
+   selected_options = []
+   for i, c in enumerate(clusters):
+      print("Cluster {} IIs: ".format(i), end='')
+      for p in c:
+         print('{:,} , '.format(p['ii']), end='')
+      print()
+      selected_options.append(min(c, key=lambda p: p['cost']))
+   return selected_options
+
+# Analyzes the synthesized layer results and outputs a list of intelligently-chosen
+# design points of different layer implementations to get overall network implementations
+# that have a cost/performance trade-off.
+def analyze_network_options(network_spec, network_root_dir, args):
+   print("Analyzing layer synthesis results to create network implementation options.\n")
+   complete_layer_specs(network_spec)
+   layers = network_spec['layers']
+   layer_impls = analyze_layer_synth_results(layers, network_root_dir, args)
+   network_impls = get_network_design_points(layer_impls)
+   print("Generated {} total possible network implementations.".format(len(network_impls)))
+   if args.network_options is not None and args.network_options < len(network_impls):
+      selected_impls = select_network_options(network_impls, args.network_options)
+   else:
+      selected_impls = network_impls
 
