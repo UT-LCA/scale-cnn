@@ -115,17 +115,29 @@ def gen_network_impl(network_spec, odir, impl_name, layer_impls):
 
 # Generates multiple implementations of a network
 # For right now this is a "test version" that only picks the cheapest option of each layer.
-def gen_network_implementations(network_spec, network_root_dir):
-   print("Generating one implementation for the network")
+def gen_network_implementations(network_spec, network_root_dir, args):
+   print("Generating network implementations for network {}.".format(network_spec['name']))
    complete_layer_specs(network_spec)
-   impl_name = "im1"
-   layer_impls = {}
    network_root_abs = os.path.abspath(network_root_dir)
-   for layer in network_spec['layers']:
-      lname = layer['layer_name']
-      layer_impls[lname] = os.path.join(network_root_abs, 'layers', lname, 'r1_o1')
    impl_top_dir = os.path.join(network_root_abs, 'impls')
-   gen_network_impl(network_spec, impl_top_dir, impl_name, layer_impls)
+   # First read the network implementations JSON file
+   fp = os.path.join(network_root_dir, network_spec['name'] + "_implementations.json")
+   network_impls = []
+   with open(fp, 'r') as f:
+      network_impls = json.load(f)
+   # For each implementation, generate it.
+   for network_impl in network_impls:
+      n_impl_name = network_impl['network_impl_name']
+      if args.impl is not None and args.impl != n_impl_name:
+         continue
+      print("Generating implementation {}".format(n_impl_name))
+      layer_impls = {}
+      for layer in network_spec['layers']:
+         lname = layer['layer_name']
+         layer_impl_name = network_impl[lname]['name']
+         layer_impls[lname] = os.path.join(network_root_abs, 'layers', lname, layer_impl_name)
+      gen_network_impl(network_spec, impl_top_dir, n_impl_name, layer_impls)
+
    print("Generation complete.")
 
 
@@ -135,7 +147,6 @@ def gen_network_implementations(network_spec, network_root_dir):
 # it returns False.
 def cost_perf_compare(a, b):
    return a['cost'] <= b['cost'] and a['cycles'] <= b['cycles']
-
 
 # Given a list of layers, analyzes all of their synthesis results for the different 
 # implementations. Prints out a summary and returns a data structure with all the information.

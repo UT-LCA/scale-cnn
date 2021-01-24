@@ -29,6 +29,7 @@ if __name__ == '__main__':
    parser.add_argument('--min_ii', help="Minimum II for network dataflow pipeline / latency of one layer")
    parser.add_argument('--max_ii', help="Maximum II for network dataflow pipeline / latency of one layer")
    parser.add_argument('--network_options', type=int, default=10, help="Maximum number of network options to generate")
+   parser.add_argument('--impl', help="Specify a specific network implementation to generate. Generates all if unspecified.")
    args = parser.parse_args()
 
    mode  = args.mode
@@ -54,7 +55,7 @@ if __name__ == '__main__':
    elif mode == 'synth_network_layers':
       hls.synth_network_layers(spec, args.input)
    elif mode == 'gen_network_implementations':
-      network_gen.gen_network_implementations(spec, args.output)
+      network_gen.gen_network_implementations(spec, args.input, args)
    elif mode == 'analyze_network_options':
       network_gen.analyze_network_options(spec, args.input, args)
    else:
