@@ -4,6 +4,7 @@ import os
 import layer_gen
 import utils
 import hls
+import json
 
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
@@ -252,6 +253,7 @@ def select_network_options(network_options, num_options):
          print('{:,} , '.format(p['ii']), end='')
       print()
       selected_options.append(min(c, key=lambda p: p['cost']))
+   selected_options.sort(key=lambda p: p['cost'])
    return selected_options
 
 # Analyzes the synthesized layer results and outputs a list of intelligently-chosen
@@ -268,4 +270,23 @@ def analyze_network_options(network_spec, network_root_dir, args):
       selected_impls = select_network_options(network_impls, args.network_options)
    else:
       selected_impls = network_impls
-
+   print("\nSelected {} implementations as candidates for generation.".format(len(selected_impls)))
+   # Print out a report of each possible implementation, and print out a JSON file with a summary of
+   # the implementations.
+   for i, network_impl in enumerate(selected_impls):
+      iname = "i" + str(i+1)
+      network_impl['network_impl_name'] = iname
+      print("\nImplementation {}:".format(iname))
+      for layer in layers:
+         lname = layer['layer_name']
+         layer_impl = network_impl[lname]
+         print("{}: {}, latency = {:,} cycles, cost = {:.4f}".format( \
+            lname, layer_impl['name'], layer_impl['cycles'], layer_impl['cost']))
+      print("Network pipeline II: {:,} cycles".format(network_impl['ii']))
+      print("Total cost: {:.4f}".format(network_impl['cost']))
+   print('\n')
+   # Dump selected_impls to a file
+   output_json_fp = os.path.join(network_root_dir, network_spec['name'] + "_implementations.json")
+   with open(output_json_fp, 'w') as f:
+      json.dump(selected_impls, f)
+   print("Wrote network implementation candidates to {}\n".format(output_json_fp))
