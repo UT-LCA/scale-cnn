@@ -47,6 +47,13 @@ def gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path):
       utils.make_file_from_template(template_fp, output_fp, substitutions)
    return impl_dir
 
+def get_axi_io_layer_files(name, d):
+   layer_files = [('{}_axi_{}.cpp'.format(name, d), 'axi_{}.cpp'.format(d)),
+                  ('{}_axi_{}.tcl'.format(name, d), 'axi_{}.tcl'.format(d)),
+                  ('run.sh', 'run.sh'),
+                  ('viewreport.sh', 'viewreport.sh')]
+   return layer_files
+
 # Return a sorted list of all the integer factors of a positive integer
 # Used to determine options for unroll factors.
 def factors(n):
@@ -212,6 +219,26 @@ def gen_conv_layer(layer_spec, odir, args):
    return layer_impls
 
 
+# Generates an AXI Stream input or output layer
+# direction is either "in" or "out"
+def gen_axi_io_layer(layer_spec, odir, direction):
+   template_path = os.getenv('SCALE_CNN_ROOT') + "/templates/axi_{}/".format(direction)
+   name = layer_spec['name']
+   # Fill out some other fields for the layer
+   chans = layer_spec['chans']
+   layer_spec['chans_padded'] = 4 if chans == 3 else chans
+   # AXI Stream side channel fields, default to 0 if unspecified.
+   axi_fields = ["AXIS_WUser", "AXIS_WId", "AXIS_WDest"]
+   for field in axi_fields:
+      if field not in layer_spec:
+         layer_spec[field] = 0
+   # Finally, do the generation.
+   layer_files = get_axi_io_layer_files(name, direction)
+   gen_layer_files(layer_spec, layer_files, odir, template_path)
+   full_layer_name = name + "_axi_" + direction
+   print("Generated AXI I/O layer {}".format(full_layer_name))
+
+
 # Create a file with a list of implementation directories.
 # It will be a text file where each line is a string representation of the 
 # dictionary that describes each implementation.
@@ -242,7 +269,8 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
 # Given a path to a layer config file, generates all the files needed
 # for that layer in the specified output directory.
 def generate_layer(layer_spec, odir, args):
-   layer_spec['lname'] = layer_spec['layer_name'] # shorthand
+   if 'layer_name' in layer_spec:
+      layer_spec['lname'] = layer_spec['layer_name'] # shorthand
    layer_type = layer_spec['layer_type']
    # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
@@ -250,8 +278,11 @@ def generate_layer(layer_spec, odir, args):
       os.makedirs(odir)
    if layer_type == 'conv' or layer_type == 'conv-max':
       implementations = gen_conv_layer(layer_spec, odir, args)
+      gen_layer_impl_list(odir, layer_spec, implementations)
+   elif layer_type == 'axi_in' or layer_type == 'axi_out':
+      direction = layer_type[layer_type.index('_')+1:]
+      gen_axi_io_layer(layer_spec, odir, direction)
    else:
       raise Exception('Unknown layer type: {}'.format(layer_type))
 
-   gen_layer_impl_list(odir, layer_spec, implementations)
 
