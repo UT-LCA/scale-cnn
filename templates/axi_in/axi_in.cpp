@@ -3,6 +3,7 @@
 #include "global_defines.h"
 #include "ap_axi_sdata.h"
 #include "hls_stream.h"
+#include <inttypes.h>
 
 static const int HEIGHT  = $height;
 static const int WIDTH   = $width;
@@ -18,17 +19,16 @@ void ${name}_axi_in (
    hls::stream<in_pkt> &stream_in,
    data_t fmaps[HEIGHT][WIDTH][CHANS_P]
 ) {
-   #pragma HLS INTERFACE axis port=stream_in
-   for (int r = 0; r < HEIGHT; r++) {
-      for (int c = 0; c < WIDTH; c++) {
+   for (uint16_t r = 0; r < HEIGHT; r++) {
+      for (uint16_t c = 0; c < WIDTH; c++) {
          data_t p[CHANS_P] = {0};
-         for (int ch = 0; ch < CHANS; ch++) {
+         for (uint16_t ch = 0; ch < CHANS; ch++) {
             #pragma HLS pipeline
             in_pkt tmp;
             stream_in.read_nb(tmp);
             p[ch] = static_cast<data_t>(tmp.data);
             if (ch == CHANS-1) {
-               for (int ch_p = 0; ch_p < CHANS_P; ch_p++) {
+               for (uint16_t ch_p = 0; ch_p < CHANS_P; ch_p++) {
                   fmaps[r][c][ch_p] = p[ch_p];
                }
             }

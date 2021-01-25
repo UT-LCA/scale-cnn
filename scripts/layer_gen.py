@@ -236,7 +236,7 @@ def gen_axi_io_layer(layer_spec, odir, direction):
    layer_files = get_axi_io_layer_files(name, direction)
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    full_layer_name = name + "_axi_" + direction
-   print("Generated AXI I/O layer {}".format(full_layer_name))
+   print("Generated AXI4-Stream I/O layer {}".format(full_layer_name))
 
 
 # Create a file with a list of implementation directories.

@@ -1,0 +1,10 @@
+{
+   "name"       : "test",
+   "layer_type" : "axi_out",
+   "height"     : 56,
+   "width"      : 56, 
+   "chans"      : 128,
+   "AXIS_WUser" : 0,
+   "AXIS_WId"   : 0,
+   "AXIS_WDest" : 0
+}
