@@ -1,6 +1,7 @@
 {
    "name"       : "test",
    "layer_type" : "axi_in",
+   "fpga_part"  : "xcku11p-ffva1156-2-e",
    "height"     : 224,
    "width"      : 224, 
    "chans"      : 3,

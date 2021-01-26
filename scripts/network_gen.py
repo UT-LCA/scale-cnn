@@ -4,8 +4,8 @@ import os
 import layer_gen
 import utils
 import hls
-import json
 import copy
+import math
 
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
@@ -21,10 +21,76 @@ def complete_layer_specs(network_spec):
       # Give the layer a name
       layer['layer_name'] = network_spec['shorthand_name'] + str(i+1)
       layer['lname'] = layer['layer_name']
+      # Assign the network FPGA part to the layer.
+      # TODO: This will need to change once implementing multiple FPGAs.
+      layer['fpga_part'] = network_spec['fpga_part']
+
+# Calculates the number of URAM blocks required for either the input or output of a
+# certain layer in the network, specified by argument d ("input" or "output")
+def calc_num_urams(layer_spec, d):
+   h = layer_spec['%s_height' % d]
+   w = layer_spec['%s_width'  % d]
+   c = layer_spec['%s_chans'  % d]
+   # Round up chans to nearest multiple of 4
+   c = 4*math.ceil(c/4)
+   # There are a total of h*w*c 16-bit words to store, and we can fit four in a single
+   # 72-bit URAM row. Calculate the number of rows we need
+   uram_rows = h*w*c / 4
+   # There are 4096 rows per URAM block.
+   # We multiply by 2 because of the double-buffering that is required between stages
+   # of a dataflow pipeline.
+   return math.ceil(uram_rows / 4096) * 2
+
+# This function is called before layer implementations for a network are generated.
+# It checks that the specified FPGA has enough UltraRAMs on it to hold all of the 
+# feature maps for different layers.
+def check_uram_requirements(network_spec):
+   print("Checking UltraRAM requirements are satisfied.")
+   # Read the metadata for the FPGAs known to the tool.
+   fpga_json_fp = os.path.join(os.getenv('SCALE_CNN_ROOT'), 'fpgas', 'fpgas.json')
+   fpga_info = utils.read_json(fpga_json_fp)
+   # The fpga_part either is a single string, or a list of strings for the 
+   # case where multiple FPGAs are used.
+   if isinstance(network_spec['fpga_part'], str):
+      fpgas = [network_spec['fpga_part']]
+   else:
+      fpgas = network_spec['fpga_part']
+   fpga_idx = 0
+   urams_utilized = 0
+   num_layers = len(network_spec['layers'])
+   enough_urams = True
+   for i in range(num_layers+1):
+      if i == num_layers or network_spec['layers'][i]['layer_type'] == 'fpga-sep':
+         # Add the output URAMs of the last layer.
+         urams_utilized += calc_num_urams(network_spec['layers'][i-1], "output")
+         # Verify there are enough URAMs on this FPGA.
+         part = fpgas[fpga_idx]
+         urams_available = fpga_info[part]['URAM']
+         print("FPGA {} ({}): ".format(fpga_idx, part), end='')
+         print("Min URAMs utilized: {}, URAMs available: {}".format(urams_utilized, urams_available), end='')
+         if urams_utilized > urams_available:
+            enough_urams = False
+            print("  (ERROR: Not enough URAMs on this FPGA)")
+         else:
+            print()
+         # Reset the count for the next FPGA
+         fpga_idx += 1
+         urams_utilized = 0
+      else:
+         layer = network_spec['layers'][i]
+         urams_utilized += calc_num_urams(layer, "input")
+
+   return enough_urams
 
 def gen_network_layers(network_spec, odir, args):
-   print("Generating layers for {} network.".format(network_spec['name']))
    complete_layer_specs(network_spec)
+   uram_reqs_satisfied = check_uram_requirements(network_spec)
+   if uram_reqs_satisfied:
+      print("UltraRAM requirements satisfied.")
+   else:
+      print("UltraRAM requirements were not satisfied. Aborting generation.")
+      return
+   print("Generating layers for {} network.".format(network_spec['name']))
    layers = network_spec['layers']
    # Before generating all the layers, we might be able to speed things up by
    # increasing the minimum II to the largest minimum layer latency. This enables
@@ -47,8 +113,8 @@ def gen_network_layers(network_spec, odir, args):
       layer_gen.generate_layer(layer, layer_odir, args)
 
    # Generate the AXI I/O layers.
-   axi_in_spec  = {'layer_type': 'axi_in'}
-   axi_out_spec = {'layer_type': 'axi_out'}
+   axi_in_spec  = {'layer_type': 'axi_in' , 'fpga_part': network_spec['fpga_part']}
+   axi_out_spec = {'layer_type': 'axi_out', 'fpga_part': network_spec['fpga_part']}
    for key in ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest']:
       if key in network_spec:
          axi_in_spec[key] = network_spec[key]
@@ -106,9 +172,8 @@ def get_network_substitutions(network_spec, layer_impls):
    fmap_decls += s + 'data_t final_fmaps[{}][{}][{}];\n'.format( \
       layers[-1]['output_height'], layers[-1]['output_width'], layers[-1]['output_chans'])
    
-   # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
    substitutions = {
-      "fpga_part"           : 'xcku11p-ffva1156-2-e',
+      "fpga_part"           : network_spec['fpga_part'],
       "name"                : network_spec['name'],
       "shorthand_name"      : network_spec['shorthand_name'],
       "fmap_declarations"   : fmap_decls,
@@ -142,9 +207,7 @@ def gen_network_implementations(network_spec, network_root_dir, args):
    impl_top_dir = os.path.join(network_root_abs, 'impls')
    # First read the network implementations JSON file
    fp = os.path.join(network_root_dir, network_spec['name'] + "_implementations.json")
-   network_impls = []
-   with open(fp, 'r') as f:
-      network_impls = json.load(f)
+   network_impls = utils.read_json(fp)
    # For each implementation, generate it.
    for network_impl in network_impls:
       n_impl_name = network_impl['network_impl_name']
@@ -318,6 +381,5 @@ def analyze_network_options(network_spec, network_root_dir, args):
    print('\n')
    # Dump selected_impls to a file
    output_json_fp = os.path.join(network_root_dir, network_spec['name'] + "_implementations.json")
-   with open(output_json_fp, 'w') as f:
-      json.dump(selected_impls, f)
+   utils.write_json(output_json_fp, selected_impls)
    print("Wrote network implementation candidates to {}\n".format(output_json_fp))

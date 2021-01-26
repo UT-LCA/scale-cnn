@@ -2,6 +2,19 @@
 # Shared code between different python modules
 import os
 import string
+import json
+
+# Takes in a path to a JSON file and reads it then returns the object or list
+def read_json(json_path):
+   if not os.path.isfile(json_path):
+      raise Exception('Error: could not find json file at {}.'.format(json_path))
+   with open(json_path, 'r') as jf:
+      return json.load(jf)
+
+# Writes JSON to a filepath
+def write_json(json_path, thing):
+   with open(json_path, 'w') as f:
+      json.dump(thing, f)
 
 # Given a template file, substitutions, and output file path,
 # copies the template file to the output file making the appropriate substitutions.

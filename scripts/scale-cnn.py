@@ -3,16 +3,7 @@ import argparse
 import layer_gen
 import network_gen
 import hls
-import json
-
-# Finds and reads layer or netowrk json
-def read_json_spec(json_path):
-   if not os.path.isfile(json_path):
-      raise Exception('Error: could not find json file at {}.'.format(json_path))
-   spec = {}
-   with open(json_path, 'r') as jf:
-      spec = json.load(jf)
-   return spec
+import utils
 
 if __name__ == '__main__':
    parser = argparse.ArgumentParser()
@@ -39,9 +30,9 @@ if __name__ == '__main__':
 
    spec = {}
    if args.layerspec is not None:
-      spec = read_json_spec(args.layerspec)
+      spec = utils.read_json(args.layerspec)
    if args.networkspec is not None:
-      spec = read_json_spec(args.networkspec)
+      spec = utils.read_json(args.networkspec)
 
    if os.getenv('SCALE_CNN_ROOT') is None:
       raise Exception('SCALE_CNN_ROOT environment variable is not set!')

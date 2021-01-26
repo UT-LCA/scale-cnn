@@ -1,6 +1,7 @@
 {
    "layer_name"    : "ex_conv1",
    "layer_type"    : "conv",
+   "fpga_part"     : "xcku11p-ffva1156-2-e",
    "input_height"  : 56,
    "input_width"   : 56, 
    "input_chans"   : 16,

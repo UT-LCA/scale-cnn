@@ -273,8 +273,6 @@ def generate_layer(layer_spec, odir, args):
    if 'layer_name' in layer_spec:
       layer_spec['lname'] = layer_spec['layer_name'] # shorthand
    layer_type = layer_spec['layer_type']
-   # TODO: Enable different FPGAs. For now, always use this one (Kintex 7 Ultrascale+)
-   layer_spec['fpga_part'] = 'xcku11p-ffva1156-2-e'
    if not os.path.isdir(odir):
       os.makedirs(odir)
    if layer_type == 'conv' or layer_type == 'conv-max':
