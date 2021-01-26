@@ -1,19 +1,14 @@
 // This CPP file contains the function that reads data from the last layer's UltraRAMs
 // and outputs it to a AXI-Stream interface.
 #include "global_defines.h"
-#include "ap_axi_sdata.h"
 #include "hls_stream.h"
 #include <inttypes.h>
+#include "${name}_axi_out.h"
 
 static const int HEIGHT  = $height;
 static const int WIDTH   = $width;
 static const int CHANS   = $chans;
 static const int CHANS_P = $chans_padded;
-
-// The AXI stream data type headers only allow ap_int or ap_uint data types.
-// So the data will be a ap_uint<16> which we can then just static_cast from
-// a half (data_t).
-typedef hls::ap_axiu<16, $AXIS_WUser, $AXIS_WId, $AXIS_WDest> out_pkt;
 
 void ${name}_axi_out (
    data_t fmaps[HEIGHT][WIDTH][CHANS_P],

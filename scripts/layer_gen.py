@@ -49,6 +49,7 @@ def gen_layer_impl_files(layer_spec, impl_files, impl, odir, template_path):
 
 def get_axi_io_layer_files(name, d):
    layer_files = [('{}_axi_{}.cpp'.format(name, d), 'axi_{}.cpp'.format(d)),
+                  ('{}_axi_{}.h'  .format(name, d), 'axi_{}.h'  .format(d)),
                   ('{}_axi_{}.tcl'.format(name, d), 'axi_{}.tcl'.format(d)),
                   ('run.sh', 'run.sh'),
                   ('viewreport.sh', 'viewreport.sh')]

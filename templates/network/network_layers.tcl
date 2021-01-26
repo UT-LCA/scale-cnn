@@ -25,3 +25,7 @@ for {set i 0} {$$i < $$num_layers} {incr i} {
    # TODO: This won't work when we have other layer types.
    source $${layer_impl_path}/../$${layer_name}_conv_directives.tcl
 }
+
+puts "Configuring AXI I/O layers."
+add_files -cflags "-I ../../layers/axi_in/ -I $$COMMON_DIR" "../../layers/axi_in/${name}_axi_in.cpp"
+add_files -cflags "-I ../../layers/axi_out/ -I $$COMMON_DIR" "../../layers/axi_out/${name}_axi_out.cpp"

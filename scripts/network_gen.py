@@ -5,6 +5,7 @@ import layer_gen
 import utils
 import hls
 import json
+import copy
 
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
@@ -45,6 +46,24 @@ def gen_network_layers(network_spec, odir, args):
       layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
       layer_gen.generate_layer(layer, layer_odir, args)
 
+   # Generate the AXI I/O layers.
+   axi_in_spec  = {'layer_type': 'axi_in'}
+   axi_out_spec = {'layer_type': 'axi_out'}
+   for key in ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest']:
+      if key in network_spec:
+         axi_in_spec[key] = network_spec[key]
+         axi_out_spec[key] = network_spec[key]
+   axi_in_spec['height']  = layers[0]['input_height']
+   axi_in_spec['width']   = layers[0]['input_width']
+   axi_in_spec['chans']   = layers[0]['input_chans']
+   axi_out_spec['height'] = layers[-1]['output_height']
+   axi_out_spec['width']  = layers[-1]['output_width']
+   axi_out_spec['chans']  = layers[-1]['output_chans']
+   axi_in_dir  = os.path.join(odir, "layers", "axi_in")
+   axi_out_dir = os.path.join(odir, "layers", "axi_out")
+   layer_gen.generate_layer(axi_in_spec, axi_in_dir, {})
+   layer_gen.generate_layer(axi_out_spec, axi_out_dir, {})
+   
    print("Layer generation complete.")
 
 
@@ -91,6 +110,7 @@ def get_network_substitutions(network_spec, layer_impls):
    substitutions = {
       "fpga_part"           : 'xcku11p-ffva1156-2-e',
       "name"                : network_spec['name'],
+      "shorthand_name"      : network_spec['shorthand_name'],
       "fmap_declarations"   : fmap_decls,
       "filter_declarations" : filter_decls,
       "layer_calls"         : layer_calls,

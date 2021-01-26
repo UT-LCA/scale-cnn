@@ -12,7 +12,7 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
-add_files -cflags "-I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ${name}.cpp"
+add_files -cflags "-I $$COMMON_DIR -I ../../layers/axi_in/ -I ../../layers/axi_out/"  "${name}.cpp"
 set_top $name
 
 set top $name
@@ -26,7 +26,7 @@ create_clock -period 10
 source ${name}_layers.tcl
 
 # Set the whole network to use dataflow
-set_directive_dataflow $name
+set_directive_dataflow ${name}
 
 # Run Synthesis
 # Disable dataflow canonical form warnings
