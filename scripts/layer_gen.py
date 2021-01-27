@@ -105,6 +105,13 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
 # For right now, choosing 200 as the maximum.
 MAX_TOTAL_SCALE_FACTOR = 200
 
+# Establish an absolute minimum target latency for accumulation stages. We should
+# skip any design point whose read / dot_product stages would require the accumulation
+# stages to be even faster than this (in cycles).
+# Any values faster than this will simply make it infeasible to create accumulation
+# stages that do not bottleneck the rest of the layer's pipeline.
+MIN_TARGET_LATENCY = 10
+
 # Return a list of all possible configurations for a conv layer
 # It eliminates options that either have too large total scaling, or are outside
 # a specified range of latencies.
@@ -129,6 +136,11 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency):
    ochan_scale_factors = sorted(list(set(ochans_factors)))
    options = []
    for read_sf in read_scale_factors:
+      # Make sure minimum target latency requirement is satisfied.
+      vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
+      target_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
+      if target_latency < MIN_TARGET_LATENCY:
+         continue
       for ochan_sf in ochan_scale_factors:
          # Make sure the total scaling is less than the max.
          total_scale = read_sf * ochan_sf
@@ -263,8 +275,9 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
    out_dims = "{}x{}x{}".format(layer_spec['output_height'], \
                                 layer_spec['output_width'],  \
                                 layer_spec['output_chans'])
-   print("{} ({}): {} -> {}, {} implementations, estimated latency range {:,} to {:,} cycles".format( \
-      lname, layer_spec['layer_type'], in_dims, out_dims, len(implementations), min(latencies), max(latencies)))
+   filter_dims = "{}x{}".format(layer_spec['filter_size'], layer_spec['filter_size'])
+   print("{} ({}): {} -> {} ({} filters), {} implementations, estimated latency range {:,} to {:,} cycles".format( \
+      lname, layer_spec['layer_type'], in_dims, out_dims, filter_dims, len(implementations), min(latencies), max(latencies)))
 
 
 # Given a path to a layer config file, generates all the files needed

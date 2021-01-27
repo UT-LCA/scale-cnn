@@ -118,6 +118,8 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
                       'substages': tree_stages, 'dsp_util': dsp_util}
          points.append(new_point)
 
+   if len(points) == 0:
+      raise Exception('Something went wrong with the accum stage generation algorithm.')
 
    # There can be multiple points that satisfy the latency requirement. The different points
    # will have a trade-off between DSP usage and output length.
