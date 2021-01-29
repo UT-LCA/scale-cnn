@@ -31,11 +31,13 @@ void gen_random_filters(data_t *filters, int len) {
 // numbers. The difference must exceed both to be considered an error.
 //
 // The current bounds I am using can be seen in the constant definitions below.
-int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int num_els) {
+int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int num_els, int ichans) {
    const float HIGH_ERROR_ABS = 0.2; 
    const float HIGH_ERROR_PCT = 0.2;
-   const float LOW_ERROR_ABS  = 0.01;
-   const float LOW_ERROR_PCT  = 0.01;
+   // The acceptable error is higher with more and more accumulations necessary to compute one output element.
+   // The number of accumulations scales with the number of input channels.
+   const float LOW_ERROR_ABS  = 0.01 * ichans / 16.0;
+   const float LOW_ERROR_PCT  = 0.01 * ichans / 16.0;
    int MAX_LOW_ERROR_COUNT = (num_els / 100) + 1; // Only 1% of points can exceed the low error threshold.
    int low_error_count = 0;
    int exactly_equal_count = 0;

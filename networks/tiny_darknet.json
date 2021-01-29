@@ -1,16 +1,28 @@
 {
    "name": "tiny_darknet",
    "shorthand_name": "td",
-   "fpga_part": "xcvu3p-ffvc1517-1-e",
-   "common_params": {
+   "fpga_part": "xcvu3p-ffvc1517-3-e",
+   "default_params": {
       "stride": 1,
       "pad": 1,
       "filter_size": 3
    },
    "layers": [
-      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3, "pooling_factor": 2},
-      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16, "pooling_factor": 2},
-      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 32},
-      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 16, "output_height": 56, "output_width": 56, "output_chans": 128}
+      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3,   "pooling_factor": 2},
+      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16,  "pooling_factor": 2},
+      {"layer_type": "conv"    , "input_height":  56, "input_width":  56, "input_chans": 32,  "filter_size": 1, "pad": 0},
+      {"layer_type": "conv"    , "input_height":  56, "input_width":  56, "input_chans": 16}, 
+      {"layer_type": "conv"    , "input_height":  56, "input_width":  56, "input_chans": 128, "filter_size": 1, "pad": 0},
+      {"layer_type": "conv-max", "input_height":  56, "input_width":  56, "input_chans": 16,  "pooling_factor": 2},
+      {"layer_type": "conv"    , "input_height":  28, "input_width":  28, "input_chans": 128, "filter_size": 1, "pad": 0}, 
+      {"layer_type": "conv"    , "input_height":  28, "input_width":  28, "input_chans": 32}, 
+      {"layer_type": "conv"    , "input_height":  28, "input_width":  28, "input_chans": 256, "filter_size": 1, "pad": 0}, 
+      {"layer_type": "conv-max", "input_height":  28, "input_width":  28, "input_chans": 32,  "pooling_factor": 2},
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 256, "filter_size": 1, "pad": 0}, 
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 64},
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 512, "filter_size": 1, "pad": 0}, 
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 64},
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 512, "filter_size": 1, "pad": 0}, 
+      {"layer_type": "conv"    , "input_height":  14, "input_width":  14, "input_chans": 128, "filter_size": 1, "pad": 0, "output_height": 14, "output_width": 14, "output_chans": 1000}
    ]
 }

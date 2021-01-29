@@ -112,12 +112,19 @@ MAX_TOTAL_SCALE_FACTOR = 200
 # stages that do not bottleneck the rest of the layer's pipeline.
 MIN_TARGET_LATENCY = 10
 
+# Put a maximum on a single scale factor at 64.
+# This is somewhat arbitrary but the point is to make sure that we don't consider
+# design points that are absurdly imbalanced (like r1_o128)
+MAX_SCALE_FACTOR = 64
+
 # Return a list of all possible configurations for a conv layer
 # It eliminates options that either have too large total scaling, or are outside
 # a specified range of latencies.
 # min and max latencies are in cycles, -1 if no limit.
 # Each element is (read_sf, ochan_sf, estimated_latency)
-def get_conv_impl_options(layer_spec, min_latency, max_latency):
+# one_below_min means we should also include the slowest design point that is
+# below the minimum latency.
+def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=False):
    # Sometimes, when different layers of a network are particularly imbalanced,
    # we can encounter a situation where even the slowest implementation of one layer (r1_o1)
    # is faster than the fastest possible implementation of another layer. In this case, we would
@@ -135,30 +142,42 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency):
    read_scale_factors  = sorted(list(set(ichans_factors)))
    ochan_scale_factors = sorted(list(set(ochans_factors)))
    options = []
+   too_fast_options = []
    for read_sf in read_scale_factors:
+      if read_sf > MAX_SCALE_FACTOR:
+         continue
       # Make sure minimum target latency requirement is satisfied.
       vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
       target_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
       if target_latency < MIN_TARGET_LATENCY:
          continue
       for ochan_sf in ochan_scale_factors:
+         if ochan_sf > MAX_SCALE_FACTOR:
+            continue
          # Make sure the total scaling is less than the max.
          total_scale = read_sf * ochan_sf
          if total_scale > MAX_TOTAL_SCALE_FACTOR:
             continue
          # Estimate the latency given the scale factors.
          est_lat = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
-         if (min_latency != -1 and est_lat < min_latency) or \
-            (max_latency != -1 and est_lat > max_latency):
+         opt = (read_sf, ochan_sf, est_lat)
+         if max_latency != -1 and est_lat > max_latency:
             continue
-         options.append((read_sf, ochan_sf, est_lat))
+         elif min_latency != -1 and est_lat < min_latency:
+            too_fast_options.append(opt)
+         else:
+            options.append(opt)
+
+   if one_below_min and len(too_fast_options) > 0:
+      slowest = max(too_fast_options, key=lambda p: p[2])
+      options.insert(0, slowest)
    return options
 
 # Layer type generic function for getting options for a layer
-def GetLayerImplOptions(layer_spec, min_latency, max_latency):
+def GetLayerImplOptions(layer_spec, min_latency, max_latency, one_below_min=False):
    ltype = layer_spec['layer_type']
    if ltype == 'conv' or ltype == 'conv-max':
-      options = get_conv_impl_options(layer_spec, min_latency, max_latency)
+      options = get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min)
    else:
       raise Exception('Unknown layer type: {}'.format(ltype))
    if len(options) == 0:
@@ -192,7 +211,7 @@ def gen_conv_layer(layer_spec, odir, args):
    # Generate all of the possible conv implementations
    min_latency = args.min_ii
    max_latency = args.max_ii
-   impl_options = GetLayerImplOptions(layer_spec, min_latency, max_latency)
+   impl_options = GetLayerImplOptions(layer_spec, min_latency, max_latency, True)
    layer_impls = []
    for read_sf, ochan_sf, est_lat in impl_options:
       impl = {}

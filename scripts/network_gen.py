@@ -10,9 +10,11 @@ import math
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
    for i, layer in enumerate(layers):
-      # Copy common params to each layer (this is for brevity in the JSON)
-      if 'common_params' in network_spec:
-         layer.update(network_spec['common_params'])
+      # Copy default params to each layer (this is for brevity in the JSON)
+      if 'default_params' in network_spec:
+         for k in network_spec['default_params'].keys():
+            if k not in layer:
+               layer[k] = network_spec['default_params'][k]
       # Fill in the output dimensions for all layers except the last
       if i < len(layers) - 1:
          layer['output_height'] = layers[i+1]['input_height']
@@ -98,13 +100,13 @@ def gen_network_layers(network_spec, odir, args):
    # synthesize them.
    max_min_latency = -1
    for layer in layers:
-      options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii)
+      options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii, False)
       min_l = min([l for (r, o, l) in options])
       if min_l > max_min_latency:
          max_min_latency = min_l
 
    if max_min_latency > args.min_ii:
-      print("Adjusting minimum ii to {} cycles".format(max_min_latency))
+      print("Adjusting target minimum ii to {} cycles".format(max_min_latency))
       args.min_ii = max_min_latency
 
    # Put all the layers under "layers" subdirectory

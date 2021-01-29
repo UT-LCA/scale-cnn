@@ -2,7 +2,7 @@
    "name": "tiny_darknet",
    "shorthand_name": "td",
    "fpga_part": "xcvu3p-ffvc1517-1-e",
-   "common_params": {
+   "default_params": {
       "stride": 1,
       "pad": 1,
       "filter_size": 3
