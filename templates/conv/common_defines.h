@@ -9,9 +9,10 @@
 #ifndef ${lname}_COMMON_H
 #define ${lname}_COMMON_H
 
-static const int OUTPUT_HEIGHT = $output_height;
-static const int OUTPUT_WIDTH  = $output_width;
-static const int OUTPUT_CHANS  = $output_chans;
+static const int OUTPUT_HEIGHT   = $output_height;
+static const int OUTPUT_WIDTH    = $output_width;
+static const int OUTPUT_CHANS    = $output_chans;
+static const int RF_OUTPUT_CHANS = OUTPUT_CHANS;
 
 static const int FILTER_SIZE = $filter_size;
 static const int PAD         = $pad;

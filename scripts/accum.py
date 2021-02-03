@@ -382,10 +382,11 @@ def GenerateAccumStageCode(stage):
    return func
 
 # Generates the code that calls all of the accumulation stages in sequence.
-def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
+def GenAccumStageFuncCalls(lname, ltype, ochan_sf, stage_params):
    code = ""
    s = " " * 6
    has_return_val = False
+   output_var = 'intermediate_fmaps' if ltype == 'conv-conv' else 'outputs'
    for stage in stage_params:
       stage_num = stage['stage_num']
       op_in = 'products[%d]' if stage_num == 1 else 'accum{}_out_%d'.format(stage_num-1)
@@ -394,7 +395,7 @@ def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
       if has_return_val:
          # Function call for the last stage
          for ochan in range(ochan_sf):
-            code += s + "outputs[{}] = {}_accum_{}({});\n".format(ochan, lname, stage_num, (op_in % ochan))
+            code += s + "{}[{}] = {}_accum_{}({});\n".format(output_var, ochan, lname, stage_num, (op_in % ochan))
       else:
          # Declare the outputs of the current stage
          for ochan in range(ochan_sf):
@@ -416,7 +417,7 @@ def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
    if not has_return_val:
       # Function call for the last stage if the output is an array with length 1 instead of return value.
       for ochan in range(ochan_sf):
-         code += s + "outputs[{}] = accum{}_out_{}[0];\n".format(ochan, stage_params[-1]['stage_num'], ochan)
+         code += s + "{}[{}] = accum{}_out_{}[0];\n".format(output_var, ochan, stage_params[-1]['stage_num'], ochan)
 
    return code
 
@@ -427,14 +428,14 @@ def GenAccumStageFuncCalls(lname, ochan_sf, stage_params):
 # Read bandwidth is the number of inputs we can read per cycle. This will either 
 # be the array partitioning factor of the inputs, or twice it.
 # ochan_sf is the output channel scaling factor.
-def GenerateAccumulationStages(layer_name, ochan_sf, target_latency, input_length, read_bw):
+def GenerateAccumulationStages(layer_name, layer_type, ochan_sf, target_latency, input_length, read_bw):
    stage_params = GetAccumulationStageParams(target_latency, input_length, read_bw)
    stage_functions = []
    for stage in stage_params:
       stage['lname'] = layer_name
       stage_functions.append(GenerateAccumStageCode(stage))
    function_defs_code  = '\n\n\n'.join(stage_functions)
-   function_calls_code = GenAccumStageFuncCalls(layer_name, ochan_sf, stage_params)
+   function_calls_code = GenAccumStageFuncCalls(layer_name, layer_type, ochan_sf, stage_params)
    return (function_defs_code, function_calls_code)
 
 #========================================================================================
@@ -458,7 +459,7 @@ if __name__ == "__main__":
             print("Type: {}, IL: {}, OL: {}, Estimated Latency: {}".format(stage['type'], \
                stage['IL'], stage['OL'], stage['est_lat']))
       print("\n")
-      func_code, func_calls_code = GenerateAccumulationStages(lname, 2, tc['targ_lat'], tc['IL'], tc['read_bw'])
+      func_code, func_calls_code = GenerateAccumulationStages(lname, 'conv', 2, tc['targ_lat'], tc['IL'], tc['read_bw'])
       print("Function definitions:\n")
       print(func_code)
       print("Function calls:\n")

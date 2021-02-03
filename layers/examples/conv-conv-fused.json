@@ -1,0 +1,15 @@
+{
+   "layer_name"    : "ccfused",
+   "layer_type"    : "conv-conv",
+   "fpga_part"     : "xcku11p-ffva1156-2-e",
+   "input_height"  : 56,
+   "input_width"   : 56, 
+   "input_chans"   : 16,
+   "intermediate_chans": 128,
+   "output_height" : 56,
+   "output_width"  : 56,
+   "output_chans"  : 16,
+   "filter_size"   : 3,
+   "stride"        : 1,
+   "pad"           : 1
+}

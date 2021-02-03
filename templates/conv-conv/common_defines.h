@@ -12,7 +12,8 @@
 static const int OUTPUT_HEIGHT   = $output_height;
 static const int OUTPUT_WIDTH    = $output_width;
 static const int OUTPUT_CHANS    = $output_chans;
-static const int RF_OUTPUT_CHANS = OUTPUT_CHANS;
+static const int L1_OUTPUT_CHANS = $intermediate_chans;
+static const int RF_OUTPUT_CHANS = L1_OUTPUT_CHANS;
 
 static const int FILTER_SIZE = $filter_size;
 static const int PAD         = $pad;
@@ -41,11 +42,10 @@ static const int VECTOR_SIZE = WORDS_PER_FILTER;
 // index, which is very expensive if divisor is 3, but free when it is 4.
 static const int NUM_INPUTS      = INPUT_HEIGHT  * INPUT_WIDTH  * INPUT_CHANS;
 static const int NUM_OUTPUTS     = OUTPUT_HEIGHT * OUTPUT_WIDTH * OUTPUT_CHANS;
+static const int NUM_L1_OUTPUTS  = OUTPUT_HEIGHT * OUTPUT_WIDTH * L1_OUTPUT_CHANS;
 static const int INPUT_RAM_SIZE  = INPUT_HEIGHT  * INPUT_WIDTH  * INPUT_CHANS_PADDED;
 static const int OUTPUT_RAM_SIZE = NUM_OUTPUTS;
-static const int FILTER_RAM_SIZE = OUTPUT_CHANS * WORDS_PER_FILTER;
-
-// Pooling factor. E.g. value of 2 means 2x2 pooling
-static const int POOLING_FACTOR = $pooling_factor;
+static const int L1_FILTER_RAM_SIZE = L1_OUTPUT_CHANS * WORDS_PER_FILTER;
+static const int L2_FILTER_RAM_SIZE = L1_OUTPUT_CHANS * OUTPUT_CHANS; // *1*1 since 1x1 filters assumed.
 
 #endif

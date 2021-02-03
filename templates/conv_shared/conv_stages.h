@@ -39,7 +39,7 @@ void ${lname}_readInputs (
 // Reads filters into internal buffers (weight_vecs)
 // It reads all the elements of OCHAN_SCALE_FACTOR filter(s)
 void ${lname}_readFilters (
-   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t filter_data[RF_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
    uint16_t k,
    data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
 ) {
@@ -50,7 +50,7 @@ void ${lname}_readFilters (
                // This loop should always be unrolled completely.
                #pragma HLS unroll
                uint16_t ochan = k*OCHAN_SCALE_FACTOR + o;
-               assert(ochan < OUTPUT_CHANS);
+               assert(ochan < RF_OUTPUT_CHANS);
                weight_vecs[o][ii][jj][kk] = filter_data[ochan][ii][jj][kk];
             }
          }

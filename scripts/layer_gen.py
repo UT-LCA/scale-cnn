@@ -82,9 +82,10 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
    # The number of top loop iterations is:
    #  O_H * O_W * O_CHANS / OCHAN_SF for ordinary conv layers
    #  O_H * O_W * O_CHANS * (POOLING_FACTOR^2) / OCHAN_SF for fused conv-max layers
+   #  O_H * O_W * INTERMEDIATE_CHANS / OCHAN_SF for fused conv-conv conv layers
    OH = layer_spec['output_height']
    OW = layer_spec['output_width']
-   OC = layer_spec['output_chans']
+   OC = layer_spec['intermediate_chans'] if layer_spec['layer_type'] == 'conv-conv' else layer_spec['output_chans']
    P  = 1 if layer_spec['layer_type'] != 'conv-max' else layer_spec['pooling_factor']
    top_loop_iters = int(OH*OW*OC*P*P / ochan_sf)
    # The initiation interval is the latency of the longest stage, plus one for dataflow
@@ -96,8 +97,12 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
    # The pipeline depth is harder to estimate, but it doesn't really matter, because since
    # the total number of iterations is typically very large, it is very small in comparison,
    # so a poor estimation will barely harm the overall estimate accuracy.
-   # I will estimate that the latency is II*3
-   pipeline_depth = II*3
+   # I will estimate that the latency is II*3 for conv and conv-max and II*6 for conv-conv
+   # because there are three extra stages in the layer pipeline.
+   if layer_spec['layer_type'] == 'conv-conv':
+      pipeline_depth = II*6
+   else:
+      pipeline_depth = II*3
    return II*top_loop_iters + pipeline_depth
 
 # To avoid using an ungodly amount of resources, we must put a reasonable limit on how
@@ -136,8 +141,12 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
    # Different implementations for conv layers:
    # - Read Scale factor: Factors of input chans
    # - Output channel scale factor: Factors of output chans
+   # For fused conv-conv layers, the "output channels" is the output channels of the first
+   # of the two layers fused together, which is represented in "intermediate chans"
    ichans_factors = factors(layer_spec['input_chans'])
-   ochans_factors = factors(layer_spec['output_chans'])
+   ochans = layer_spec['intermediate_chans'] if layer_spec['layer_type'] == 'conv-conv' \
+            else layer_spec['output_chans']
+   ochans_factors = factors(ochans)
    # Sort and remove duplicates
    read_scale_factors  = sorted(list(set(ichans_factors)))
    ochan_scale_factors = sorted(list(set(ochans_factors)))
@@ -176,7 +185,7 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
 # Layer type generic function for getting options for a layer
 def GetLayerImplOptions(layer_spec, min_latency, max_latency, one_below_min=False):
    ltype = layer_spec['layer_type']
-   if ltype == 'conv' or ltype == 'conv-max':
+   if ltype == 'conv' or ltype == 'conv-max' or ltype == 'conv-conv':
       options = get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min)
    else:
       raise Exception('Unknown layer type: {}'.format(ltype))
@@ -184,6 +193,49 @@ def GetLayerImplOptions(layer_spec, min_latency, max_latency, one_below_min=Fals
       raise Exception('No layer options for layer {} met latency requirements: min {}, max {}'.format( \
          layer_spec['layer_name'], min_latency, max_latency))
    return options
+
+
+# Generates the params needed for the pragmas of the L2 stages in the conv-conv
+# layer pipelines
+def gen_convconv_params(layer_spec, impl, target_latency):
+   # The three params are all based on the factors of # intermediate channels
+   # in the middle of the two conv layers fused together
+   mchans = layer_spec['intermediate_chans']
+   mchans_factors = sorted(list(set(factors(mchans))))
+   # Ideal L2 Multiplication Loop unroll factor is the smallest factor of mchans
+   # that satisfies this inequality:
+   # Unroll factor >= read_sf * ochan_sf * output_chans / (filter_size^2 * input_chans)
+   read_sf  = impl['read_scale_factor']
+   ochan_sf = impl['ochan_scale_factor']
+   ochans   = layer_spec['output_chans']
+   ichans   = layer_spec['input_chans']
+   fs       = layer_spec['filter_size']
+   min_mul_unroll = read_sf * ochan_sf * ochans / (fs*fs*ichans)
+   l2_mul_unroll = -1
+   for f in mchans_factors:
+      if f >= min_mul_unroll:
+         l2_mul_unroll = f
+         break
+   # Ideal L2 Accumulation unroll factor is the smallest factor of mchans that 
+   # satisfies this inequality:
+   # Unroll factor >= (ochan_sf - 1) * OC * hadd latency / target latency
+   # If ochan_sf = 1 this is irrelevant because this stage doesn't even exist.
+   # Right now the hadd latency is fixed at 3 but this may be configurable in the future.
+   hadd_latency = 3
+   min_acc_unroll = (ochan_sf - 1) * ochans * hadd_latency / target_latency
+   l2_acc_unroll = -1
+   for f in mchans_factors:
+      if f >= min_acc_unroll:
+         l2_acc_unroll = f
+         break
+   # The partition factor of l2_products (which is between the l2_multiply and l2_accum stages)
+   # must be large enough for whichever unroll factor is larger. Since the data is stored in BRAMs
+   # which have two read ports each, we take the larger of the two factors and divide by 2.
+   l2_prod_part = math.ceil(max(l2_mul_unroll, l2_acc_unroll) / 2)
+   impl['l2_mul_unroll'] = l2_mul_unroll
+   impl['l2_acc_unroll'] = l2_acc_unroll
+   impl['l2_products_part_factor'] = l2_prod_part
+
 
 # Generates a conv layer from the template, and generates the different implementations
 # Returns a list of dicts that describe each implementation, including their directory.
@@ -231,6 +283,7 @@ def gen_conv_layer(layer_spec, odir, args):
       dp_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
       accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                        layer_name = layer_spec['layer_name'],
+                                       layer_type = layer_spec['layer_type'],
                                        ochan_sf = ochan_sf,
                                        target_latency=dp_latency, 
                                        input_length=vec_size,
@@ -238,6 +291,9 @@ def gen_conv_layer(layer_spec, odir, args):
 
       impl['accum_functions']      = accum_funcs
       impl['accum_function_calls'] = accum_func_calls
+
+      if layer_type == 'conv-conv':
+         gen_convconv_params(layer_spec, impl, dp_latency)
 
       # Pick a name for the implementation
       impl['name'] = "r{}_o{}".format(read_sf, ochan_sf)
@@ -295,8 +351,15 @@ def gen_layer_impl_list(odir, layer_spec, implementations):
                                 layer_spec['output_width'],  \
                                 layer_spec['output_chans'])
    filter_dims = "{}x{}".format(layer_spec['filter_size'], layer_spec['filter_size'])
-   print("{} ({}): {} -> {} ({} filters), {} implementations, estimated latency range {:,} to {:,} cycles".format( \
-      lname, layer_spec['layer_type'], in_dims, out_dims, filter_dims, len(implementations), min(latencies), max(latencies)))
+   if layer_spec['layer_type'] == 'conv-conv':
+      intermediate_dims = "{}x{}x{}".format(layer_spec['output_height'], \
+                                            layer_spec['output_width'],  \
+                                            layer_spec['intermediate_chans'])
+      dim_str = '{} -> {} -> {}'.format(in_dims, intermediate_dims, out_dims)
+   else:
+      dim_str = '{} -> {}'.format(in_dims, out_dims)
+   print("{} ({}): {} ({} filters), {} implementations, estimated latency range {:,} to {:,} cycles".format( \
+      lname, layer_spec['layer_type'], dim_str, filter_dims, len(implementations), min(latencies), max(latencies)))
 
 
 # Given a path to a layer config file, generates all the files needed
@@ -307,7 +370,7 @@ def generate_layer(layer_spec, odir, args):
    layer_type = layer_spec['layer_type']
    if not os.path.isdir(odir):
       os.makedirs(odir)
-   if layer_type == 'conv' or layer_type == 'conv-max':
+   if layer_type == 'conv' or layer_type == 'conv-max' or layer_type == 'conv-conv':
       implementations = gen_conv_layer(layer_spec, odir, args)
       gen_layer_impl_list(odir, layer_spec, implementations)
    elif layer_type == 'axi_in' or layer_type == 'axi_out':
