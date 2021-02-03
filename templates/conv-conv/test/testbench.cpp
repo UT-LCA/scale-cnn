@@ -61,7 +61,7 @@ int main() {
    for (int ochan = 0; ochan < OUTPUT_CHANS; ochan++) {
       for (int k = 0; k < L1_OUTPUT_CHANS; k++) {
          int idx = k + L1_OUTPUT_CHANS * ochan;
-         l2_filters_2d[ochan][i][j][k] = l2_filters[idx];
+         l2_filters_2d[ochan][k] = l2_filters[idx];
       }
    }
 
@@ -73,7 +73,7 @@ int main() {
    $lname(ifmaps_3d, ofmaps_synth_3d, l1_filters_4d, l2_filters_2d);
    printf("Running golden comparison function...\n");
    fflush(stdout);
-   conv_golden(ifmaps_3d, ofmaps_gold_3d, l1_filters_4d, l2_filters_2d);
+   convconv_golden(ifmaps_3d, ofmaps_gold_3d, l1_filters_4d, l2_filters_2d);
 
    // Copy the 3d output arrays to 1d arrays for the compare function
    data_t ofmaps_synth[NUM_OUTPUTS];

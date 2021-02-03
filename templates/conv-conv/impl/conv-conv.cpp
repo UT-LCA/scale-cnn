@@ -59,7 +59,7 @@ void ${lname}_l2_accum (
 void ${lname}_l2_writeOutputs (
    uint16_t i_int, uint16_t j_int, bool write,
    data_t l2_partial_sums[OUTPUT_CHANS], 
-   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
    static data_t running_sums[OUTPUT_CHANS] = {0};
    data_t quad[4];
@@ -68,7 +68,7 @@ void ${lname}_l2_writeOutputs (
       #pragma HLS pipeline
       data_t val = l2_partial_sums[ochan];
       data_t sum = running_sums[ochan] + val;
-      running_sums[ochan] = write ? 0 : sum;
+      running_sums[ochan] = write ? (data_t)0 : sum;
       quad[ochan % 4] = sum;
       // Every four iterations, write four values to the output all at once
       // We do it this way because the output data is stored in UltraRAMs where
@@ -101,13 +101,14 @@ $accum_functions
 // at the same time), then k = 1 represents output channels 4,5,6,7.
 // NOTE: For the fused conv-conv layers, OCHAN_SCALE_FACTOR pertains to the 
 // "middle channels" of the feature maps between the two layers fused together.
-void ${lname}_get_next_ijk (uint16_t indices[3]) {
+void ${lname}_get_next_ijk (uint16_t indices[3], bool *write) {
    static uint16_t i = 0;
    static uint16_t j = 0;
    static uint16_t k = 0;
    indices[0] = i;
    indices[1] = j;
    indices[2] = k;
+   *write = (k == (L1_OUTPUT_CHANS / OCHAN_SCALE_FACTOR) - 1);
    k++;
    if (k == L1_OUTPUT_CHANS / OCHAN_SCALE_FACTOR) {
       k = 0;
@@ -160,8 +161,9 @@ void $lname (
       data_t intermediate_fmaps[OCHAN_SCALE_FACTOR];
       #pragma HLS array_partition variable=intermediate_fmaps complete
       uint16_t indices[3];
+      bool write;
       #pragma HLS array_partition variable=indices complete
-      ${lname}_get_next_ijk(indices);
+      ${lname}_get_next_ijk(indices, &write);
       uint16_t i_int = indices[0];
       uint16_t j_int = indices[1];
       uint16_t k_int = indices[2];
@@ -187,13 +189,13 @@ void $lname (
 $accum_function_calls
       data_t l2_products[OCHAN_SCALE_FACTOR][OUTPUT_CHANS];
       #pragma HLS array_partition variable=l2_products cyclic factor=$l2_products_part_factor dim=2
-      ${lname}_l2_multiply(intermediate_fmaps, l2_filter_data, l2_products);
+      ${lname}_l2_multiply(intermediate_fmaps, l2_filter_data, l2_products, k_int);
       #if $ochan_scale_factor > 1
       data_t l2_partial_sums[OUTPUT_CHANS];
       ${lname}_l2_accum(l2_products, l2_partial_sums);
-      ${lname}_l2_writeOutputs(i_int, j_int, l2_partial_sums, out_data);
+      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_partial_sums, out_data);
       #else
-      ${lname}_l2_writeOutputs(i_int, j_int, l2_products[0], out_data);
+      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_products[0], out_data);
       #endif
    }
 }

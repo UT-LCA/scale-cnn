@@ -27,7 +27,7 @@ void convconv_golden (
               bool is_padding = (row_coord < 0) || (row_coord >= INPUT_HEIGHT) ||
                                 (col_coord < 0) || (col_coord >= INPUT_WIDTH);
               data_t in_data_elem = is_padding ? (data_t)0 : in_data[row_coord][col_coord][kk];
-              val += (float)in_data_elem * (float)filter_data[k][ii][jj][kk];
+              val += (float)in_data_elem * (float)l1_filter_data[k][ii][jj][kk];
             }
           }
           all_chans_val += val;
