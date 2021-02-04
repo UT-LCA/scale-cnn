@@ -18,6 +18,9 @@ if {$$final_layer} {
 
 # Implement filter data as Block RAMs.
 set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data
+if {$$layer_type == "conv-conv"} {
+   set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data_2
+}
 
 # Pack the input data into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.
@@ -29,8 +32,8 @@ set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data
 set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
 set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$in_data -dim 3
 
-# The output data reshape partitioning factor will really depend on what the next layer wants to do.
-# For right now just set it to to output words per URAM row
+# The output data reshape partitioning factor will really depend on what the next layer wants to do,
+# since the outputs are the inputs to the next layer. So only set this when this is the final layer.
 if {$$final_layer} {
    set_directive_array_reshape -type cyclic -factor $output_words_per_uram_row $$top $$out_data -dim 3
 }
@@ -59,9 +62,17 @@ if {$$READ_SCALE_FACTOR > 1} {
 # We theoretically could do the same for weight_vecs, ifmap_vec, and products as well, but we don't because we want everything after
 # the read stages to be faster than the read stages. To guarantee this, we give the dot product and first accumulation stages
 # twice the read bandwidth of readFilters and readInputs.
+# TODO: This isn't true anymore so could possibly reduce those BRAMs as well.
 # Read scale factor could be odd so need to round up.
 if {$$READ_SCALE_FACTOR > 2} {
-   set_directive_array_partition -type cyclic -factor [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}] -dim 4 $$top $$filter_data
+   set filter_part [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}]
+   set_directive_array_partition -type cyclic -factor $$filter_part -dim 4 $$top $$filter_data
+}
+
+# For fused conv-conv layers we need to partition the L2 filter data s well.
+if {$$layer_type == "conv-conv"} {
+   set l2_filter_part [expr {int(ceil($$l2_mult_unroll / 2.0))}]
+   set_directive_array_partition -type cyclic -factor $$l2_filter_part -dim 2 $$top $$filter_data_2
 }
 
 # readInputs directives

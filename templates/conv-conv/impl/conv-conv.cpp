@@ -75,7 +75,7 @@ void ${lname}_l2_writeOutputs (
       // four words are packed into a single URAM row.
       if (write && (ochan % 4 == 3)) {
          for (int q = 0; q < 4; q++) { // will be automatically unrolled
-            uint16_t ochan_idx = ochan/4 + q;
+            uint16_t ochan_idx = ((ochan/4)*4) + q;
             assert(i_int < OUTPUT_HEIGHT);
             assert(j_int < OUTPUT_WIDTH);
             assert(ochan_idx < OUTPUT_CHANS);
@@ -154,7 +154,8 @@ void $lname (
    //
    // TODO: Figure out if this is fixed in Vitis.
    TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
-      #pragma HLS stable variable=filter_data
+      #pragma HLS stable variable=l1_filter_data
+      #pragma HLS stable variable=l2_filter_data
       data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
