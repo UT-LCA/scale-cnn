@@ -15,14 +15,17 @@ void ${lname}_l2_multiply (
    data_t l2_products[OCHAN_SCALE_FACTOR][OUTPUT_CHANS],
    uint16_t k
 ) {
-   L2_MUL_OUTER: for (uint16_t l2_i = 0; l2_i < OCHAN_SCALE_FACTOR; l2_i++) {
-      L2_MUL_INNER: for (uint16_t l2_o = 0; l2_o < OUTPUT_CHANS; l2_o++) {
-         #pragma HLS pipeline
-         #pragma HLS unroll factor=$l2_mul_unroll
-         uint16_t l2_ichan = k*OCHAN_SCALE_FACTOR + l2_i;
-         assert(l2_ichan < L1_OUTPUT_CHANS);
-         l2_products[l2_i][l2_o] = intermediate_fmaps[l2_i] * l2_filter_data[l2_o][l2_ichan];
-      }
+   // Ideally this would be two separate loops but for some reason the tool isn't able to
+   // flatten them. So manually flatten it in the code. The divide and modulo operations will
+   // be cheap because for the conv-conv layers in Tiny Darknet, OUTPUT_CHANS is always a power of 2.
+   L2_MUL_INNER: for (uint16_t i = 0; i < OUTPUT_CHANS * OCHAN_SCALE_FACTOR; i++) {
+      #pragma HLS pipeline
+      #pragma HLS unroll factor=$l2_mul_unroll
+      uint16_t l2_i = i / OUTPUT_CHANS;
+      uint16_t l2_o = i % OUTPUT_CHANS;
+      uint16_t l2_ichan = k*OCHAN_SCALE_FACTOR + l2_i;
+      assert(l2_ichan < L1_OUTPUT_CHANS);
+      l2_products[l2_i][l2_o] = intermediate_fmaps[l2_i] * l2_filter_data[l2_o][l2_ichan];
    }
 }
 
@@ -34,21 +37,28 @@ void ${lname}_l2_accum (
    data_t l2_partial_sums[OUTPUT_CHANS]
 ) {
    L2_ACC_1: for (uint16_t group = 0; group < OUTPUT_CHANS/$l2_acc_unroll; group++) {
+      // Need to explicitly tell tool to not pipeline these loops
+      #pragma HLS pipeline off
       data_t sums[$l2_acc_unroll] = {0};
       #pragma HLS array_partition variable=sums complete
       L2_ACC_2: for (uint16_t i = 0; i < OCHAN_SCALE_FACTOR; i++) {
+         #pragma HLS pipeline off
          L2_ACC_3: for (uint8_t s = 0; s < $l2_acc_unroll; s++) {
             // Unroll this inner-most loop, but do not pipeline. Running sum accumulations
             // cannot be pipelined.
-            #pragma HLS unroll
+            #pragma HLS pipeline off
+            #pragma HLS unroll factor=$l2_acc_unroll
             uint16_t out_idx = group*$l2_acc_unroll + s;
-            assert(oud_idx < OUTPUT_CHANS);
+            assert(out_idx < OUTPUT_CHANS);
             sums[s] += l2_products[i][out_idx];
          }
       }
       for (uint8_t s = 0; s < $l2_acc_unroll; s++) {
+         // This as well should be fully unrolled so that all writes occur in parallel.
+         #pragma HLS pipeline off
+         #pragma HLS unroll factor=$l2_acc_unroll
          uint16_t out_idx = group*$l2_acc_unroll + s;
-         assert(oud_idx < OUTPUT_CHANS);
+         assert(out_idx < OUTPUT_CHANS);
          l2_partial_sums[out_idx] = sums[s];
       }
    }
@@ -62,6 +72,7 @@ void ${lname}_l2_writeOutputs (
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
    static data_t running_sums[OUTPUT_CHANS] = {0};
+   #pragma HLS bind_storage variable=running_sums type=RAM_T2P impl=bram
    data_t quad[4];
    #pragma HLS array_partition variable=quad complete
    for(uint16_t ochan = 0; ochan < OUTPUT_CHANS; ochan++) {
@@ -189,10 +200,13 @@ void $lname (
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
 $accum_function_calls
       data_t l2_products[OCHAN_SCALE_FACTOR][OUTPUT_CHANS];
+      #pragma HLS bind_storage variable=l2_products type=RAM_T2P impl=bram
       #pragma HLS array_partition variable=l2_products cyclic factor=$l2_products_part_factor dim=2
       ${lname}_l2_multiply(intermediate_fmaps, l2_filter_data, l2_products, k_int);
       #if $ochan_scale_factor > 1
       data_t l2_partial_sums[OUTPUT_CHANS];
+      #pragma HLS bind_storage variable=l2_partial_sums type=RAM_T2P impl=bram
+      #pragma HLS array_partition variable=l2_partial_sums cyclic factor=$l2_products_part_factor
       ${lname}_l2_accum(l2_products, l2_partial_sums);
       ${lname}_l2_writeOutputs(i_int, j_int, write, l2_partial_sums, out_data);
       #else

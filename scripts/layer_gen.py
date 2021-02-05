@@ -60,8 +60,7 @@ def get_axi_io_layer_files(name, d):
 def factors(n):
    x = list(set(reduce(list.__add__, 
                ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0))))
-   x.sort()
-   return x
+   return sorted(list(set(x)))
 
 
 # If number of channels is a multiple of 4, choose 4.
@@ -76,24 +75,35 @@ def GetUramWordsPerRow(chans):
       raise Exception('Invalid # channels: {}'.format(chans))
 
 # Estimates the total execution time of a convolution layer
-# given its dimensions and scale factors
+# given its dimensions and scale factors.
+# Also returns the expected II of the intra-layer pipeline.
 def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
+
    # Total latency = II * top loop iterations + pipeline depth
    # The number of top loop iterations is:
    #  O_H * O_W * O_CHANS / OCHAN_SF for ordinary conv layers
    #  O_H * O_W * O_CHANS * (POOLING_FACTOR^2) / OCHAN_SF for fused conv-max layers
-   #  O_H * O_W * INTERMEDIATE_CHANS / OCHAN_SF for fused conv-conv conv layers
+   #  O_H * O_W * INTERMEDIATE_CHANS / OCHAN_SF for fused conv-conv layers
    OH = layer_spec['output_height']
    OW = layer_spec['output_width']
    OC = layer_spec['intermediate_chans'] if layer_spec['layer_type'] == 'conv-conv' else layer_spec['output_chans']
    P  = 1 if layer_spec['layer_type'] != 'conv-max' else layer_spec['pooling_factor']
    top_loop_iters = int(OH*OW*OC*P*P / ochan_sf)
+
    # The initiation interval is the latency of the longest stage, plus one for dataflow
    # pipeline overhead. If everything synthesizes correctly, the longest stage should 
    # always be dot_product which should take exactly INPUT_CHANS*(FILTER_SIZE^2) / read_sf + 3 cycles.
    IC = layer_spec['input_chans']
    FS = layer_spec['filter_size']
-   II = int(FS*FS*IC / read_sf) + 3 + 1
+   II = int(FS*FS*IC / read_sf) + 3 + 1 # +1 for dataflow overhead
+   if layer_spec['layer_type'] == 'conv-conv':
+      # The exception to this is with conv-conv layers, where for certain design points,
+      # the L2 accumulation stage is the bottleneck even when we fully unroll the OUTPUT_CHANS
+      # dimension. The latency of this stage in this case is (hadd latency)*ochan_sf + 3
+      hadd_latency = 3 # fixed for right now
+      l2_accum_min_lat = hadd_latency*ochan_sf + 3
+      II = max(II, l2_accum_min_lat + 1)
+
    # The pipeline depth is harder to estimate, but it doesn't really matter, because since
    # the total number of iterations is typically very large, it is very small in comparison,
    # so a poor estimation will barely harm the overall estimate accuracy.
@@ -103,7 +113,10 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
       pipeline_depth = II*6
    else:
       pipeline_depth = II*3
-   return II*top_loop_iters + pipeline_depth
+
+   total_latency = II*top_loop_iters + pipeline_depth
+   return total_latency, II
+
 
 # To avoid using an ungodly amount of resources, we must put a reasonable limit on how
 # much scaling we can allow in a single layer.
@@ -115,7 +128,7 @@ MAX_TOTAL_SCALE_FACTOR = 200
 # stages to be even faster than this (in cycles).
 # Any values faster than this will simply make it infeasible to create accumulation
 # stages that do not bottleneck the rest of the layer's pipeline.
-MIN_TARGET_LATENCY = 10
+MIN_TARGET_LAYER_II = 10
 
 # Put a maximum on a single scale factor at 64.
 # This is somewhat arbitrary but the point is to make sure that we don't consider
@@ -135,7 +148,7 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
    # is faster than the fastest possible implementation of another layer. In this case, we would
    # return 0 options for the faster layer. If this happens, then make r1_o1 the only option to
    # consider for this layer and don't consider any other points.
-   r1_o1_latency = GetConvEstimatedLatency(layer_spec, 1, 1)
+   r1_o1_latency, r1_o1_ii = GetConvEstimatedLatency(layer_spec, 1, 1)
    if r1_o1_latency < min_latency:
       return [(1, 1, r1_o1_latency)]
    # Different implementations for conv layers:
@@ -143,22 +156,14 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
    # - Output channel scale factor: Factors of output chans
    # For fused conv-conv layers, the "output channels" is the output channels of the first
    # of the two layers fused together, which is represented in "intermediate chans"
-   ichans_factors = factors(layer_spec['input_chans'])
+   read_scale_factors = factors(layer_spec['input_chans'])
    ochans = layer_spec['intermediate_chans'] if layer_spec['layer_type'] == 'conv-conv' \
             else layer_spec['output_chans']
-   ochans_factors = factors(ochans)
-   # Sort and remove duplicates
-   read_scale_factors  = sorted(list(set(ichans_factors)))
-   ochan_scale_factors = sorted(list(set(ochans_factors)))
+   ochan_scale_factors = factors(ochans)
    options = []
    too_fast_options = []
    for read_sf in read_scale_factors:
       if read_sf > MAX_SCALE_FACTOR:
-         continue
-      # Make sure minimum target latency requirement is satisfied.
-      vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
-      target_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
-      if target_latency < MIN_TARGET_LATENCY:
          continue
       for ochan_sf in ochan_scale_factors:
          if ochan_sf > MAX_SCALE_FACTOR:
@@ -168,8 +173,11 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
          if total_scale > MAX_TOTAL_SCALE_FACTOR:
             continue
          # Estimate the latency given the scale factors.
-         est_lat = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
-         opt = (read_sf, ochan_sf, est_lat)
+         est_lat, est_ii = GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf)
+         opt = (read_sf, ochan_sf, est_lat, est_ii)
+         # Make sure minimum target layer II requirement is satisfied.
+         if est_ii < MIN_TARGET_LAYER_II:
+            continue
          if max_latency != -1 and est_lat > max_latency:
             continue
          elif min_latency != -1 and est_lat < min_latency:
@@ -179,7 +187,7 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
 
    if one_below_min and len(too_fast_options) > 0:
       slowest = max(too_fast_options, key=lambda p: p[2])
-      options.insert(0, slowest)
+      options.append(slowest)
    return options
 
 # Layer type generic function for getting options for a layer
@@ -198,11 +206,9 @@ def GetLayerImplOptions(layer_spec, min_latency, max_latency, one_below_min=Fals
 # Generates the params needed for the pragmas of the L2 stages in the conv-conv
 # layer pipelines
 def gen_convconv_params(layer_spec, impl, target_latency):
-   # The three params are all based on the factors of # intermediate channels
-   # in the middle of the two conv layers fused together
-   mchans = layer_spec['intermediate_chans']
-   mchans_factors = sorted(list(set(factors(mchans))))
-   # Ideal L2 Multiplication Loop unroll factor is the smallest factor of mchans
+   # The three params are all based on the factors of # output channels
+   ochans_factors = factors(layer_spec['output_chans'])
+   # Ideal L2 Multiplication Loop unroll factor is the smallest factor of ochans
    # that satisfies this inequality:
    # Unroll factor >= read_sf * ochan_sf * output_chans / (filter_size^2 * input_chans)
    read_sf  = impl['read_scale_factor']
@@ -212,19 +218,19 @@ def gen_convconv_params(layer_spec, impl, target_latency):
    fs       = layer_spec['filter_size']
    min_mul_unroll = read_sf * ochan_sf * ochans / (fs*fs*ichans)
    l2_mul_unroll = -1
-   for f in mchans_factors:
+   for f in ochans_factors:
       if f >= min_mul_unroll:
          l2_mul_unroll = f
          break
-   # Ideal L2 Accumulation unroll factor is the smallest factor of mchans that 
+   # Ideal L2 Accumulation unroll factor is the smallest factor of ochans that 
    # satisfies this inequality:
-   # Unroll factor >= (ochan_sf - 1) * OC * hadd latency / target latency
+   # Unroll factor >= ochan_sf * OC * hadd latency / target latency
    # If ochan_sf = 1 this is irrelevant because this stage doesn't even exist.
    # Right now the hadd latency is fixed at 3 but this may be configurable in the future.
    hadd_latency = 3
-   min_acc_unroll = (ochan_sf - 1) * ochans * hadd_latency / target_latency
+   min_acc_unroll = ochan_sf * ochans * hadd_latency / target_latency
    l2_acc_unroll = -1
-   for f in mchans_factors:
+   for f in ochans_factors:
       if f >= min_acc_unroll:
          l2_acc_unroll = f
          break
@@ -260,12 +266,15 @@ def gen_conv_layer(layer_spec, odir, args):
    impl_files  = get_conv_layer_impl_files(layer_name, layer_type)
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    
+   # Misc params
+   vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
+
    # Generate all of the possible conv implementations
    min_latency = args.min_ii
    max_latency = args.max_ii
    impl_options = GetLayerImplOptions(layer_spec, min_latency, max_latency, True)
    layer_impls = []
-   for read_sf, ochan_sf, est_lat in impl_options:
+   for read_sf, ochan_sf, est_lat, est_ii in impl_options:
       impl = {}
       impl['read_scale_factor'] = read_sf
       impl['ochan_scale_factor'] = ochan_sf
@@ -279,13 +288,11 @@ def gen_conv_layer(layer_spec, odir, args):
       # is expected to be the critical path.
       # Read bandwidth is twice the read scale factor because each BRAM has 
       # two separate read ports.
-      vec_size = (layer_spec['filter_size'] ** 2) * layer_spec['input_chans']
-      dp_latency = math.ceil(vec_size / read_sf) + 3 # Three-cycle pipeline with II of 1
       accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
                                        layer_name = layer_spec['layer_name'],
                                        layer_type = layer_spec['layer_type'],
                                        ochan_sf = ochan_sf,
-                                       target_latency=dp_latency, 
+                                       target_latency=est_ii, 
                                        input_length=vec_size,
                                        read_bw = read_sf*2 )
 
@@ -293,7 +300,7 @@ def gen_conv_layer(layer_spec, odir, args):
       impl['accum_function_calls'] = accum_func_calls
 
       if layer_type == 'conv-conv':
-         gen_convconv_params(layer_spec, impl, dp_latency)
+         gen_convconv_params(layer_spec, impl, est_ii)
 
       # Pick a name for the implementation
       impl['name'] = "r{}_o{}".format(read_sf, ochan_sf)

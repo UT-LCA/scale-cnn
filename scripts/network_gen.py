@@ -101,7 +101,7 @@ def gen_network_layers(network_spec, odir, args):
    max_min_latency = -1
    for layer in layers:
       options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii, False)
-      min_l = min([l for (r, o, l) in options])
+      min_l = min([l for (r, o, l, ii) in options])
       if min_l > max_min_latency:
          max_min_latency = min_l
 
