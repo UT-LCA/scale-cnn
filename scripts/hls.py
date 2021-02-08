@@ -35,26 +35,6 @@ def synthesize_layer(layer_name, impl_path):
    print("Done.", flush=True)
 
 
-# Also calculate the memory read bandwidth utilization of the layer implementation
-# Memory read bandwidth utilization is calculated as follows:
-# TD = Total amount of data that needs to be read
-# CR = Total amount of data that can be read in one clock cycle
-# TC = Total cycles the function takes to complete
-# Memory read bandwidth utilization = (TD / CR) / TC
-# Total data can be calculated as:
-# TD = # input data to read per output element * # output elements
-#    = (filter_size^2 * input_chans) * (output_height * output_width * output_chans) 
-#def CalcMemReadBandwidthUtil(layer_spec, implementation, total_cycles):
-#   total_words_to_read = (layer_spec['filter_size'] ** 2) * \
-#                          layer_spec['input_chans']   * \
-#                          layer_spec['output_height'] * \
-#                          layer_spec['output_width']  * \
-#                          layer_spec['output_chans']
-#   # Right now, the memory read bandwidth is just the scale factor.
-#   mem_read_bandwidth = implementation['read_scale_factor']
-#   return (total_words_to_read / mem_read_bandwidth) / total_cycles
-
-
 # Calculate the "true" latency of the function
 # This is necessary because right now, the function only iterates on a very small
 # subset of the data to reduce synthesis times. Since the top loop is a dataflow
@@ -103,18 +83,6 @@ def analyze_reports(layer_spec, impl, args):
    dataflow_rpt_filepath = os.path.join(report_dir, 'dataflow_in_loop_TOP_LOOP_csynth.rpt')
    stage_latencies, dataflow_ii = hls_reports.GetDataflowStageLatencies(dataflow_rpt_filepath)
 
-   # Calculate minimum number of UltraRAMs needed for the layer implementation.
-   # This is needed by the cost function.
-   # Each UltraRAM in the Ultrascale+ architecture is 4K x 72 and with array reshaping we 
-   # can pack 4 16-bit half-precision floats in each row. Unless there are just 3 channels in which
-   # case we only pack 3 per row.
-   # Therefore minimum URAMs = ceil(# elements / (4 * 4096)  (for inputs and outputs)
-   ichans_padded = math.ceil(layer_spec['input_chans']  / 4) * 4
-   ochans_padded = math.ceil(layer_spec['output_chans'] / 4) * 4
-   num_inputs  = layer_spec['input_width']  * layer_spec['input_height']  * ichans_padded
-   num_outputs = layer_spec['output_width'] * layer_spec['output_height'] * ochans_padded
-   min_urams   = math.ceil(num_inputs / (4 * 4096)) + math.ceil(num_outputs / (4 * 4096))
-
    top_level_rpt_filepath = os.path.join(report_dir, '{}_top_csynth.xml'.format(layer_name))
    top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
    top_latency_raw   = hls_reports.GetWorstCaseLatency(top_level_xml)
@@ -122,14 +90,14 @@ def analyze_reports(layer_spec, impl, args):
       top_latency_true  = CalcTrueLatency(layer_spec, impl, top_latency_raw, dataflow_ii)
    else:
       top_latency_true = top_latency_raw
-   top_cost_info = hls_reports.GetCostInfo(top_level_xml, args.cost_function, min_urams)
+
+   top_cost_info = hls_reports.GetCostInfo(layer_spec, top_level_xml, args.cost_function)
 
    report_info = {}
    report_info['latency']      = top_latency_raw
    report_info['true_latency'] = top_latency_true
    report_info['cost_info']    = top_cost_info
    report_info['subfunctions'] = stage_latencies
-   #report_info['mbru']         = CalcMemReadBandwidthUtil(layer_spec, impl, top_latency)
    return report_info
 
 

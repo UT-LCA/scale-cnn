@@ -2,15 +2,20 @@
    "name": "tiny_darknet",
    "shorthand_name": "td",
    "fpga_part": "xcvu3p-ffvc1517-1-e",
-   "default_params": {
+   "a": {
       "stride": 1,
       "pad": 1,
       "filter_size": 3
    },
+   "b": {
+      "stride": 1,
+      "pad": 0,
+      "filter_size": 1
+   },
    "layers": [
-      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3, "pooling_factor": 2},
-      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16, "pooling_factor": 2},
-      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 32},
-      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 16, "output_height": 56, "output_width": 56, "output_chans": 128}
+      {"layer_type": "conv-max", "input_height": 224, "input_width": 224, "input_chans": 3, "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv-max", "input_height": 112, "input_width": 112, "input_chans": 16, "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 32, "inherit": "b"},
+      {"layer_type": "conv", "input_height": 56, "input_width": 56, "input_chans": 16, "inherit": "a", "output_height": 56, "output_width": 56, "output_chans": 128}
    ]
 }

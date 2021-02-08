@@ -3,6 +3,7 @@
 import os
 import string
 import json
+import math
 
 # Takes in a path to a JSON file and reads it then returns the object or list
 def read_json(json_path):
@@ -64,3 +65,20 @@ def pareto_sort(points, pareto_superior):
 
    return (pareto_points, non_pareto_points)
             
+
+# Calculates the number of URAM blocks required for either the input or output of a
+# certain layer in the network, specified by argument d ("input" or "output")
+def calc_num_urams(layer_spec, d):
+   h = layer_spec['%s_height' % d]
+   w = layer_spec['%s_width'  % d]
+   c = layer_spec['%s_chans'  % d]
+   # Round up chans to nearest multiple of 4
+   c = 4*math.ceil(c/4)
+   # There are a total of h*w*c 16-bit words to store, and we can fit four in a single
+   # 72-bit URAM row. Calculate the number of rows we need
+   uram_rows = h*w*c / 4
+   # There are 4096 rows per URAM block.
+   # We multiply by 2 because of the double-buffering that is required between stages
+   # of a dataflow pipeline.
+   return math.ceil(uram_rows / 4096) * 2
+

@@ -10,11 +10,10 @@ import math
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
    for i, layer in enumerate(layers):
-      # Copy default params to each layer (this is for brevity in the JSON)
-      if 'default_params' in network_spec:
-         for k in network_spec['default_params'].keys():
-            if k not in layer:
-               layer[k] = network_spec['default_params'][k]
+      # Copy inherited params (this is for JSON brevity)
+      if 'inherit' in layer:
+         layer.update(network_spec[layer['inherit']]) 
+         layer.pop('inherit', None)
       # Fill in the output dimensions for all layers except the last
       if i < len(layers) - 1:
          layer['output_height'] = layers[i+1]['input_height']
@@ -27,21 +26,6 @@ def complete_layer_specs(network_spec):
       # TODO: This will need to change once implementing multiple FPGAs.
       layer['fpga_part'] = network_spec['fpga_part']
 
-# Calculates the number of URAM blocks required for either the input or output of a
-# certain layer in the network, specified by argument d ("input" or "output")
-def calc_num_urams(layer_spec, d):
-   h = layer_spec['%s_height' % d]
-   w = layer_spec['%s_width'  % d]
-   c = layer_spec['%s_chans'  % d]
-   # Round up chans to nearest multiple of 4
-   c = 4*math.ceil(c/4)
-   # There are a total of h*w*c 16-bit words to store, and we can fit four in a single
-   # 72-bit URAM row. Calculate the number of rows we need
-   uram_rows = h*w*c / 4
-   # There are 4096 rows per URAM block.
-   # We multiply by 2 because of the double-buffering that is required between stages
-   # of a dataflow pipeline.
-   return math.ceil(uram_rows / 4096) * 2
 
 # This function is called before layer implementations for a network are generated.
 # It checks that the specified FPGA has enough UltraRAMs on it to hold all of the 
@@ -64,7 +48,7 @@ def check_uram_requirements(network_spec):
    for i in range(num_layers+1):
       if i == num_layers or network_spec['layers'][i]['layer_type'] == 'fpga-sep':
          # Add the output URAMs of the last layer.
-         urams_utilized += calc_num_urams(network_spec['layers'][i-1], "output")
+         urams_utilized += utils.calc_num_urams(network_spec['layers'][i-1], "output")
          # Verify there are enough URAMs on this FPGA.
          part = fpgas[fpga_idx]
          urams_available = fpga_info[part]['URAM']
@@ -80,7 +64,7 @@ def check_uram_requirements(network_spec):
          urams_utilized = 0
       else:
          layer = network_spec['layers'][i]
-         urams_utilized += calc_num_urams(layer, "input")
+         urams_utilized += utils.calc_num_urams(layer, "input")
 
    return enough_urams
 
