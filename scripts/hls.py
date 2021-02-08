@@ -61,8 +61,10 @@ def synthesize_layer(layer_name, impl_path):
 # pipeline, we can easily calculate the true latency by adding the number of "skipped"
 # iterations and multiplying it by the dataflow pipeline's II.
 def CalcTrueLatency(layer_spec, impl_spec, report_latency, dataflow_ii):
+   ltype = layer_spec['layer_type']
+   ochans = layer_spec['intermediate_chans' if ltype == 'conv-conv' else 'output_chans']
    true_iters  = layer_spec['output_height'] * layer_spec['output_width'] * \
-                 layer_spec['output_chans'] / impl_spec['ochan_scale_factor']
+                 ochans / impl_spec['ochan_scale_factor']
    if layer_spec['layer_type'] == 'conv-max':
       true_iters = true_iters * (layer_spec['pooling_factor'] ** 2)
    synth_iters = 10

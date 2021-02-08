@@ -72,7 +72,9 @@ if {$$READ_SCALE_FACTOR > 2} {
 # For fused conv-conv layers we need to partition the L2 filter data s well.
 if {$$layer_type == "conv-conv"} {
    set l2_filter_part [expr {int(ceil($$l2_mult_unroll / 2.0))}]
-   set_directive_array_partition -type cyclic -factor $$l2_filter_part -dim 2 $$top $$filter_data_2
+   if {$$l2_filter_part > 1} {
+      set_directive_array_partition -type cyclic -factor $$l2_filter_part -dim 1 $$top $$filter_data_2
+   }
 }
 
 # readInputs directives

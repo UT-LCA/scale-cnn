@@ -99,10 +99,14 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
    if layer_spec['layer_type'] == 'conv-conv':
       # The exception to this is with conv-conv layers, where for certain design points,
       # the L2 accumulation stage is the bottleneck even when we fully unroll the OUTPUT_CHANS
-      # dimension. The latency of this stage in this case is (hadd latency)*ochan_sf + 3
+      # dimension. The latency of this stage in this case is (hadd latency)*ochan_sf + 1
       hadd_latency = 3 # fixed for right now
-      l2_accum_min_lat = hadd_latency*ochan_sf + 3
-      II = max(II, l2_accum_min_lat + 1)
+      l2_accum_min_lat = hadd_latency*ochan_sf + 1
+      # And for some other extreme cases, the writeOutputs can be the longest stage.
+      # This stage takes output chans + (output chans / 4) + 1 cycles.
+      # It might be possible to unroll the loop with factor 2 to make this faster though.
+      l2_write_min_lat = math.ceil(layer_spec['output_chans'] * 1.25) + 1
+      II = max(II, l2_accum_min_lat + 1, l2_write_min_lat + 1)
 
    # The pipeline depth is harder to estimate, but it doesn't really matter, because since
    # the total number of iterations is typically very large, it is very small in comparison,
@@ -238,6 +242,12 @@ def gen_convconv_params(layer_spec, impl, target_latency):
    # must be large enough for whichever unroll factor is larger. Since the data is stored in BRAMs
    # which have two read ports each, we take the larger of the two factors and divide by 2.
    l2_prod_part = math.ceil(max(l2_mul_unroll, l2_acc_unroll) / 2)
+   # The pipelining doesn't work correctly unless both sides of l2_products are unrolled at least
+   # by that same factor. For example if l2_products is partitioned with factor 8 and l2_multiply
+   # is unrolled with factor 4, the tools aren't able to get an II of 1. So both unroll factors
+   # must at least be equal to the l2_products partitioning factor.
+   l2_mul_unroll = max(l2_mul_unroll, l2_prod_part)
+   l2_acc_unroll = max(l2_acc_unroll, l2_prod_part)
    impl['l2_mul_unroll'] = l2_mul_unroll
    impl['l2_acc_unroll'] = l2_acc_unroll
    impl['l2_products_part_factor'] = l2_prod_part

@@ -18,13 +18,15 @@ void ${lname}_l2_multiply (
    // Ideally this would be two separate loops but for some reason the tool isn't able to
    // flatten them. So manually flatten it in the code. The divide and modulo operations will
    // be cheap because for the conv-conv layers in Tiny Darknet, OUTPUT_CHANS is always a power of 2.
-   L2_MUL_INNER: for (uint16_t i = 0; i < OUTPUT_CHANS * OCHAN_SCALE_FACTOR; i++) {
+   L2_MUL: for (uint16_t i = 0; i < OUTPUT_CHANS * OCHAN_SCALE_FACTOR; i++) {
       #pragma HLS pipeline
       #pragma HLS unroll factor=$l2_mul_unroll
       uint16_t l2_i = i / OUTPUT_CHANS;
       uint16_t l2_o = i % OUTPUT_CHANS;
       uint16_t l2_ichan = k*OCHAN_SCALE_FACTOR + l2_i;
       assert(l2_ichan < L1_OUTPUT_CHANS);
+      assert(l2_i < OCHAN_SCALE_FACTOR);
+      assert(l2_o < OUTPUT_CHANS);
       l2_products[l2_i][l2_o] = intermediate_fmaps[l2_i] * l2_filter_data[l2_o][l2_ichan];
    }
 }
