@@ -11,15 +11,15 @@
 # Implement ifmaps and ofmaps as UltraRAMs
 # RAM_S2P means 2-port RAM where one only does write operations and the other
 # only does read operations.
-set_directive_bind_storage -type RAM_S2P -impl uram $$top $$in_data
+set_directive_bind_storage -type ram_s2p -impl uram $$top $$in_data
 if {$$final_layer} {
-   set_directive_bind_storage -type RAM_S2P -impl uram $$top $$out_data
+   set_directive_bind_storage -type ram_s2p -impl uram $$top $$out_data
 }
 
 # Implement filter data as Block RAMs.
-set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data
+set_directive_bind_storage -type ram_2p -impl bram $$top $$filter_data
 if {$$layer_type == "conv-conv"} {
-   set_directive_bind_storage -type RAM_2P -impl bram $$top $$filter_data_2
+   set_directive_bind_storage -type ram_2p -impl bram $$top $$filter_data_2
 }
 
 # Pack the input data into the URAMs so we get multiple words per URAM row.

@@ -1,0 +1,14 @@
+{
+   "name": "ccfused_net",
+   "shorthand_name": "ccf",
+   "fpga_part": "xcku11p-ffva1156-2-e",
+   "a": {
+      "stride": 1,
+      "pad": 1,
+      "filter_size": 3
+   },
+   "layers": [
+      {"layer_type": "conv-conv", "input_height": 56, "input_width": 56, "input_chans": 16, 
+        "inherit": "a", "output_height": 56, "output_width": 56, "output_chans": 16, "intermediate_chans": 128}
+   ]
+}

@@ -13,6 +13,8 @@ void $name(
    hls::stream<in_pkt>  &stream_in,
    hls::stream<out_pkt> &stream_out
 ) {
+   #pragma HLS INTERFACE axis port=stream_in
+   #pragma HLS INTERFACE axis port=stream_out
    #pragma HLS INTERFACE ap_ctrl_chain port=return
 
    // Feature map memories (UltraRAMs)

@@ -1,0 +1,31 @@
+{
+   "name": "td_fused",
+   "shorthand_name": "tdf",
+   "fpga_part": "xcvu3p-ffvc1517-3-e",
+   "a": {
+      "stride": 1,
+      "pad": 1,
+      "filter_size": 3
+   },
+   "b": {
+      "stride": 1,
+      "pad": 0,
+      "filter_size": 1
+   },
+   "layers": [
+      {"layer_type": "conv-max" , "input_height": 224, "input_width": 224, "input_chans": 3,   "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv-max" , "input_height": 112, "input_width": 112, "input_chans": 16,  "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv"     , "input_height":  56, "input_width":  56, "input_chans": 32,  "inherit": "b"},
+      {"layer_type": "conv-conv", "input_height":  56, "input_width":  56, "input_chans": 16,  "inherit": "a", "intermediate_chans": 128}, 
+      {"layer_type": "conv-max" , "input_height":  56, "input_width":  56, "input_chans": 16,  "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv"     , "input_height":  28, "input_width":  28, "input_chans": 128, "inherit": "b"}, 
+      {"layer_type": "conv-conv", "input_height":  28, "input_width":  28, "input_chans": 32,  "inherit": "a", "intermediate_chans": 256}, 
+      {"layer_type": "conv-max" , "input_height":  28, "input_width":  28, "input_chans": 32,  "pooling_factor": 2, "inherit": "a"},
+      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 256, "inherit": "b"}, 
+      {"layer_type": "conv-conv", "input_height":  14, "input_width":  14, "input_chans": 64,  "inherit": "a", "intermediate_chans": 512},
+      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 64,  "inherit": "a"},
+      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 512, "inherit": "b"}, 
+      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 128, "inherit": "b", 
+                                  "output_height": 14, "output_width": 14, "output_chans": 1000}
+   ]
+}

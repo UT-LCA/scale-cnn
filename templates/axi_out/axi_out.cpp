@@ -31,6 +31,7 @@ void ${name}_axi_out (
 
 void ${name}_axi_out_top (data_t val, hls::stream<out_pkt> &stream_out) {
    // Wrapper function to test function synthesis in isolation.
+   #pragma HLS INTERFACE axis port=stream_out
    data_t fmaps[HEIGHT][WIDTH][CHANS_P];
    fmaps[0][0][0] = val;
    ${name}_axi_out(fmaps, stream_out);

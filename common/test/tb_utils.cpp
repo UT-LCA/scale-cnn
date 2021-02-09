@@ -1,6 +1,7 @@
 // tb_utils.cpp
 // Common utilities for layer testbenches
 #include "global_defines.h"
+#include <math.h>
 
 // Initialize input data to random values between 0 and 1
 void gen_random_inputs(data_t *ifmaps, int len) {
@@ -32,8 +33,8 @@ void gen_random_filters(data_t *filters, int len) {
 //
 // The current bounds I am using can be seen in the constant definitions below.
 int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int num_els, int ichans) {
-   const float HIGH_ERROR_ABS = 0.2; 
-   const float HIGH_ERROR_PCT = 0.2;
+   const float HIGH_ERROR_ABS = fmax(0.2, 0.04 * ichans / 16.0); 
+   const float HIGH_ERROR_PCT = fmax(0.2, 0.04 * ichans / 16.0);
    // The acceptable error is higher with more and more accumulations necessary to compute one output element.
    // The number of accumulations scales with the number of input channels.
    const float LOW_ERROR_ABS  = 0.01 * ichans / 16.0;
