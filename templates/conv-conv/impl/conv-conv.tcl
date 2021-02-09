@@ -24,7 +24,6 @@ set in_data in_data
 set out_data out_data
 set filter_data l1_filter_data
 set filter_data_2 l2_filter_data
-set l2_mult_unroll $l2_mul_unroll
 set layer_type "conv-conv"
 set final_layer 1
 

@@ -130,6 +130,7 @@ def get_network_substitutions(network_spec, layer_impls):
    layer_dicts  = ''
    for i, l in enumerate(layers):
       name = l['layer_name']
+      lt = l['layer_type']
       ih = l['input_height']
       iw = l['input_width']
       ic = l['input_chans']
@@ -138,21 +139,31 @@ def get_network_substitutions(network_spec, layer_impls):
       ow = l['output_width']
       oc = l['output_chans']
       fs = l['filter_size']
+      if 'intermediate_chans' in l:
+         mc = l['intermediate_chans']
       last = (i == len(layers) - 1)
       ifmaps  = '{}_fmaps'.format(name)
       ofmaps  = 'final_fmaps' if last else '{}_fmaps'.format(layers[i+1]['layer_name'])
       filters = '{}_filters'.format(name)
+      l2_filters = '{}_l2_filters'.format(name)
       in_dims   = '[{}][{}][{}]'.format(ih, iw, icp)
       out_dims  = '[{}][{}][{}]'.format(oh, ow, oc)
-      filt_dims = '[{}][{}][{}][{}]'.format(oc, fs, fs, ic)
+      filt_dim1 = mc if lt == 'conv-conv' else oc
+      filt_dims = '[{}][{}][{}][{}]'.format(filt_dim1, fs, fs, ic)
       fmap_decls   += s + 'data_t {}{};\n'.format(ifmaps, in_dims)
       filter_decls += s + 'data_t {}{};\n'.format(filters, filt_dims)
-      layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters)
-      # Header declaration for each layer
-      layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
-         .format(name, in_dims, out_dims, filt_dims)
+      if lt == 'conv-conv':
+         l2_filt_dims = '[{}][{}]'.format(oc, mc)
+         filter_decls += s + 'data_t {}{};\n'.format(l2_filters, l2_filt_dims)
+         layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters)
+         layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t l1_filter_data{},\n data_t l2_filter_data{});\n\n'\
+            .format(name, in_dims, out_dims, filt_dims, l2_filt_dims)
+      else:
+         layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters)
+         layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
+            .format(name, in_dims, out_dims, filt_dims)
       # TCL declaration of path to layer implementation
-      layer_dicts += s + '[dict create name {} path {}] \\\n'.format(name, layer_impls[name])
+      layer_dicts += s + '[dict create name {} path {} type {}] \\\n'.format(name, layer_impls[name], lt)
 
    # Final feature maps
    fmap_decls += s + 'data_t final_fmaps[{}][{}][{}];\n'.format( \
@@ -335,6 +346,7 @@ def select_network_options(network_options, num_options):
       selected_options.append(min(c, key=lambda p: p['cost']))
    selected_options.sort(key=lambda p: p['cost'])
    return selected_options
+
 
 # Analyzes the synthesized layer results and outputs a list of intelligently-chosen
 # design points of different layer implementations to get overall network implementations
