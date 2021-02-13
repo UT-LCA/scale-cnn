@@ -55,7 +55,7 @@ if {$$OCHAN_SCALE_FACTOR > 1} {
 if {$$READ_SCALE_FACTOR > 1} {
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR -dim 3 $lname ifmap_vec
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR -dim 4 $lname weight_vecs
-   set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR -dim 2 $lname products
+   set_directive_array_partition -type cyclic -factor $$PRODUCTS_PART_FACTOR -dim 2 $lname products
 }
 
 # For the filter_data, we only need to partition by half the read scale factor. This is because each BRAM has 2 read ports.

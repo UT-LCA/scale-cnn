@@ -41,7 +41,7 @@ void ${lname}_l2_accum (
    L2_ACC_1: for (uint16_t group = 0; group < OUTPUT_CHANS/$l2_acc_unroll; group++) {
       // Need to explicitly tell tool to not pipeline these loops
       #pragma HLS pipeline off
-      data_t sums[$l2_acc_unroll] = {0};
+      data_t sums[$l2_acc_unroll];
       #pragma HLS array_partition variable=sums complete
       L2_ACC_2: for (uint16_t i = 0; i < OCHAN_SCALE_FACTOR; i++) {
          #pragma HLS pipeline off
@@ -73,8 +73,8 @@ void ${lname}_l2_writeOutputs (
    data_t l2_partial_sums[OUTPUT_CHANS], 
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
 ) {
-   static data_t running_sums[OUTPUT_CHANS] = {0};
-   #pragma HLS bind_storage variable=running_sums type=RAM_T2P impl=bram
+   static data_t running_sums[OUTPUT_CHANS];
+   #pragma HLS bind_storage variable=running_sums type=ram_t2p impl=bram
    data_t quad[4];
    #pragma HLS array_partition variable=quad complete
    for(uint16_t ochan = 0; ochan < OUTPUT_CHANS; ochan++) {

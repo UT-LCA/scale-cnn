@@ -103,9 +103,9 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
       hadd_latency = 3 # fixed for right now
       l2_accum_min_lat = hadd_latency*ochan_sf + 1
       # And for some other extreme cases, the writeOutputs can be the longest stage.
-      # This stage takes output chans + (output chans / 4) + 1 cycles.
+      # This stage takes output chans + 3 cycles to complete
       # It might be possible to unroll the loop with factor 2 to make this faster though.
-      l2_write_min_lat = math.ceil(layer_spec['output_chans'] * 1.25) + 1
+      l2_write_min_lat = layer_spec['output_chans'] + 3
       II = max(II, l2_accum_min_lat + 1, l2_write_min_lat + 1)
 
    # The pipeline depth is harder to estimate, but it doesn't really matter, because since
@@ -293,6 +293,17 @@ def gen_conv_layer(layer_spec, odir, args):
       impl['writeFuncType'] = 'aligned' if (ochan_sf % 4 == 0) else 'unaligned'
       impl['estimated_latency'] = est_lat
 
+      # products partitioning factor is the same as read scale factor, unless 
+      # read scale factor is not a power of 2. In which case, it is the smallest
+      # power of 2 that is greater than or equal to read scale factor / 2. This 
+      # is necessary because the tools are not able to gracefully handle array
+      # partitioning with non-power-of-2 factors.
+      if math.log2(read_sf).is_integer():
+         products_part_factor = read_sf
+      else:
+         products_part_factor = 2**math.ceil(math.log2(read_sf/2))
+      impl['products_part_factor'] = products_part_factor
+
       # Generate the custom code for the accumulation functions for this layer.
       # Target latency is the estimated latency of the dot_product stage, which
       # is expected to be the critical path.
@@ -304,7 +315,7 @@ def gen_conv_layer(layer_spec, odir, args):
                                        ochan_sf = ochan_sf,
                                        target_latency=est_ii, 
                                        input_length=vec_size,
-                                       read_bw = read_sf*2 )
+                                       read_bw = products_part_factor*2 )
 
       impl['accum_functions']      = accum_funcs
       impl['accum_function_calls'] = accum_func_calls

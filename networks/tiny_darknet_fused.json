@@ -23,8 +23,7 @@
       {"layer_type": "conv-max" , "input_height":  28, "input_width":  28, "input_chans": 32,  "pooling_factor": 2, "inherit": "a"},
       {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 256, "inherit": "b"}, 
       {"layer_type": "conv-conv", "input_height":  14, "input_width":  14, "input_chans": 64,  "inherit": "a", "intermediate_chans": 512},
-      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 64,  "inherit": "a"},
-      {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 512, "inherit": "b"}, 
+      {"layer_type": "conv-conv", "input_height":  14, "input_width":  14, "input_chans": 64,  "inherit": "a", "intermediate_chans": 512},
       {"layer_type": "conv"     , "input_height":  14, "input_width":  14, "input_chans": 128, "inherit": "b", 
                                   "output_height": 14, "output_width": 14, "output_chans": 1000}
    ]

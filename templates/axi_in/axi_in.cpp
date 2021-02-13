@@ -16,7 +16,7 @@ void ${name}_axi_in (
 ) {
    for (uint16_t r = 0; r < HEIGHT; r++) {
       for (uint16_t c = 0; c < WIDTH; c++) {
-         data_t p[CHANS_P] = {0};
+         data_t p[CHANS_P];
          for (uint16_t ch = 0; ch < CHANS; ch++) {
             #pragma HLS pipeline
             in_pkt tmp;

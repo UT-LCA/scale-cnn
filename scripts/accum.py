@@ -70,7 +70,7 @@ def PipelinedTreeStageNoncomplete(target_latency, curr_IL, input_read_bw):
    output_storage = 'bram' if (ol > 6 and trip_count > 1) else 'regs'
    # We will partition the outputs with a factor equal to the amount of outputs we write per cycle.
    # It might be possible to do just half, need to experiment (TODO)
-   stage = {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency,
+   stage = {'wrpc': input_read_bw, 'th': tree_height, 'OL': ol, 'est_lat': latency, 'trip_count': trip_count,
            'output_storage_type': output_storage, 'substages': tree_stages, 'type': 'pipelined_tree'}
    if output_storage == 'bram':
       stage['bram_part_factor'] = num_last_level_outputs
@@ -114,7 +114,7 @@ def PipelinedTreeStageComplete(target_latency, curr_IL):
          ol = tree_stages[-1][1] * trip_count
          # Each function call, each DSP produces ceil(IL / wrpc) outputs.
          dsp_util = trip_count
-         new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 
+         new_point = {'wrpc': wrpc, 'th': th, 'OL': ol, 'est_lat': latency, 'trip_count': trip_count,
                       'substages': tree_stages, 'dsp_util': dsp_util}
          points.append(new_point)
 

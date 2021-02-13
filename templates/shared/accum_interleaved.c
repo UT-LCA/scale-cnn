@@ -7,7 +7,7 @@ void ${lname}_accum_${stage_num} (
    data_t accum_in[$IL],
    data_t accum_out[$OL]
 ) { 
-   data_t psum[$OL] = {0};
+   data_t psum[$OL];
    #pragma HLS array_partition variable=psum complete
    const int PSUM_LEN   = $OL;
    const int INPUT_SIZE = $IL;
@@ -24,6 +24,11 @@ void ${lname}_accum_${stage_num} (
       // This loop takes the registers and writes them into a BRAM
       // (or multiple BRAMs). Ideally there is just one BRAM but sometimes
       // we need more to prevent this stage from being the bottleneck.
+      // These dependence pragmas are needed because sometimes the tools aren't
+      // smart enough to realize that two writes occuring at the same are always
+      // to separate addresses.
+      #pragma HLS dependence variable=accum_out inter WAW false
+      #pragma HLS dependence variable=accum_out intra WAW false
       #pragma HLS pipeline
       #pragma HLS unroll factor=$next_read_bw
       accum_out[q] = psum[q];
