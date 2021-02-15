@@ -9,6 +9,7 @@ import math
 
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
+   keys = utils.get_top_level_keys()
    for i, layer in enumerate(layers):
       # Copy inherited params (this is for JSON brevity)
       if 'inherit' in layer:
@@ -22,10 +23,9 @@ def complete_layer_specs(network_spec):
       # Give the layer a name
       layer['layer_name'] = network_spec['shorthand_name'] + str(i+1)
       layer['lname'] = layer['layer_name']
-      # Assign the network FPGA part to the layer.
-      # TODO: This will need to change once implementing multiple FPGAs.
-      layer['fpga_part'] = network_spec['fpga_part']
-
+      # Copy top-levl keys from network spec to layer spec
+      for k in keys:
+         layer[k] = network_spec[k]
 
 # This function is called before layer implementations for a network are generated.
 # It checks that the specified FPGA has enough UltraRAMs on it to hold all of the 
@@ -99,9 +99,10 @@ def gen_network_layers(network_spec, odir, args):
       layer_gen.generate_layer(layer, layer_odir, args)
 
    # Generate the AXI I/O layers.
-   axi_in_spec  = {'layer_type': 'axi_in' , 'fpga_part': network_spec['fpga_part']}
-   axi_out_spec = {'layer_type': 'axi_out', 'fpga_part': network_spec['fpga_part']}
-   for key in ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest']:
+   axi_in_spec  = {'layer_type': 'axi_in'}
+   axi_out_spec = {'layer_type': 'axi_out'}
+   keys = ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest'] + utils.get_top_level_keys()
+   for key in keys:
       if key in network_spec:
          axi_in_spec[key] = network_spec[key]
          axi_out_spec[key] = network_spec[key]
@@ -168,17 +169,16 @@ def get_network_substitutions(network_spec, layer_impls):
    # Final feature maps
    fmap_decls += s + 'data_t final_fmaps[{}][{}][{}];\n'.format( \
       layers[-1]['output_height'], layers[-1]['output_width'], layers[-1]['output_chans'])
-   
-   substitutions = {
-      "fpga_part"           : network_spec['fpga_part'],
-      "name"                : network_spec['name'],
-      "shorthand_name"      : network_spec['shorthand_name'],
+  
+   substitutions = copy.copy(network_spec)
+   substitutions.pop('layers', None)
+   substitutions.update({
       "fmap_declarations"   : fmap_decls,
       "filter_declarations" : filter_decls,
       "layer_calls"         : layer_calls,
       "layer_declarations"  : layer_decls,
       "layer_dicts"         : layer_dicts
-   }
+   })
    return substitutions
 
 

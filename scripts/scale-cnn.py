@@ -34,6 +34,7 @@ if __name__ == '__main__':
       spec = utils.read_json(args.layerspec)
    if args.networkspec is not None:
       spec = utils.read_json(args.networkspec)
+   utils.set_spec_defaults(spec)
 
    if os.getenv('SCALE_CNN_ROOT') is None:
       raise Exception('SCALE_CNN_ROOT environment variable is not set!')

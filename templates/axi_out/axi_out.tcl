@@ -10,13 +10,13 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 
 # Create a Vivado HLS project
 open_project -reset ${name}_axi_out_prj
-add_files -cflags "-I .. -I $$COMMON_DIR"  "$$COMMON_DIR/global_defines.h ${name}_axi_out.cpp"
+add_files -cflags "-I .. -I $$COMMON_DIR"  "${name}_axi_out.cpp"
 set_top ${name}_axi_out_top
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"
 set_part {$fpga_part}
-create_clock -period 10
+create_clock -period $target_clock_period
 
 # Apply the directives
 # Feature maps are stored in URAMs

@@ -82,3 +82,20 @@ def calc_num_urams(layer_spec, d):
    # of a dataflow pipeline.
    return math.ceil(uram_rows / 4096) * 2
 
+# Returns a list of keys that should be in every top-level network or layer spec.
+def get_top_level_keys():
+   return ['fpga_part', 'target_clock_period', 'hadd_latency', 'hmul_latency', 'reduce_dsp_usage']
+
+# Sets default values if unspecified for the layer or network (depending on which is the "top level")
+def set_spec_defaults(spec):
+   defaults = {
+      'target_clock_period': 10, # ns
+      'hadd_latency': 1, # cycles
+      'hmul_latency': 1, # cycles
+      'reduce_dsp_usage': False
+   }
+   for k in defaults.keys():
+      if k not in spec:
+         spec[k] = defaults[k]
+
+

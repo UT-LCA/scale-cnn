@@ -92,20 +92,20 @@ def GetConvEstimatedLatency(layer_spec, read_sf, ochan_sf):
 
    # The initiation interval is the latency of the longest stage, plus one for dataflow
    # pipeline overhead. If everything synthesizes correctly, the longest stage should 
-   # always be dot_product which should take exactly INPUT_CHANS*(FILTER_SIZE^2) / read_sf + 3 cycles.
+   # always be dot_product which should take exactly INPUT_CHANS*(FILTER_SIZE^2) / read_sf + HADD_LATENCY cycles.
+   hadd_latency = 2 + layer_spec['hadd_latency'] # The actual op latency + 1 cycle each for reading/writing BRAMs
    IC = layer_spec['input_chans']
    FS = layer_spec['filter_size']
-   II = int(FS*FS*IC / read_sf) + 3 + 1 # +1 for dataflow overhead
+   II = int(FS*FS*IC / read_sf) + hadd_latency + 1 # +1 for dataflow overhead
    if layer_spec['layer_type'] == 'conv-conv':
       # The exception to this is with conv-conv layers, where for certain design points,
       # the L2 accumulation stage is the bottleneck even when we fully unroll the OUTPUT_CHANS
       # dimension. The latency of this stage in this case is (hadd latency)*ochan_sf + 1
-      hadd_latency = 3 # fixed for right now
       l2_accum_min_lat = hadd_latency*ochan_sf + 1
       # And for some other extreme cases, the writeOutputs can be the longest stage.
-      # This stage takes output chans + 3 cycles to complete
+      # This stage takes output chans + hadd_latency cycles to complete
       # It might be possible to unroll the loop with factor 2 to make this faster though.
-      l2_write_min_lat = layer_spec['output_chans'] + 3
+      l2_write_min_lat = layer_spec['output_chans'] + hadd_latency
       II = max(II, l2_accum_min_lat + 1, l2_write_min_lat + 1)
 
    # The pipeline depth is harder to estimate, but it doesn't really matter, because since
@@ -154,7 +154,7 @@ def get_conv_impl_options(layer_spec, min_latency, max_latency, one_below_min=Fa
    # consider for this layer and don't consider any other points.
    r1_o1_latency, r1_o1_ii = GetConvEstimatedLatency(layer_spec, 1, 1)
    if r1_o1_latency < min_latency:
-      return [(1, 1, r1_o1_latency)]
+      return [(1, 1, r1_o1_latency, r1_o1_ii)]
    # Different implementations for conv layers:
    # - Read Scale factor: Factors of input chans
    # - Output channel scale factor: Factors of output chans
@@ -305,15 +305,15 @@ def gen_conv_layer(layer_spec, odir, args):
       impl['products_part_factor'] = products_part_factor
 
       # Generate the custom code for the accumulation functions for this layer.
-      # Target latency is the estimated latency of the dot_product stage, which
-      # is expected to be the critical path.
-      # Read bandwidth is twice the read scale factor because each BRAM has 
-      # two separate read ports.
-      accum_funcs, accum_func_calls = accum.GenerateAccumulationStages( \
+      # The read bandwidth is double the partition factor because each BRAM has 
+      # 2 read ports.
+      # We add two to the nominal hadd latency to account for the 1 cycle each for[
+      # reading and writing BRAMs. The accum gen code assumes these cyces are included
+      # in hadd latency.
+      accumgen = accum.AccumGenerator(est_ii, layer_spec['hadd_latency'] + 2, ochan_sf)
+      accum_funcs, accum_func_calls = accumgen.GenerateAccumulationStages( \
                                        layer_name = layer_spec['layer_name'],
                                        layer_type = layer_spec['layer_type'],
-                                       ochan_sf = ochan_sf,
-                                       target_latency=est_ii, 
                                        input_length=vec_size,
                                        read_bw = products_part_factor*2 )
 

@@ -11,5 +11,8 @@
    "filter_size"    : 3,
    "stride"         : 1,
    "pad"            : 1,
-   "pooling_factor" : 2
+   "pooling_factor" : 2,
+   "hadd_latency"   : 3,
+   "hmul_latency"   : 2,
+   "target_clock_period": 6
 }

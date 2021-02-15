@@ -37,8 +37,8 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
    const float HIGH_ERROR_PCT = fmax(0.2, 0.04 * ichans / 16.0);
    // The acceptable error is higher with more and more accumulations necessary to compute one output element.
    // The number of accumulations scales with the number of input channels.
-   const float LOW_ERROR_ABS  = 0.01 * ichans / 16.0;
-   const float LOW_ERROR_PCT  = 0.01 * ichans / 16.0;
+   const float LOW_ERROR_ABS  = fmax(0.01, 0.01 * ichans / 16.0);
+   const float LOW_ERROR_PCT  = fmax(0.01, 0.01 * ichans / 16.0);
    int MAX_LOW_ERROR_COUNT = (num_els / 100) + 1; // Only 1% of points can exceed the low error threshold.
    int low_error_count = 0;
    int exactly_equal_count = 0;

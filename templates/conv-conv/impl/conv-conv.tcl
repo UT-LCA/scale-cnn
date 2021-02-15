@@ -30,11 +30,21 @@ set final_layer 1
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"
 set_part {$fpga_part}
-create_clock -period 10
+create_clock -period $target_clock_period
 
 # Apply the directives
 source ${lname}_impl_directives.tcl
 source ../${lname}_conv_directives.tcl
+
+# Configure floating point operation latencies 
+set reduce_dsp_usage $reduce_dsp_usage
+if {$$reduce_dsp_usage} {
+   config_op hadd -impl meddsp  -latency $hadd_latency
+   config_op hmul -impl fulldsp -latency $hmul_latency
+} else {
+   config_op hadd -impl fulldsp -latency $hadd_latency
+   config_op hmul -impl maxdsp  -latency $hmul_latency
+}
 
 # Simulate the design
 csim_design -clean
