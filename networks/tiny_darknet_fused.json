@@ -2,6 +2,7 @@
    "name": "td_fused",
    "shorthand_name": "tdf",
    "fpga_part": "xcvu3p-ffvc1517-3-e",
+   "target_clock_period": 10,
    "a": {
       "stride": 1,
       "pad": 1,

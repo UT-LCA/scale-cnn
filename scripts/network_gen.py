@@ -226,7 +226,7 @@ def gen_network_implementations(network_spec, network_root_dir, args):
 # It returns True if point A has lower cost and lower cycles than point B. Otherwise,
 # it returns False.
 def cost_perf_compare(a, b):
-   return a['cost'] <= b['cost'] and a['cycles'] <= b['cycles']
+   return a['cost']['total'] <= b['cost']['total'] and a['cycles'] <= b['cycles']
 
 # Given a list of layers, analyzes all of their synthesis results for the different 
 # implementations. Prints out a summary and returns a data structure with all the information.
@@ -248,7 +248,7 @@ def analyze_layer_synth_results(layers, network_root_dir, args):
          est_latency  = impl['estimated_latency']
          latency_error = abs(est_latency - true_latency) / true_latency 
          layer_options.append({'name'  : impl['name'], \
-                               'cost'  : report_info['cost_info']['total'], \
+                               'cost'  : report_info['cost_info'], \
                                'cycles': true_latency,
                                'latency_error': latency_error})
       # Separate the layer design points into Pareto and non-Pareto optimal points.
@@ -262,12 +262,12 @@ def analyze_layer_synth_results(layers, network_root_dir, args):
       for p in pareto_points:
          le = p['latency_error']
          s = "  (HIGH LATENCY ERROR: {:.2%})".format(le) if le > 0.05 else ""
-         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']) + s)
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost']['total'], p['cycles']) + s)
       print("\nNot Pareto-optimal ({}):".format(len(non_pareto_points)))
       for p in non_pareto_points:
          le = p['latency_error']
          s = "  (HIGH LATENCY ERROR: {:.2%})".format(le) if le > 0.05 else ""
-         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost'], p['cycles']) + s)
+         print("{}: cost: {:.4f}, cycles: {:,}".format(p['name'], p['cost']['total'], p['cycles']) + s)
       print('\n')
       # When choosing combinations of layer implementations to form entire networks,
       # we only want to consider the points that are Pareto-optimal.
@@ -296,22 +296,34 @@ def get_network_design_points(layer_impls):
    while not stop:
       network_impl = {}
       max_latency = -1
-      cost = 0
+      cost = {'bram': 0, 'dsp': 0, 'ff': 0, 'lut': 0, 'uram': 0, 'total': 0}
       for l in layer_impls.keys():
          layer_choice = layer_impls[l][0]
          network_impl[l] = layer_choice
          cycles = layer_choice['cycles']
-         cost += layer_choice['cost']
+         for ck in cost.keys():
+            cost[ck] += layer_choice['cost'][ck]
          max_latency = max(max_latency, cycles)
+
       network_impl['ii'] = max_latency + 1
-      network_impl['cost'] = cost
+      network_impl['cost'] = cost['total']
+
       for l in layer_impls.keys():
          if layer_impls[l][0]['cycles'] == max_latency:
             layer_impls[l].pop(0)
             if len(layer_impls[l]) == 0:
                stop = True
+      
+      # Now, make sure the cost estimates don't exceed 100% for any resource.
+      # If they do, discard this option.
+      not_enough_resources = False
+      for ck in cost.keys():
+         if ck != "total" and cost[ck] > 1:
+            not_enough_resources = True
+            break
 
-      network_implementations.append(network_impl)
+      if not not_enough_resources:
+         network_implementations.append(network_impl)
 
    # Filter out any implementations that are not Pareto-optimal
    def network_design_point_compare(a, b):
@@ -373,8 +385,10 @@ def analyze_network_options(network_spec, network_root_dir, args):
          lname = layer['layer_name']
          layer_impl = network_impl[lname]
          print("{}: {}, latency = {:,} cycles, cost = {:.4f}".format( \
-            lname, layer_impl['name'], layer_impl['cycles'], layer_impl['cost']))
+            lname, layer_impl['name'], layer_impl['cycles'], layer_impl['cost']['total']))
       print("Network pipeline II: {:,} cycles".format(network_impl['ii']))
+      inference_throughput = (10**9) / (network_impl['ii'] * network_spec['target_clock_period'])
+      print("Inference throughput: {:.2f} inferences/second".format(inference_throughput))
       print("Total cost: {:.4f}".format(network_impl['cost']))
    print('\n')
    # Dump selected_impls to a file
