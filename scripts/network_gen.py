@@ -126,6 +126,8 @@ def get_network_substitutions(network_spec, layer_impls):
    layers = network_spec['layers']
    fmap_decls   = ''
    filter_decls = ''
+   filter_params_top = ''
+   filter_init = ''
    layer_calls  = ''
    layer_decls  = ''
    layer_dicts  = ''
@@ -153,9 +155,13 @@ def get_network_substitutions(network_spec, layer_impls):
       filt_dims = '[{}][{}][{}][{}]'.format(filt_dim1, fs, fs, ic)
       fmap_decls   += s + 'data_t {}{};\n'.format(ifmaps, in_dims)
       filter_decls += s + 'data_t {}{};\n'.format(filters, filt_dims)
+      filter_params_top += s*2 + filters + ',\n' 
+      filter_init  += s + '{}[0][0][0][0] = tmp.data;\n'.format(filters)
       if lt == 'conv-conv':
          l2_filt_dims = '[{}][{}]'.format(oc, mc)
          filter_decls += s + 'data_t {}{};\n'.format(l2_filters, l2_filt_dims)
+         filter_init  += s + '{}[0][0] = tmp.data;\n'.format(l2_filters)
+         filter_params_top += s*2 + l2_filters + ',\n' 
          layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters)
          layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t l1_filter_data{},\n data_t l2_filter_data{});\n\n'\
             .format(name, in_dims, out_dims, filt_dims, l2_filt_dims)
@@ -170,14 +176,19 @@ def get_network_substitutions(network_spec, layer_impls):
    fmap_decls += s + 'data_t final_fmaps[{}][{}][{}];\n'.format( \
       layers[-1]['output_height'], layers[-1]['output_width'], layers[-1]['output_chans'])
   
+   filter_params = filter_decls.replace(';', ',')
+
    substitutions = copy.copy(network_spec)
    substitutions.pop('layers', None)
    substitutions.update({
-      "fmap_declarations"   : fmap_decls,
-      "filter_declarations" : filter_decls,
-      "layer_calls"         : layer_calls,
-      "layer_declarations"  : layer_decls,
-      "layer_dicts"         : layer_dicts
+      "fmap_declarations"      : fmap_decls,
+      "filter_declarations"    : filter_decls,
+      "layer_calls"            : layer_calls,
+      "layer_declarations"     : layer_decls,
+      "layer_dicts"            : layer_dicts,
+      "filter_data_params"     : filter_params,
+      "filter_data_params_top" : filter_params_top,
+      "filter_init"            : filter_init
    })
    return substitutions
 

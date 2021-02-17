@@ -17,9 +17,9 @@ if {$$final_layer} {
 }
 
 # Implement filter data as Block RAMs.
-set_directive_bind_storage -type ram_2p -impl bram $$top $$filter_data
+set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$filter_data
 if {$$layer_type == "conv-conv"} {
-   set_directive_bind_storage -type ram_2p -impl bram $$top $$filter_data_2
+   set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$filter_data_2
 }
 
 # Pack the input data into the URAMs so we get multiple words per URAM row.
@@ -47,7 +47,7 @@ if {$$final_layer} {
 # And the input channel dimension by READ_SCALE_FACTOR
 # (note that the partition type for dim 1 of weight_vecs / products doesn't really matter since it is a complete partitioning)
 if {$$OCHAN_SCALE_FACTOR > 1} {
-   set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $$top  $$filter_data
+   set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $$filter_top $$filter_data
    set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $lname weight_vecs
    set_directive_array_partition -type cyclic -factor $$OCHAN_SCALE_FACTOR -dim 1 $lname products
 }
@@ -66,14 +66,14 @@ if {$$READ_SCALE_FACTOR > 1} {
 # Read scale factor could be odd so need to round up.
 if {$$READ_SCALE_FACTOR > 2} {
    set filter_part [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}]
-   set_directive_array_partition -type cyclic -factor $$filter_part -dim 4 $$top $$filter_data
+   set_directive_array_partition -type cyclic -factor $$filter_part -dim 4 $$filter_top $$filter_data
 }
 
 # For fused conv-conv layers we need to partition the L2 filter data s well.
 if {$$layer_type == "conv-conv"} {
    set l2_filter_part [expr {int(ceil($$l2_mult_unroll / 2.0))}]
    if {$$l2_filter_part > 1} {
-      set_directive_array_partition -type cyclic -factor $$l2_filter_part -dim 1 $$top $$filter_data_2
+      set_directive_array_partition -type cyclic -factor $$l2_filter_part -dim 1 $$filter_top $$filter_data_2
    }
 }
 

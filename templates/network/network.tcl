@@ -13,9 +13,10 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
 add_files -cflags "-I $$COMMON_DIR -I ../../layers/axi_in/ -I ../../layers/axi_out/"  "${name}.cpp"
-set_top $name
+set_top ${name}_top
 
 set top $name
+set filter_top ${name}_top
 
 # Create solution, specify FPGA and desired clock period.
 open_solution -reset "solution1"

@@ -79,6 +79,7 @@ void ${lname}_l2_writeOutputs (
    #pragma HLS array_partition variable=quad complete
    for(uint16_t ochan = 0; ochan < OUTPUT_CHANS; ochan++) {
       #pragma HLS pipeline
+      #pragma HLS dependence variable=out_data inter RAW false
       data_t val = l2_partial_sums[ochan];
       data_t sum = running_sums[ochan] + val;
       running_sums[ochan] = write ? (data_t)0 : sum;
