@@ -270,6 +270,10 @@ def gen_conv_layer(layer_spec, odir, args):
    # Set the fast compile key
    layer_spec['fast_compile'] = int(args.fast_compile)
 
+   # Default filter RAM type to BRAM if not specified
+   if 'filter_ram_type' not in layer_spec:
+      layer_spec['filter_ram_type'] = 'bram'
+
    # Generate the layer-specific files once
    layer_name  = layer_spec['layer_name']
    layer_files = get_conv_layer_files(layer_name)

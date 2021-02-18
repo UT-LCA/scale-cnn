@@ -81,7 +81,7 @@ def gen_network_layers(network_spec, odir, args):
    # Before generating all the layers, we might be able to speed things up by
    # increasing the minimum II to the largest minimum layer latency. This enables
    # us to eliminate certain design points for certain layers so we don't have to 
-   # synthesize them.
+   # spend synthesizing them.
    max_min_latency = -1
    for layer in layers:
       options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii, False)
@@ -343,9 +343,27 @@ def get_network_design_points(layer_impls):
    return optimal_points
 
 
-# Given a large set of design points for an overall network, 
+# Given a large set of design points for an overall network, select a subset of them
+# (num_options in total). This function exists because there could be a large number of 
+# options for implementing a whole network (potentially several hundred), but the designer
+# does not want to spend time considering that many different points.
+#
+# The goal of this function is to choose a subset of options that are the best representation
+# of the entire set and are likely to be "top choices" of the designer. All design points are already
+# Pareto-optimal, so this function is mainly trying to pick points that span the entire range of 
+# the cost/performance tradeoff curve, and avoid picking points that are too close together.
+#
+# To acheive this, I use k-means clustering where k = the number of desired options. Then for 
+# each cluster, I pick the design point with the lowest cost. However, rather than clustering the 
+# points with respect to cost and throughput, I only cluster with respect to cycles. This is because 
+# frequently there are points that are very close together in throughput but far apart in cost. If 
+# such points exist, the designer is unlikely to want to pick the point or points with higher cost. 
+# By clustering them only with respect to throughput, these points will end up in the same cluster 
+# and the ones with higher cost will not be selected. Lastly, I cluster them on a log scale since 
+# points tend to get further and further apart as cost decreases and cycles increases. This is due 
+# to the inverse relationship between scale factor and execution time. Clustering them by 1/cycles
+# would also work likely just as well.
 def select_network_options(network_options, num_options):
-   # TODO: Add comments explaining this code
    from sklearn.cluster import KMeans
    import numpy as np
    print("Grouping {} network implementation options into {} clusters.".format( \

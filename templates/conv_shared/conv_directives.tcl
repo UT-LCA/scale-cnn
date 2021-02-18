@@ -16,8 +16,10 @@ if {$$final_layer} {
    set_directive_bind_storage -type ram_s2p -impl uram $$top $$out_data
 }
 
-# Implement filter data as Block RAMs.
-set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$filter_data
+# Implement filter data with either Block RAMs or UltraRAMs. The tool will decide which.
+# For conv-conv layers, L2 filter data will always be in Block RAMs because it is typically
+# less data.
+set_directive_bind_storage -type ram_2p -impl $filter_ram_type $$filter_top $$filter_data
 if {$$layer_type == "conv-conv"} {
    set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$filter_data_2
 }
@@ -29,8 +31,10 @@ if {$$layer_type == "conv-conv"} {
 # To acheive this, we just need to set the partitioning factor to that number
 # But we always want to pack the words into the URAMs regardless to save on memory.
 # Therefore the reshape partitioning factor should always be at least 4
+# Reshape filters with the same factor as the inputs.
 set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
 set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$in_data -dim 3
+set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$filter_top $$filter_data -dim 4
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do,
 # since the outputs are the inputs to the next layer. So only set this when this is the final layer.
@@ -56,17 +60,6 @@ if {$$READ_SCALE_FACTOR > 1} {
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR -dim 3 $lname ifmap_vec
    set_directive_array_partition -type cyclic -factor $$READ_SCALE_FACTOR -dim 4 $lname weight_vecs
    set_directive_array_partition -type cyclic -factor $$PRODUCTS_PART_FACTOR -dim 2 $lname products
-}
-
-# For the filter_data, we only need to partition by half the read scale factor. This is because each BRAM has 2 read ports.
-# We theoretically could do the same for weight_vecs, ifmap_vec, and products as well, but we don't because we want everything after
-# the read stages to be faster than the read stages. To guarantee this, we give the dot product and first accumulation stages
-# twice the read bandwidth of readFilters and readInputs.
-# TODO: This isn't true anymore so could possibly reduce those BRAMs as well.
-# Read scale factor could be odd so need to round up.
-if {$$READ_SCALE_FACTOR > 2} {
-   set filter_part [expr {int(ceil($$READ_SCALE_FACTOR / 2.0))}]
-   set_directive_array_partition -type cyclic -factor $$filter_part -dim 4 $$filter_top $$filter_data
 }
 
 # For fused conv-conv layers we need to partition the L2 filter data s well.
