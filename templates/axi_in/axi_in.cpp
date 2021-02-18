@@ -21,7 +21,7 @@ void ${name}_axi_in (
             #pragma HLS pipeline
             in_pkt tmp;
             stream_in.read_nb(tmp);
-            p[ch] = static_cast<data_t>(tmp.data);
+            p[ch] = tmp.data;
             if (ch == CHANS-1) {
                for (uint16_t ch_p = 0; ch_p < CHANS_P; ch_p++) {
                   fmaps[r][c][ch_p] = p[ch_p];

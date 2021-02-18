@@ -17,7 +17,6 @@ $filter_data_params
 ) {
    #pragma HLS INTERFACE axis port=stream_in
    #pragma HLS INTERFACE axis port=stream_out
-   #pragma HLS INTERFACE ap_ctrl_chain port=return
 
    // Feature map memories (UltraRAMs)
 $fmap_declarations

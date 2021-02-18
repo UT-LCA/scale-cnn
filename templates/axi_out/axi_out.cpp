@@ -22,7 +22,7 @@ void ${name}_axi_out (
             // effectively still 1.
             #pragma HLS pipeline II=4
             out_pkt tmp;
-            tmp.data = static_cast<ap_uint<16> >(fmaps[r][c][ch]);
+            tmp.data = fmaps[r][c][ch];
             stream_out.write(tmp);
          }
       }
