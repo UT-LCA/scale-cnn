@@ -33,8 +33,7 @@ def complete_layer_specs(network_spec):
 def check_uram_requirements(network_spec):
    print("Checking UltraRAM requirements are satisfied.")
    # Read the metadata for the FPGAs known to the tool.
-   fpga_json_fp = os.path.join(os.getenv('SCALE_CNN_ROOT'), 'fpgas', 'fpgas.json')
-   fpga_info = utils.read_json(fpga_json_fp)
+   fpga_info = utils.get_fpga_info()
    # The fpga_part either is a single string, or a list of strings for the 
    # case where multiple FPGAs are used.
    if isinstance(network_spec['fpga_part'], str):
@@ -65,11 +64,70 @@ def check_uram_requirements(network_spec):
       else:
          layer = network_spec['layers'][i]
          urams_utilized += utils.calc_num_urams(layer, "input")
+         # Some layers might store their filters in URAMs, account for that here
+         if layer['filter_ram_type'] == 'uram':
+            l1_filter_words = utils.calc_num_l1_filter_words(layer)
+            urams_utilized += math.ceil(l1_filter_words / (4*4096))
 
    return enough_urams
 
+
+# Given a network specification and FPGA, determines which layers should use BRAMs
+# for their filter data and which should use URAMs
+def choose_filter_ram_types(network_spec):
+   print("Selecting filter RAM types...")
+   # First get the FPGA specs.
+   fpga_info = utils.get_fpga_info()
+   fpga_part_info = fpga_info[network_spec['fpga_part']]
+   # Initialize all layers to use BRAMs at the beginning.
+   layers = network_spec['layers']
+   for layer in layers:
+      layer['filter_ram_type'] = 'bram'
+   while True:
+      # Calculate the percentage of URAMs and BRAMs utilized by this network
+      # given the current RAM type assignments. This only considers BRAMs used
+      # to hold filter data - not other BRAMs.
+      total_urams = 0
+      total_brams = 0
+      for layer in layers:
+         total_urams += utils.calc_num_urams(layer, "input")
+         filter_urams, filter_brams = utils.calc_filter_rams(layer)
+         total_urams += filter_urams
+         total_brams += filter_brams
+      # Add the final layer output URAMs
+      total_urams += utils.calc_num_urams(layers[-1], "output")
+      # Break out of the loop when the percentage of utilized URAMs is greater 
+      # than the percentage of utilized BRAMs. In reality, the utilized BRAMs will
+      # be higher because we are not accounting for BRAMs used for other purposes
+      # than storing filter data.
+      uram_pct = total_urams / fpga_part_info['URAM']
+      bram_pct = total_brams / fpga_part_info['BRAM_18K']
+      if uram_pct > bram_pct:
+         break
+      # Doubt this would ever happen, but if all layers are set to have filters in URAMs,
+      # break out of the loop as well
+      if all([l['filter_ram_type'] == 'uram' for l in layers]):
+         break
+      # Now determine which layer that is currently configured to have BRAMs for filters
+      # has the most amount of L1 filter words. Then set that one to use URAMs instead.
+      layer_candidate = None
+      most_words = 0
+      for layer in layers:
+         if layer['filter_ram_type'] == 'bram':
+            l1_words = utils.calc_num_l1_filter_words(layer)
+            if layer_candidate is None or l1_words > most_words:
+               layer_candidate = layer
+               most_words = l1_words
+      print("Configuring {} to store filter data in URAMs.".format(layer_candidate['layer_name']))
+      layer_candidate['filter_ram_type'] = 'uram'
+
+   print("Done. Expecting filters and fmaps to utilize {:.1%} of BRAMs and {:.1%} of URAMs.".format(bram_pct, uram_pct))
+
+
 def gen_network_layers(network_spec, odir, args):
    complete_layer_specs(network_spec)
+   # Decide which layers should use BRAMs for filters and which should use URAMs.
+   choose_filter_ram_types(network_spec)
    uram_reqs_satisfied = check_uram_requirements(network_spec)
    if uram_reqs_satisfied:
       print("UltraRAM requirements satisfied.")

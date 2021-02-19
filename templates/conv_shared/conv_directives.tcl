@@ -34,7 +34,7 @@ if {$$layer_type == "conv-conv"} {
 # Reshape filters with the same factor as the inputs.
 set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
 set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$in_data -dim 3
-set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$filter_top $$filter_data -dim 4
+set_directive_array_reshape -type cyclic -factor $$READ_SCALE_FACTOR $$filter_top $$filter_data -dim 4
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do,
 # since the outputs are the inputs to the next layer. So only set this when this is the final layer.

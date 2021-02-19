@@ -68,6 +68,7 @@ def pareto_sort(points, pareto_superior):
 
 # Calculates the number of URAM blocks required for either the input or output of a
 # certain layer in the network, specified by argument d ("input" or "output")
+# This does not count any filters that are stored in URAMs.
 def calc_num_urams(layer_spec, d):
    h = layer_spec['%s_height' % d]
    w = layer_spec['%s_width'  % d]
@@ -81,6 +82,44 @@ def calc_num_urams(layer_spec, d):
    # We multiply by 2 because of the double-buffering that is required between stages
    # of a dataflow pipeline.
    return math.ceil(uram_rows / 4096) * 2
+
+
+# Functions for calculating total number of filter words for a layer
+def calc_num_l1_filter_words(layer):
+   l1_ochans = layer['intermediate_chans'] if layer['layer_type'] == 'conv-conv' else layer['output_chans'] 
+   return l1_ochans * (layer['filter_size']**2) * layer['input_chans']
+
+def calc_num_l2_filter_words(layer):
+   if layer['layer_type'] == 'conv-conv':
+      return layer['intermediate_chans'] * layer['output_chans'] # assumes L2 is 1x1 filters
+   else:
+      return 0
+
+def calc_num_filter_words(layer):
+   return calc_num_l1_filter_words(layer) + calc_num_l2_filter_words(layer)
+
+# Given a layer specification, returns the number of URAMs and BRAMs that would
+# be required to implement the filters for that layer. It calculates this based
+# on whether the layer is currently configured to use BRAMs or URAMs for the
+# filter data.
+def calc_filter_rams(layer):
+   filter_urams = 0
+   filter_brams = 0
+   l1_words = calc_num_l1_filter_words(layer)
+   l2_words = calc_num_l2_filter_words(layer)
+   # BRAMs are 1K rows * 18 bits. Each word is 16 bits. The other two bits are unused,
+   # so each BRAM can hold 1024 words
+   words_per_bram = 1024
+   # URAMs are 4K rows * 72 bits. We reshape the array so each row holds 4 words.
+   # Therefore each URAM can hold 4*4K words
+   words_per_uram = 4*4096
+   if layer['filter_ram_type'] == 'bram':
+      filter_brams += math.ceil(l1_words / words_per_bram)
+   else:
+      filter_urams += math.ceil(l1_words / words_per_uram)
+   # For conv-conv layers, the L2 filters are alway stored in BRAMs.
+   filter_brams += math.ceil(l2_words / words_per_bram)
+   return filter_urams, filter_brams
 
 # Returns a list of keys that should be in every top-level network or layer spec.
 def get_top_level_keys():
@@ -98,4 +137,8 @@ def set_spec_defaults(spec):
       if k not in spec:
          spec[k] = defaults[k]
 
+# Loads FPGA info
+def get_fpga_info():
+   fpga_json_fp = os.path.join(os.getenv('SCALE_CNN_ROOT'), 'fpgas', 'fpgas.json')
+   return read_json(fpga_json_fp)
 
