@@ -99,9 +99,10 @@ $accum_function_calls
 }
 
 // Top-level wrapper function for $lname
-void ${lname}_top() {
+// The output data is a port so that when we calculate cost, we don't double-count
+// the UltraRAMs (since output of one layer is input to the next one).
+void ${lname}_top(data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
-   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS];
    data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
    ${lname}(in_data, out_data, filter_data);
 }

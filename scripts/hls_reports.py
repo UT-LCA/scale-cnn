@@ -18,15 +18,19 @@ def GetCostInfo(layer_spec, report_xml, cost_func):
    # This is a common cost function used in similar works. One important caveat is how URAM cost is
    # calculated.
    #
-   # First, there is a bug in Vitis HLS 2019.2 where the required URAMs are not doubled when the URAMs
-   # are double-buffered for the dataflow pipeline. Therefore I account for the doubling in this function. 
-   # TODO: If/when moving to v2020.2, check to see if this is fixed.
+   # First, the URAMs for the inputs have to be doubled because the layer will eventually be placed in the 
+   # network dataflow pipeline. This means all buffers between stages in the pipeline will be double buffers, 
+   # so these will be doubled.
    #
-   # Second, the HLS reports will show URAMs used for both input and output. But the output of one layer
-   # is the input to the next layer. So we don't want to double-count the URAMs. To fix this, only count
-   # the input URAMs for each channel. The AXI input layer has no input URAMs.
+   # Secondly, note that output URAMs will nto show up in the report because the outputs are left as a port on the top level
+   # Therefore they are not included. This is done to avoid double-counting, because the outputs of one layer are 
+   # the inputs to the next layer.
    #
-   # "LUTs only" cost excludes LUT utilization, and "DSP only" only considers DSPs.
+   # Thirdly, sometimes conv, conv-max, and conv-conv layers might store their inputs in URAMs. When this is done, everything
+   # stated above regarding the double buffering doesn't apply, because the filter memories remain constant and therefore
+   # do not need to be double-buffered.
+   #
+   # "No LUTs" cost excludes LUT utilization, and "DSP only" only considers DSPs.
    resources = report_xml.find('AreaEstimates').find('Resources')
    available_resources = report_xml.find('AreaEstimates').find('AvailableResources')
    cost = {}
@@ -41,8 +45,8 @@ def GetCostInfo(layer_spec, report_xml, cost_func):
       uram_multiplier = 1
    else:
       estimated_input_urams  = utils.calc_num_urams(layer_spec, 'input')
-      estimated_output_urams = utils.calc_num_urams(layer_spec, 'output')
-      uram_multiplier = estimated_input_urams / (estimated_input_urams + estimated_output_urams)
+      estimated_filter_urams, brams = utils.calc_filter_rams(layer_spec)
+      uram_multiplier = estimated_input_urams / (estimated_input_urams + estimated_filter_urams)
 
    for name, rpt_name in cost_factors:
       resources_utilized = int(resources.find(rpt_name).text) 
