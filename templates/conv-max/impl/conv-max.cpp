@@ -20,9 +20,8 @@ void ${lname}_poolOutputs (
    #pragma HLS array_partition variable=max_vals complete
    for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
       #pragma HLS unroll
-      if (resetMaximum || outputs[o] > max_vals[o]) {
-         max_vals[o] = outputs[o];
-      }
+      bool greaterThanMaximum = (outputs[o] > max_vals[o]);
+      max_vals[o] = (resetMaximum || greaterThanMaximum) ? outputs[o] : max_vals[o];
    }
    if (storeOutput) {
       ${lname}_writeOutputs_${writeFuncType}(i_out, j_out, k, max_vals, out_data);

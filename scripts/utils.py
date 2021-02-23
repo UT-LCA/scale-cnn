@@ -66,8 +66,8 @@ def pareto_sort(points, pareto_superior):
    return (pareto_points, non_pareto_points)
             
 
-# Calculates the number of URAM blocks required for either the input or output of a
-# certain layer in the network, specified by argument d ("input" or "output")
+# Calculates the number of URAM blocks required for either the input or output 
+# feature maps of a certain layer in the network, specified by argument d ("input" or "output")
 # This does not count any filters that are stored in URAMs.
 def calc_num_urams(layer_spec, d):
    h = layer_spec['%s_height' % d]

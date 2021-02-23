@@ -6,6 +6,7 @@ import ast
 import math
 import subprocess
 import network_gen
+import utils
 
 # Given a layer name and a path to an implementation of that layer,
 # calls vitis_hls to synthesize it.
@@ -98,6 +99,20 @@ def analyze_reports(layer_spec, impl, args):
    report_info['true_latency'] = top_latency_true
    report_info['cost_info']    = top_cost_info
    report_info['subfunctions'] = stage_latencies
+   # Dump the report info to a JSON file
+   json_fp = os.path.join(impl_dir, 'impl_info.json')
+   utils.write_json(json_fp, report_info)
+   return report_info
+
+
+# analyze_reports for AXI layers
+def analyze_reports_axi(layer_spec, layer_path, args):
+   report_dir = os.path.join(layer_path, 'report')
+   top_level_rpt_filepath = os.path.join(report_dir, '{}_{}_top_csynth.xml'.format(layer_spec['name'], layer_spec['layer_type']))
+   top_level_xml = hls_reports.read_report_xml(top_level_rpt_filepath)
+   top_latency = hls_reports.GetWorstCaseLatency(top_level_xml)
+   top_cost_info = hls_reports.GetCostInfo(layer_spec, top_level_xml, args.cost_function)
+   report_info = {'latency': top_latency, 'true_latency': top_latency, 'cost_info': top_cost_info}
    return report_info
 
 
@@ -215,7 +230,7 @@ def synth_network_layers(network_spec, network_root_dir, args):
       print("Skipping synthesis for layers prior to layer {}".format(args.layer_offset))
    print("This may take several hours...", flush=True)
    network_gen.complete_layer_specs(network_spec)
-   layers = network_spec['layers']
+   layers = network_spec['layers'][1:-1] # leave AXI layers to the very end.
    for layer in layers[args.layer_offset-1:]:
      lname = layer['layer_name']
      impl_list_path = os.path.join(network_root_dir, 'layers', lname, lname + "_implementations.txt")
@@ -223,3 +238,9 @@ def synth_network_layers(network_spec, network_root_dir, args):
      print("Synthesizing {} implementations for layer {}...".format(len(implementations), lname), flush=True)
      for impl in implementations:
         synthesize_layer(lname, impl['dir'])
+   print("Synthesizing AXI layers...")
+   axi_in_dir  = os.path.join(network_root_dir, 'layers', 'axi_in')
+   axi_out_dir = os.path.join(network_root_dir, 'layers', 'axi_out')
+   synthesize_layer(network_spec['name'] + '_axi_in' ,  axi_in_dir)
+   synthesize_layer(network_spec['name'] + '_axi_out',  axi_out_dir)
+   print("Finished layer synthesis for network.")

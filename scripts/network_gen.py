@@ -7,6 +7,31 @@ import hls
 import copy
 import math
 
+# Creates and returns layer objects for the AXI-in and AXI-out layers
+# of a network.
+def create_axi_layers(network_spec):
+   axi_in_spec  = {'layer_type': 'axi_in', 'layer_name': 'axi_in'}
+   axi_out_spec = {'layer_type': 'axi_out', 'layer_name': 'axi_out'}
+   keys = ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest']
+   for key in keys:
+      if key in network_spec:
+         axi_in_spec[key] = network_spec[key]
+         axi_out_spec[key] = network_spec[key]
+   layers = network_spec['layers']
+   axi_in_spec['height']  = layers[0]['input_height']
+   axi_in_spec['width']   = layers[0]['input_width']
+   axi_in_spec['chans']   = layers[0]['input_chans']
+   axi_out_spec['height'] = layers[-1]['output_height']
+   axi_out_spec['width']  = layers[-1]['output_width']
+   axi_out_spec['chans']  = layers[-1]['output_chans']
+   return axi_in_spec, axi_out_spec
+
+
+# Complete the specification of a network and all its layers given the 
+# minimal specification provided in the JSON file. This handles things 
+# like automatically creating the AXI layers, and making the next layer's
+# input dimensions the previous one's output dimensions so the user doesn't
+# have to duplicate this info in the JSON file.
 def complete_layer_specs(network_spec):
    layers = network_spec['layers']
    keys = utils.get_top_level_keys()
@@ -26,6 +51,11 @@ def complete_layer_specs(network_spec):
       # Copy top-levl keys from network spec to layer spec
       for k in keys:
          layer[k] = network_spec[k]
+   # Add AXI layers
+   axi_in_layer, axi_out_layer = create_axi_layers(network_spec)
+   layers.insert(0, axi_in_layer)
+   layers.append(axi_out_layer)
+
 
 # This function is called before layer implementations for a network are generated.
 # It checks that the specified FPGA has enough UltraRAMs on it to hold all of the 
@@ -47,7 +77,8 @@ def check_uram_requirements(network_spec):
    for i in range(num_layers+1):
       if i == num_layers or network_spec['layers'][i]['layer_type'] == 'fpga-sep':
          # Add the output URAMs of the last layer.
-         urams_utilized += utils.calc_num_urams(network_spec['layers'][i-1], "output")
+         # No longer necessary since now AXI layers are included
+         #urams_utilized += utils.calc_num_urams(network_spec['layers'][i-1], "output")
          # Verify there are enough URAMs on this FPGA.
          part = fpgas[fpga_idx]
          urams_available = fpga_info[part]['URAM']
@@ -63,9 +94,10 @@ def check_uram_requirements(network_spec):
          urams_utilized = 0
       else:
          layer = network_spec['layers'][i]
-         urams_utilized += utils.calc_num_urams(layer, "input")
+         if layer['layer_type'] != 'axi_in':
+            urams_utilized += utils.calc_num_urams(layer, "input")
          # Some layers might store their filters in URAMs, account for that here
-         if layer['filter_ram_type'] == 'uram':
+         if 'filter_ram_type' in layer and layer['filter_ram_type'] == 'uram':
             l1_filter_words = utils.calc_num_l1_filter_words(layer)
             urams_utilized += math.ceil(l1_filter_words / (4*4096))
 
@@ -79,8 +111,9 @@ def choose_filter_ram_types(network_spec):
    # First get the FPGA specs.
    fpga_info = utils.get_fpga_info()
    fpga_part_info = fpga_info[network_spec['fpga_part']]
+   # Skip the AXI layers (first and last elements)
+   layers = network_spec['layers'][1:-1]
    # Initialize all layers to use BRAMs at the beginning.
-   layers = network_spec['layers']
    for layer in layers:
       layer['filter_ram_type'] = 'bram'
    while True:
@@ -142,6 +175,10 @@ def gen_network_layers(network_spec, odir, args):
    # spend synthesizing them.
    max_min_latency = -1
    for layer in layers:
+      # Skip AXI layers for this analysis. They each only have one implementation and there 
+      # is never a conceivable situation in which either could be the bottleneck.
+      if layer['layer_type'] in ['axi_in', 'axi_out']:
+         continue
       options = layer_gen.GetLayerImplOptions(layer, args.min_ii, args.max_ii, False)
       min_l = min([l for (r, o, l, ii) in options])
       if min_l > max_min_latency:
@@ -153,35 +190,20 @@ def gen_network_layers(network_spec, odir, args):
 
    # Put all the layers under "layers" subdirectory
    for layer in layers:
-      layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
+      if layer['layer_type'] in ['axi_in', 'axi_out']:
+         layer_odir = os.path.join(odir, "layers/" + layer['layer_type'])
+      else:
+         layer_odir = os.path.join(odir, "layers/" + layer['layer_name'])
       layer_gen.generate_layer(layer, layer_odir, args)
 
-   # Generate the AXI I/O layers.
-   axi_in_spec  = {'layer_type': 'axi_in'}
-   axi_out_spec = {'layer_type': 'axi_out'}
-   keys = ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest'] + utils.get_top_level_keys()
-   for key in keys:
-      if key in network_spec:
-         axi_in_spec[key] = network_spec[key]
-         axi_out_spec[key] = network_spec[key]
-   axi_in_spec['height']  = layers[0]['input_height']
-   axi_in_spec['width']   = layers[0]['input_width']
-   axi_in_spec['chans']   = layers[0]['input_chans']
-   axi_out_spec['height'] = layers[-1]['output_height']
-   axi_out_spec['width']  = layers[-1]['output_width']
-   axi_out_spec['chans']  = layers[-1]['output_chans']
-   axi_in_dir  = os.path.join(odir, "layers", "axi_in")
-   axi_out_dir = os.path.join(odir, "layers", "axi_out")
-   layer_gen.generate_layer(axi_in_spec, axi_in_dir, {})
-   layer_gen.generate_layer(axi_out_spec, axi_out_dir, {})
-   
    print("Layer generation complete.")
 
 
 # Generates the text substitutions necessary for a network implementation
 def get_network_substitutions(network_spec, layer_impls):
    s = ' ' * 3
-   layers = network_spec['layers']
+   # Skip AXI layers
+   layers = network_spec['layers'][1:-1]
    fmap_decls   = ''
    filter_decls = ''
    filter_params_top = ''
@@ -282,6 +304,8 @@ def gen_network_implementations(network_spec, network_root_dir, args):
       print("Generating implementation {}".format(n_impl_name))
       layer_impls = {}
       for layer in network_spec['layers']:
+         if layer['layer_type'] in ['axi_in', 'axi_out']:
+            continue
          lname = layer['layer_name']
          layer_impl_name = network_impl[lname]['name']
          layer_impls[lname] = os.path.join(network_root_abs, 'layers', lname, layer_impl_name)
@@ -307,6 +331,18 @@ def analyze_layer_synth_results(layers, network_root_dir, args):
    for layer in layers:
       lname = layer['layer_name']
       print("Layer: {}".format(lname))
+      if layer['layer_type'] in ['axi_in', 'axi_out']:
+         layer_path = os.path.join(network_root_dir, 'layers', layer['layer_type'])
+         report_info = hls.analyze_reports_axi(layer, layer_path, args)
+         print("AXI layer")
+         print("cost: {:.4f}, cycles: {:,}".format(report_info['cost_info']['total'], report_info['true_latency']))
+         print('\n')
+         # Only one option for each AXI layer
+         layer_option = {'name'  : layer['layer_type'],
+                         'cost'  : report_info['cost_info'],
+                         'cycles': report_info['true_latency']}
+         layer_impls[layer['layer_type']] = [layer_option]
+         continue
       impl_list_path = os.path.join(network_root_dir, 'layers', lname, lname + str('_implementations.txt'))
       layer_spec, implementations = hls.read_layer_implementations(impl_list_path)
       print("{} implementations".format(len(implementations)))
@@ -475,6 +511,7 @@ def analyze_network_options(network_spec, network_root_dir, args):
             lname, layer_impl['name'], layer_impl['cycles'], layer_impl['cost']['total']))
       print("Network pipeline II: {:,} cycles".format(network_impl['ii']))
       inference_throughput = (10**9) / (network_impl['ii'] * network_spec['target_clock_period'])
+      network_impl['inference_throughput'] = inference_throughput
       print("Inference throughput: {:.2f} inferences/second".format(inference_throughput))
       print("Total cost: {:.4f}".format(network_impl['cost']))
    print('\n')
