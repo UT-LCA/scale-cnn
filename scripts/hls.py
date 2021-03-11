@@ -121,7 +121,7 @@ REPORT_HEADER = '''
 == Synthesis results for {} layer implementations
 ==========================================================='''
 
-def generate_layer_summary(layer_spec, summary_filepath, impl_results):
+def generate_layer_summary(layer_spec, summary_filepath, impl_results, printReport=True):
    global REPORT_HEADER
 
    # First generate a CSV file that just contains (implementation directory, latency, cost)
@@ -175,7 +175,8 @@ def generate_layer_summary(layer_spec, summary_filepath, impl_results):
          #rpt.write('\nMemory Read Bandwidth Utilization: {:.1f}%\n'.format(report_info['mbru'] * 100))
 
    # Print the entire report to stdout and then print messages about the generated files.
-   os.system('cat ' + rpt_filepath)
+   if printReport:
+      os.system('cat ' + rpt_filepath)
    print("\n\nGenerated above report at {}".format(rpt_filepath))
    print("Generated CSV summary at {}\n".format(csv_filepath))
 

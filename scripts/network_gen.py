@@ -12,7 +12,7 @@ import math
 def create_axi_layers(network_spec):
    axi_in_spec  = {'layer_type': 'axi_in', 'layer_name': 'axi_in'}
    axi_out_spec = {'layer_type': 'axi_out', 'layer_name': 'axi_out'}
-   keys = ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest']
+   keys = ['name', 'AXIS_WUser', 'AXIS_WId', 'AXIS_WDest'] + utils.get_top_level_keys()
    for key in keys:
       if key in network_spec:
          axi_in_spec[key] = network_spec[key]
@@ -24,6 +24,8 @@ def create_axi_layers(network_spec):
    axi_out_spec['height'] = layers[-1]['output_height']
    axi_out_spec['width']  = layers[-1]['output_width']
    axi_out_spec['chans']  = layers[-1]['output_chans']
+   for key in ['height', 'width', 'chans']:
+      axi_out_spec['input_' + key] = axi_out_spec[key]
    return axi_in_spec, axi_out_spec
 
 
@@ -347,15 +349,21 @@ def analyze_layer_synth_results(layers, network_root_dir, args):
       layer_spec, implementations = hls.read_layer_implementations(impl_list_path)
       print("{} implementations".format(len(implementations)))
       layer_options = []
+      implementation_results = []
       for impl in implementations:
          report_info = hls.analyze_reports(layer_spec, impl, args)
          true_latency = report_info['true_latency']
          est_latency  = impl['estimated_latency']
          latency_error = abs(est_latency - true_latency) / true_latency 
+         implementation_results.append((impl, report_info))
          layer_options.append({'name'  : impl['name'], \
                                'cost'  : report_info['cost_info'], \
                                'cycles': true_latency,
                                'latency_error': latency_error})
+      # Generate a summary for the implementations in this layer
+      summary_filename = '{}_implementations_summary'.format(lname)
+      summary_filepath = os.path.join(os.path.dirname(impl_list_path), summary_filename)
+      hls.generate_layer_summary(layer, summary_filepath, implementation_results, False)
       # Separate the layer design points into Pareto and non-Pareto optimal points.
       pareto_points, non_pareto_points = utils.pareto_sort(layer_options, cost_perf_compare)
       # Sort the layer options by execution time, highest to lowest.
