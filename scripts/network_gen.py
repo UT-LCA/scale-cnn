@@ -211,7 +211,8 @@ def get_network_substitutions(network_spec, layer_impls):
    filter_params_top = ''
    filter_init = ''
    layer_calls  = ''
-   layer_decls  = ''
+   #layer_decls  = ''
+   layer_includes = ''
    layer_dicts  = ''
    for i, l in enumerate(layers):
       name = l['layer_name']
@@ -239,18 +240,19 @@ def get_network_substitutions(network_spec, layer_impls):
       filter_decls += s + 'data_t {}{};\n'.format(filters, filt_dims)
       filter_params_top += s*2 + filters + ',\n' 
       filter_init  += s + '{}[0][0][0][0] = tmp.data;\n'.format(filters)
+      layer_includes += '#include \"{}.h\"\n'.format(name)
       if lt == 'conv-conv':
          l2_filt_dims = '[{}][{}]'.format(oc, mc)
          filter_decls += s + 'data_t {}{};\n'.format(l2_filters, l2_filt_dims)
          filter_init  += s + '{}[0][0] = tmp.data;\n'.format(l2_filters)
          filter_params_top += s*2 + l2_filters + ',\n' 
          layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters)
-         layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t l1_filter_data{},\n data_t l2_filter_data{});\n\n'\
-            .format(name, in_dims, out_dims, filt_dims, l2_filt_dims)
+         #layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t l1_filter_data{},\n data_t l2_filter_data{});\n\n'\
+         #   .format(name, in_dims, out_dims, filt_dims, l2_filt_dims)
       else:
          layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters)
-         layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
-            .format(name, in_dims, out_dims, filt_dims)
+         #layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
+         #   .format(name, in_dims, out_dims, filt_dims)
       # TCL declaration of path to layer implementation
       layer_dicts += s + '[dict create name {} path {} type {}] \\\n'.format(name, layer_impls[name], lt)
 
@@ -266,7 +268,8 @@ def get_network_substitutions(network_spec, layer_impls):
       "fmap_declarations"      : fmap_decls,
       "filter_declarations"    : filter_decls,
       "layer_calls"            : layer_calls,
-      "layer_declarations"     : layer_decls,
+      #"layer_declarations"     : layer_decls,
+      "layer_includes"         : layer_includes,
       "layer_dicts"            : layer_dicts,
       "filter_data_params"     : filter_params,
       "filter_data_params_top" : filter_params_top,
@@ -291,7 +294,8 @@ def gen_network_impl(network_spec, odir, impl_name, layer_impls):
 # Generates multiple implementations of a network
 # For right now this is a "test version" that only picks the cheapest option of each layer.
 def gen_network_implementations(network_spec, network_root_dir, args):
-   print("Generating network implementations for network {}.".format(network_spec['name']))
+   net_name = network_spec['name']
+   print("Generating network implementations for network {}.".format(net_name))
    complete_layer_specs(network_spec)
    network_root_abs = os.path.abspath(network_root_dir)
    impl_top_dir = os.path.join(network_root_abs, 'impls')
@@ -312,6 +316,22 @@ def gen_network_implementations(network_spec, network_root_dir, args):
          layer_impl_name = network_impl[lname]['name']
          layer_impls[lname] = os.path.join(network_root_abs, 'layers', lname, layer_impl_name)
       gen_network_impl(network_spec, impl_top_dir, n_impl_name, layer_impls)
+
+   # Generate the common "include" directory that includes all of the layer headers.
+   include_dir = os.path.join(network_root_abs, 'impls', 'include')
+   if not os.path.isdir(include_dir):
+      os.mkdir(include_dir)
+
+   # For each layer, copy the header file to the common include directory.
+   for layer in network_spec['layers']:
+      lname = layer['layer_name']
+      ltype = layer['layer_type']
+      if ltype in ['axi_in', 'axi_out']:
+         lname_full = net_name + '_' + lname
+      else:
+         lname_full = lname
+      header_fp = os.path.join(network_root_abs, 'layers', lname, lname_full + '.h')
+      os.system('cp {} {}'.format(header_fp, include_dir))
 
    print("Generation complete.")
 

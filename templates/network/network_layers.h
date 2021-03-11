@@ -9,4 +9,4 @@
 #include "${name}_axi_in.h"
 #include "${name}_axi_out.h"
 
-$layer_declarations
+$layer_includes

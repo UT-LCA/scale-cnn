@@ -12,7 +12,7 @@ set COMMON_DIR $$env(SCALE_CNN_ROOT)/common
 
 # Create a Vivado HLS project
 open_project -reset ${name}_prj
-add_files -cflags "-I $$COMMON_DIR -I ../../layers/axi_in/ -I ../../layers/axi_out/"  "${name}.cpp"
+add_files -cflags "-I $$COMMON_DIR -I ../include/"  "${name}.cpp"
 set_top ${name}_top
 
 set top $name

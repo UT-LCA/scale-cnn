@@ -8,10 +8,11 @@ import accum
 import math
 import utils
 
-def get_conv_layer_files(layer_name):
+def get_conv_layer_files(layer_name, layer_type):
    # Each tuple is ([name of file to be created], [name of template file])
    # List of once-per-layer files
    layer_files = [('{}_common_defines.h'.format(layer_name), 'common_defines.h'), \
+                  ('{}.h'.format(layer_name), '{}.h'.format(layer_type)), \
                   ('{}_conv_directives.tcl'.format(layer_name), '../conv_shared/conv_directives.tcl'), \
                   ('test/tb_{}.cpp'.format(layer_name), 'test/testbench.cpp'), \
                   ('test/golden.cpp', 'test/golden.cpp')]
@@ -276,7 +277,7 @@ def gen_conv_layer(layer_spec, odir, args):
 
    # Generate the layer-specific files once
    layer_name  = layer_spec['layer_name']
-   layer_files = get_conv_layer_files(layer_name)
+   layer_files = get_conv_layer_files(layer_name, layer_type)
    impl_files  = get_conv_layer_impl_files(layer_name, layer_type)
    gen_layer_files(layer_spec, layer_files, odir, template_path)
    
