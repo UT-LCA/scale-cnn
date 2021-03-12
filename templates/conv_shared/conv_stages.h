@@ -156,3 +156,63 @@ void ${lname}_dot_product (
    }
 }
 
+
+// Performs the "adjustment" after accumulation. This handles batch normalization, bias,
+// and activation. Currently, the only supported activation is ReLU, as it is the simplest
+// and cheapest to implement an FPGA.
+//
+// Batch normalization mean/variance and bias are calculated during training and are loaded 
+// into the FPGA in the same manner as filter data. Each accumulation result is passed through
+// this function to first noramlize the data, then add the bias, and finally pass the result
+// through the activation function. This gives the final output element for a layer.
+//
+// There is one mean, variance, and bias for each filter in a layer. The values will be stored in
+// BRAMs. Rather than storing the variance directly, we instead store the pre-computed 1/sqrt(variance)
+// to simplify the work that needs to be done on chip.
+//
+// If it is desired to apply a "scale" to multiply to the normalized value before adding
+// a bias, this can be accomplished simply by multiplying inverse square-root variance
+// with the desired scale value during pre-computation outside the FPGA.
+//
+// This function is intentionally inlined and is intended to be pipelined by the caller.
+data_t adjust (
+   data_t val_in,
+   data_t mean,
+   data_t inv_sqrt_variance,
+   data_t bias ) 
+{
+   #pragma HLS inline
+   data_t normalized = (val_in - mean) * inv_sqrt_variance;
+   data_t biased     = normalized + bias;
+   data_t activated  = (biased < 0) ? (data_t)0 : biased; // ReLU activation
+   return activated;
+}
+
+
+// Adjustment stage for CONV layers. This handles batch normalization, bias, and activation.
+// See above comments for more details on the adjustment.
+// 
+// The function takes in the sums that are the outputs of the accumulation stages and makes
+// all adjustments to calculate the final layer outputs.
+//
+// "adjustments" holds all values required to do the adjustments -- mainly, mean and variance
+// (actually 1/sqrt(variance)), and bias. While this is just three words, the dimension is 4
+// because the tools cannot gracefully handle array partitioning with non-power-of-2 factors.
+//
+// The integer "k" represents the group of output channels being processed at once.
+void ${lname}_adjust (
+   data_t sums[OCHAN_SCALE_FACTOR],
+   data_t outputs[OCHAN_SCALE_FACTOR],
+   data_t adjustments[RF_OUTPUT_CHANS][4],
+   uint16_t k)
+{
+   for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
+      #pragma HLS pipeline
+      // TODO: Allow this loop to be unrolled.
+      uint16_t ochan = k*OCHAN_SCALE_FACTOR + o;
+      data_t mean         = adjustments[ochan][0];
+      data_t inv_sqrt_var = adjustments[ochan][1];
+      data_t bias         = adjustments[ochan][2];
+      outputs[o] = adjust(sums[o], mean, inv_sqrt_var, bias);
+   }
+}

@@ -17,6 +17,26 @@ void gen_random_filters(data_t *filters, int len) {
    }
 }
 
+// Initializes random values for the "adjustments".
+// The output is a 2D array whose first dimension is len and second dimension
+// is always 4.
+void gen_random_adjustments(data_t adjustments[][4], int len) {
+   for (int i = 0; i < len; i++) {
+      // Element 0 is the mean. Pick a random value between -1 and 1
+      data_t mean = (data_t)((double)rand()/(double(RAND_MAX/2))) - 1.0;
+      // Element 1 is inverse square-root of variance. Pick a random value 
+      // between 0.2 and 1 (since variance is always positive) 
+      data_t inv_sqrt_var = (data_t)((double)rand()/(double(RAND_MAX/0.8))) + 0.2;
+      // Element 2 is bias. Pick a random value betwen -2 and 2
+      data_t bias = (data_t)((double)rand()/(double(RAND_MAX/4))) - 2.0;
+      // Store to the output. Element 3 is unused.
+      adjustments[i][0] = mean;
+      adjustments[i][1] = inv_sqrt_var;
+      adjustments[i][2] = bias;
+      adjustments[i][3] = 0;
+   }
+}
+
 // Compare expected data against actual data
 // Due to floating point rounding error the values might not be exactly
 // the same. Since the exponents of the numbers across accumulations can 
@@ -42,7 +62,6 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
    int MAX_LOW_ERROR_COUNT = (num_els / 100) + 1; // Only 1% of points can exceed the low error threshold.
    int low_error_count = 0;
    int exactly_equal_count = 0;
-   int exactly_zero_count = 0;
    for (int k = 0; k < num_els; k++) {
       float abs_error = abs(actual_data[k] - expected_data[k]);
       float pct_error = abs_error / abs(expected_data[k]);
@@ -57,7 +76,6 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
          ++low_error_count;
       }
       if (actual_data[k] == expected_data[k]) ++exactly_equal_count;
-      if (actual_data[k] == (data_t)0) ++exactly_zero_count;
    }
 
    if (low_error_count > MAX_LOW_ERROR_COUNT) {
@@ -73,14 +91,6 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
       return -1;
    } else {
       printf("%d out of %d points equaled their exact expected values.\n", exactly_equal_count, num_els);
-   }
-
-   int MAX_EXACTLY_ZERO_COUNT = MAX_LOW_ERROR_COUNT;
-   if (exactly_zero_count > MAX_EXACTLY_ZERO_COUNT) {
-      printf("Too many points (%d out of %d) were exactly zero.\n", exactly_zero_count, num_els);
-      return -1;
-   } else {
-      printf("%d out of %d points were exactly zero.\n", exactly_zero_count, num_els);
    }
 
    return 0;

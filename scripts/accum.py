@@ -394,7 +394,7 @@ class AccumGenerator():
       code = ""
       s = " " * 6
       has_return_val = False
-      output_var = 'intermediate_fmaps' if ltype == 'conv-conv' else 'outputs'
+      output_var = 'sums'
       for stage in stage_params:
          stage_num = stage['stage_num']
          op_in = 'products[%d]' if stage_num == 1 else 'accum{}_out_%d'.format(stage_num-1)
