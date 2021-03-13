@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <inttypes.h>
+#include "hls_math.h"
 
 // Reads input feature maps into an internal buffer (ifmap_vec)
 // The assertions tell the compiler the upper bounds of the index
@@ -184,7 +185,10 @@ data_t adjust (
    #pragma HLS inline
    data_t normalized = (val_in - mean) * inv_sqrt_variance;
    data_t biased     = normalized + bias;
-   data_t activated  = (biased < 0) ? (data_t)0 : biased; // ReLU activation
+   // Rather than doing a comparison to 0, just check the sign bit directly so that
+   // the tools do not infer an entire hcmp component.
+   bool negative = (bool)(hls::signbit(biased));
+   data_t activated  = negative ? (data_t)0 : biased; // ReLU activation
    return activated;
 }
 
@@ -208,7 +212,9 @@ void ${lname}_adjust (
 {
    for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
       #pragma HLS pipeline
-      // TODO: Allow this loop to be unrolled.
+      // Under "reasonable" circumstances, not unrolling this loop
+      // will be fine and not cause a bottleneck. However, it could cause a bottleneck
+      // if both scaling factors are very high. But I will not worry about it right now.
       uint16_t ochan = k*OCHAN_SCALE_FACTOR + o;
       data_t mean         = adjustments[ochan][0];
       data_t inv_sqrt_var = adjustments[ochan][1];
