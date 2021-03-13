@@ -6,7 +6,8 @@
 void convmax_golden (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
-   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t adjustments[OUTPUT_CHANS][4]
 ) {
   static const int OU_HEIGHT = INPUT_HEIGHT + (2*PAD) - FILTER_SIZE + 1;
   static const int OU_WIDTH  = INPUT_WIDTH  + (2*PAD) - FILTER_SIZE + 1;
@@ -33,7 +34,13 @@ void convmax_golden (
           }
           all_chans_val += val;
         }
-        out_data_unpooled[i][j][k] = (data_t)all_chans_val;
+        float mean         = adjustments[k][0], 
+              inv_sqrt_var = adjustments[k][1], 
+              bias         = adjustments[k][2];
+        float normalized = (all_chans_val - mean) * inv_sqrt_var;
+        float biased     = normalized + bias;
+        float activated  = fmax(0, biased); // ReLU activation
+        out_data_unpooled[i][j][k] = (data_t)activated;
       }
     }
   }

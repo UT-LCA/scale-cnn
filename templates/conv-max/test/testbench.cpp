@@ -7,13 +7,15 @@
 void $lname (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
-   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t adjustments[OUTPUT_CHANS][4]
 );
 
 void convmax_golden (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
-   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t adjustments[OUTPUT_CHANS][4]
 );
 
 int main() {
@@ -25,8 +27,10 @@ int main() {
    // Generate random inputs and filters (flattened)
    data_t ifmaps[NUM_INPUTS];
    data_t filters[FILTER_RAM_SIZE];
+   data_t adjustments[OUTPUT_CHANS][4];
    gen_random_inputs(ifmaps, NUM_INPUTS);
    gen_random_filters(filters, FILTER_RAM_SIZE);
+   gen_random_adjustments(adjustments, OUTPUT_CHANS);
 
    // Copy the flattened 1D ifmaps to the 3D array
    data_t ifmaps_3d[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
@@ -57,10 +61,10 @@ int main() {
    data_t ofmaps_gold_3d[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS];
    printf("Running synthesized function...\n");
    fflush(stdout);
-   $lname(ifmaps_3d, ofmaps_synth_3d, filters_4d);
+   $lname(ifmaps_3d, ofmaps_synth_3d, filters_4d, adjustments);
    printf("Running golden comparison function...\n");
    fflush(stdout);
-   convmax_golden(ifmaps_3d, ofmaps_gold_3d, filters_4d);
+   convmax_golden(ifmaps_3d, ofmaps_gold_3d, filters_4d, adjustments);
 
    // Copy the 3d output arrays to 1d arrays for the compare function
    data_t ofmaps_synth[NUM_OUTPUTS];

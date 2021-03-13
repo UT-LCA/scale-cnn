@@ -110,6 +110,11 @@ if {$$READ_SCALE_FACTOR < $input_chans} {
    set_directive_pipeline ${lname}_dot_product/DP_OUTER_2
 }
 
-# Use dataflow optimization
+# Unroll the adjustment loop if appropriate
+if {$$UNROLL_ADJUST_LOOP} {
+   set_directive_unroll -factor 2 ${lname}_adjust/ADJUST_LOOP
+}
+
+# Use dataflow pipelining for the top-level loop.
 set_directive_dataflow ${lname}/TOP_LOOP
 

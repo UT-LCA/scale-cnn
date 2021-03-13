@@ -210,11 +210,12 @@ void ${lname}_adjust (
    data_t adjustments[RF_OUTPUT_CHANS][4],
    uint16_t k)
 {
-   for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
+   ADJUST_LOOP: for (uint16_t o = 0; o < OCHAN_SCALE_FACTOR; o++) {
       #pragma HLS pipeline
-      // Under "reasonable" circumstances, not unrolling this loop
-      // will be fine and not cause a bottleneck. However, it could cause a bottleneck
-      // if both scaling factors are very high. But I will not worry about it right now.
+      // This loop may be unrolled by the CONV directives. However it will 
+      // only be unrolled by factor 2 for simplicity. Any need to unroll it 
+      // beyond that to acheive an II of 1 can only realistically occur for 
+      // layers with very high scale factors (unlikely to be used).
       uint16_t ochan = k*OCHAN_SCALE_FACTOR + o;
       data_t mean         = adjustments[ochan][0];
       data_t inv_sqrt_var = adjustments[ochan][1];

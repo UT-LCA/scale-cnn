@@ -107,14 +107,14 @@ $accum_function_calls
 // Top-level wrapper function for $lname
 // The output data is a port so that when we calculate cost, we don't double-count
 // the UltraRAMs (since output of one layer is input to the next one).
-void ${lname}_top(data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
+void ${lname}_top(data_t dummy_val, data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
    data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
    data_t adjustments[OUTPUT_CHANS][4];
    // Write one element to filters and adjustments to prevent tools from optimizing
    // them out. This is just to make sure the resource estimates are accurate.
-   filter_data[0][0][0][0] = 1.0;
-   adjustments[0][0] = 1.0;
+   filter_data[0][0][0][0] = dummy_val;
+   adjustments[0][0] = dummy_val;
    ${lname}(in_data, out_data, filter_data, adjustments);
 }
 

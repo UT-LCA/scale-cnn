@@ -24,6 +24,7 @@ set filter_top ${lname}_top
 set in_data in_data
 set out_data out_data
 set filter_data filter_data
+set adjustments adjustments
 set layer_type "conv-max"
 set final_layer 1
 

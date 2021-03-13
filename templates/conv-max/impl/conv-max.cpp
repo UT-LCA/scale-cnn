@@ -110,7 +110,8 @@ void ${lname}_get_next_ijk (
 void $lname (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
-   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]
+   data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
+   data_t adjustments[OUTPUT_CHANS][4]
 ) {
    // Ideally, this single for loop would be split into three nested loops like this,
    // where the dataflow directive would be applied to L3:
@@ -137,10 +138,13 @@ void $lname (
    // TODO: Figure out if this is fixed in Vitis.
    TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
       #pragma HLS stable variable=filter_data
+      #pragma HLS stable variable=adjustments
       data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
+      data_t sums[OCHAN_SCALE_FACTOR];
       data_t outputs[OCHAN_SCALE_FACTOR];
+      #pragma HLS array_partition variable=sums complete
       #pragma HLS array_partition variable=outputs complete
       uint16_t input_indices[3];
       uint16_t output_indices[2];
@@ -158,6 +162,7 @@ void $lname (
       //  - Read the filters
       //  - Perform element-wise multiplication of the inputs and weights
       //  - Accumulate the results
+      //  - Adjust the sums (batch normalization, bias, activation)
       //  - Write the outputs.
       //
       //  Note that we can process multiple filters / output channels at the same time.
@@ -165,6 +170,7 @@ void $lname (
       ${lname}_readFilters(filter_data, k, weight_vecs);
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
 $accum_function_calls
+      ${lname}_adjust(sums, outputs, adjustments, k);
       ${lname}_poolOutputs(i_out, j_out, k, resetMaximum, storeOutput, outputs, out_data);
    }
 }
@@ -172,9 +178,14 @@ $accum_function_calls
 // Top-level wrapper function for $lname
 // The output data is a port so that when we calculate cost, we don't double-count
 // the UltraRAMs (since output of one layer is input to the next one).
-void ${lname}_top(data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
+void ${lname}_top(data_t dummy_val, data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
    data_t filter_data[OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
-   ${lname}(in_data, out_data, filter_data);
+   data_t adjustments[OUTPUT_CHANS][4];
+   // Write one element to filters and adjustments to prevent tools from optimizing
+   // them out. This is just to make sure the resource estimates are accurate.
+   filter_data[0][0][0][0] = dummy_val;
+   adjustments[0][0] = dummy_val;
+   ${lname}(in_data, out_data, filter_data, adjustments);
 }
 

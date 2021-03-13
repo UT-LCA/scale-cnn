@@ -309,6 +309,13 @@ def gen_conv_layer(layer_spec, odir, args):
          products_part_factor = 2**math.ceil(math.log2(read_sf/2))
       impl['products_part_factor'] = products_part_factor
 
+      # We unroll the adjustment loop when the following condition is satisfied:
+      # filter size * filter size * input channels / read scale factor < output channel scaling factor
+      # This is an approximation of when the adjustment loop total latency will exceed that of dot_product
+      # (It is not exact because it doesn't consider the relative latencies of the loops, but it's close enough,
+      #  and those exact latencies are hard to predict anyways since the tools will vary the latency of the ops.)
+      impl['unroll_adjust_loop'] = (vec_size / read_sf) < ochan_sf 
+      
       # Generate the custom code for the accumulation functions for this layer.
       # The read bandwidth is double the partition factor because each BRAM has 
       # 2 read ports.
