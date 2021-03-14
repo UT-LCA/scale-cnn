@@ -8,14 +8,18 @@ void $lname (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
    data_t l1_filter_data[L1_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
-   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS]
+   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS],
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4],
+   data_t l2_adjustments[OUTPUT_CHANS][4]
 );
 
 void convconv_golden (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
    data_t l1_filter_data[L1_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
-   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS]
+   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS],
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4],
+   data_t l2_adjustments[OUTPUT_CHANS][4]
 );
 
 int main() {
@@ -28,9 +32,14 @@ int main() {
    data_t ifmaps[NUM_INPUTS];
    data_t l1_filters[L1_FILTER_RAM_SIZE];
    data_t l2_filters[L2_FILTER_RAM_SIZE];
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4];
+   data_t l2_adjustments[OUTPUT_CHANS][4];
+
    gen_random_inputs(ifmaps, NUM_INPUTS);
    gen_random_filters(l1_filters, L1_FILTER_RAM_SIZE);
    gen_random_filters(l2_filters, L2_FILTER_RAM_SIZE);
+   gen_random_adjustments(l1_adjustments, L1_OUTPUT_CHANS);
+   gen_random_adjustments(l2_adjustments, OUTPUT_CHANS);
 
    // Copy the flattened 1D ifmaps to the 3D array
    data_t ifmaps_3d[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
@@ -70,10 +79,12 @@ int main() {
    data_t ofmaps_gold_3d[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS];
    printf("Running synthesized function...\n");
    fflush(stdout);
-   $lname(ifmaps_3d, ofmaps_synth_3d, l1_filters_4d, l2_filters_2d);
+   $lname(ifmaps_3d, ofmaps_synth_3d, l1_filters_4d, l2_filters_2d, 
+          l1_adjustments, l2_adjustments);
    printf("Running golden comparison function...\n");
    fflush(stdout);
-   convconv_golden(ifmaps_3d, ofmaps_gold_3d, l1_filters_4d, l2_filters_2d);
+   convconv_golden(ifmaps_3d, ofmaps_gold_3d, l1_filters_4d, l2_filters_2d, 
+                   l1_adjustments, l2_adjustments);
 
    // Copy the 3d output arrays to 1d arrays for the compare function
    data_t ofmaps_synth[NUM_OUTPUTS];

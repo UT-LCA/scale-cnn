@@ -26,6 +26,10 @@ if {$$layer_type == "conv-conv"} {
 
 # Implement adjustment data with brams.
 set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$adjustments
+if {$$layer_type == "conv-conv"} {
+   set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$adjustments_2
+}
+   
 
 # Pack the input data into the URAMs so we get multiple words per URAM row.
 # This is achieved using array_reshape with cyclic partitioning.
@@ -50,6 +54,9 @@ if {$$final_layer} {
 # adjustment pipeline cannot acheive an II of 1, but this might not matter. In the future this could be explored
 # to save resources for such layers. But just always reshape for now to keep things simple.
 set_directive_array_reshape -type cyclic -factor 4 $$filter_top $$adjustments -dim 2
+if {$$layer_type == "conv-conv"} {
+   set_directive_array_reshape -type cyclic -factor 4 $$filter_top $$adjustments_2 -dim 2
+}
 
 # Filters / vectors / products partitioning
 # ifmap_vec dimensions are [FILTER_SIZE][FILTER_SIZE][INPUT_CHANS]

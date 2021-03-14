@@ -2,7 +2,6 @@
 #include "${lname}_impl_defines.h"
 #include <stdbool.h>
 #include <assert.h>
-
 #include "${lname}_conv_stages.h"
 
 // Multiplies the intermediate feature maps with the second-layer
@@ -68,10 +67,17 @@ void ${lname}_l2_accum (
 #endif
 
 
+// Final stage in conv-conv layer pipeline.
+// This stage holds an array of running sums. It receives one partial sum for each
+// output channel each time it is called, pertaining to a subset of the L2 input channels.
+// Once all L2 input channels have been processed, the running sums will be the final
+// complete sums that can be adjusted and then written to the output URAMs. This is 
+// indicated by the "write" input.
 void ${lname}_l2_writeOutputs (
    uint16_t i_int, uint16_t j_int, bool write,
    data_t l2_partial_sums[OUTPUT_CHANS], 
-   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]
+   data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
+   data_t l2_adjustments[OUTPUT_CHANS][4]
 ) {
    static data_t running_sums[OUTPUT_CHANS];
    #pragma HLS bind_storage variable=running_sums type=ram_t2p impl=bram
@@ -82,8 +88,15 @@ void ${lname}_l2_writeOutputs (
       #pragma HLS dependence variable=out_data inter RAW false
       data_t val = l2_partial_sums[ochan];
       data_t sum = running_sums[ochan] + val;
+      // Either save the sum to accumulate a running sum, or reset to 0 when
+      // we have received the final set of partial sums for these outputs.
       running_sums[ochan] = write ? (data_t)0 : sum;
-      quad[ochan % 4] = sum;
+      // Read the adjustments for this output channel
+      data_t mean         = l2_adjustments[ochan][0];
+      data_t inv_sqrt_var = l2_adjustments[ochan][1];
+      data_t bias         = l2_adjustments[ochan][2];
+      // Send the sum through the adjustment pipeline.
+      quad[ochan % 4]     = adjust(sum, mean, inv_sqrt_var, bias);
       // Every four iterations, write four values to the output all at once
       // We do it this way because the output data is stored in UltraRAMs where
       // four words are packed into a single URAM row.
@@ -142,7 +155,9 @@ void $lname (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
    data_t l1_filter_data[L1_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
-   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS]
+   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS],
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4],
+   data_t l2_adjustments[OUTPUT_CHANS][4]
 ) {
    // Ideally, this single for loop would be split into three nested loops like this,
    // where the dataflow directive would be applied to L3:
@@ -170,10 +185,14 @@ void $lname (
    TOP_LOOP: for (int f = 0; f < TOP_LOOP_ITERATIONS; f++) {
       #pragma HLS stable variable=l1_filter_data
       #pragma HLS stable variable=l2_filter_data
+      #pragma HLS stable variable=l1_adjustments
+      #pragma HLS stable variable=l2_adjustments
       data_t ifmap_vec[FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t weight_vecs[OCHAN_SCALE_FACTOR][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
       data_t products[OCHAN_SCALE_FACTOR][VECTOR_SIZE];
+      data_t sums[OCHAN_SCALE_FACTOR];
       data_t intermediate_fmaps[OCHAN_SCALE_FACTOR];
+      #pragma HLS array_partition variable=sums complete
       #pragma HLS array_partition variable=intermediate_fmaps complete
       uint16_t indices[3];
       bool write;
@@ -202,6 +221,7 @@ void $lname (
       ${lname}_readFilters(l1_filter_data, k_int, weight_vecs);
       ${lname}_dot_product(ifmap_vec, weight_vecs, products);
 $accum_function_calls
+      ${lname}_adjust(sums, intermediate_fmaps, l1_adjustments, k_int);
       data_t l2_products[OCHAN_SCALE_FACTOR][OUTPUT_CHANS];
       #pragma HLS bind_storage variable=l2_products type=RAM_T2P impl=bram
       #pragma HLS array_partition variable=l2_products cyclic factor=$l2_products_part_factor dim=2
@@ -211,9 +231,9 @@ $accum_function_calls
       #pragma HLS bind_storage variable=l2_partial_sums type=RAM_T2P impl=bram
       #pragma HLS array_partition variable=l2_partial_sums cyclic factor=$l2_products_part_factor
       ${lname}_l2_accum(l2_products, l2_partial_sums);
-      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_partial_sums, out_data);
+      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_partial_sums, out_data, l2_adjustments);
       #else
-      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_products[0], out_data);
+      ${lname}_l2_writeOutputs(i_int, j_int, write, l2_products[0], out_data, l2_adjustments);
       #endif
    }
 }
@@ -221,10 +241,18 @@ $accum_function_calls
 // Top-level wrapper function for $lname
 // The output data is a port so that when we calculate cost, we don't double-count
 // the UltraRAMs (since output of one layer is input to the next one).
-void ${lname}_top(data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
+void ${lname}_top(data_t dummy_val, data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS]) {
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED];
    data_t l1_filter_data[L1_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS];
    data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS];
-   ${lname}(in_data, out_data, l1_filter_data, l2_filter_data);
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4];
+   data_t l2_adjustments[OUTPUT_CHANS][4];
+   // Write one element to filters and adjustments to prevent tools from optimizing
+   // them out. This is just to make sure the resource estimates are accurate.
+   l1_filter_data[0][0][0][0] = dummy_val;
+   l2_filter_data[0][0] = dummy_val;
+   l1_adjustments[0][0] = dummy_val;
+   l2_adjustments[0][0] = dummy_val;
+   ${lname}(in_data, out_data, l1_filter_data, l2_filter_data, l1_adjustments, l2_adjustments);
 }
 

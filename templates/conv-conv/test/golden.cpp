@@ -8,7 +8,9 @@ void convconv_golden (
    data_t in_data[INPUT_HEIGHT][INPUT_WIDTH][INPUT_CHANS_PADDED],
    data_t out_data[OUTPUT_HEIGHT][OUTPUT_WIDTH][OUTPUT_CHANS],
    data_t l1_filter_data[L1_OUTPUT_CHANS][FILTER_SIZE][FILTER_SIZE][INPUT_CHANS],
-   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS]
+   data_t l2_filter_data[OUTPUT_CHANS][L1_OUTPUT_CHANS],
+   data_t l1_adjustments[L1_OUTPUT_CHANS][4],
+   data_t l2_adjustments[OUTPUT_CHANS][4]
 ) {
   float intermediate_fmaps[OUTPUT_HEIGHT][OUTPUT_WIDTH][L1_OUTPUT_CHANS];
   // First of the two layers fused together
@@ -32,7 +34,14 @@ void convconv_golden (
           }
           all_chans_val += val;
         }
-        intermediate_fmaps[i][j][k] = all_chans_val;
+        // batch normalization / bias / adjustment
+        float mean         = l1_adjustments[k][0], 
+              inv_sqrt_var = l1_adjustments[k][1], 
+              bias         = l1_adjustments[k][2];
+        float normalized = (all_chans_val - mean) * inv_sqrt_var;
+        float biased     = normalized + bias;
+        float activated  = fmax(0, biased); // ReLU activation
+        intermediate_fmaps[i][j][k] = activated;
       }
       // Now multiply the 1x1xL1_OUTPUT_CHANS elements against OUTPUT_CHANS
       // 1x1 filters of the second half of the fused conv-conv layer to get the final
@@ -42,7 +51,14 @@ void convconv_golden (
          L4_2: for (int ic = 0; ic < L1_OUTPUT_CHANS; ic++) {
             val += (float)l2_filter_data[oc][ic] * intermediate_fmaps[i][j][ic];
          }
-         out_data[i][j][oc] = (data_t)val;
+         // batch normalization / bias / adjustment
+         float mean         = l2_adjustments[oc][0], 
+               inv_sqrt_var = l2_adjustments[oc][1], 
+               bias         = l2_adjustments[oc][2];
+         float normalized = (val - mean) * inv_sqrt_var;
+         float biased     = normalized + bias;
+         float activated  = fmax(0, biased); // ReLU activation
+         out_data[i][j][oc] = (data_t)activated;
       }
     }
   }
