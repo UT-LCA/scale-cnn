@@ -12,6 +12,7 @@
 
 void $name(
 $filter_data_params
+$adjustment_data_params
    hls::stream<in_pkt>  &stream_in,
    hls::stream<out_pkt> &stream_out
 ) {
@@ -40,15 +41,18 @@ void ${name}_top(
 
    // Filter memories (Block RAMs)
 $filter_declarations
-
+   // Adjustment data memories (Block RAMs)
+$adjustment_declarations
    // Just initialize one element of each filter array to a piece of data from stream_in.
    // Of course this is not what actually will happen but this is the bare minimum to keep
    // the tools from optimizing the BRAMs out of the design.
    in_pkt tmp;
    stream_in.read_nb(tmp);
 $filter_init
+$adjustment_init
    ${name}(
 $filter_data_params_top
+$adjustment_data_params_top
       stream_in,
       stream_out
    );

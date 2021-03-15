@@ -129,6 +129,12 @@ def choose_filter_ram_types(network_spec):
          filter_urams, filter_brams = utils.calc_filter_rams(layer)
          total_urams += filter_urams
          total_brams += filter_brams
+         # assume 4 BRAMs used to hold the adjustments, or 8 for conv-conv
+         if layer['layer_type'] == 'conv-conv':
+            total_brams += 8
+         else:
+            total_brams += 4
+
       # Add the final layer output URAMs
       total_urams += utils.calc_num_urams(layers[-1], "output")
       # Break out of the loop when the percentage of utilized URAMs is greater 
@@ -208,10 +214,12 @@ def get_network_substitutions(network_spec, layer_impls):
    layers = network_spec['layers'][1:-1]
    fmap_decls   = ''
    filter_decls = ''
+   adjustment_decls = ''
    filter_params_top = ''
+   adjustment_params_top = ''
    filter_init = ''
+   adjustment_init = ''
    layer_calls  = ''
-   #layer_decls  = ''
    layer_includes = ''
    layer_dicts  = ''
    for i, l in enumerate(layers):
@@ -231,28 +239,35 @@ def get_network_substitutions(network_spec, layer_impls):
       ifmaps  = '{}_fmaps'.format(name)
       ofmaps  = 'final_fmaps' if last else '{}_fmaps'.format(layers[i+1]['layer_name'])
       filters = '{}_filters'.format(name)
+      adjustments = '{}_adjustments'.format(name)
       l2_filters = '{}_l2_filters'.format(name)
+      l2_adjustments = '{}_l2_adjustments'.format(name)
       in_dims   = '[{}][{}][{}]'.format(ih, iw, icp)
       out_dims  = '[{}][{}][{}]'.format(oh, ow, oc)
       filt_dim1 = mc if lt == 'conv-conv' else oc
       filt_dims = '[{}][{}][{}][{}]'.format(filt_dim1, fs, fs, ic)
+      adj_dims = '[{}][4]'.format(filt_dim1)
       fmap_decls   += s + 'data_t {}{};\n'.format(ifmaps, in_dims)
       filter_decls += s + 'data_t {}{};\n'.format(filters, filt_dims)
-      filter_params_top += s*2 + filters + ',\n' 
+      adjustment_decls += s + 'data_t {}{};\n'.format(adjustments, adj_dims)
+      filter_params_top += s*2 + filters + ',\n'
+      adjustment_params_top += s*2 + adjustments + ',\n'
       filter_init  += s + '{}[0][0][0][0] = tmp.data;\n'.format(filters)
+      adjustment_init  += s + '{}[0][0] = tmp.data;\n'.format(adjustments)
       layer_includes += '#include \"{}.h\"\n'.format(name)
       if lt == 'conv-conv':
          l2_filt_dims = '[{}][{}]'.format(oc, mc)
+         l2_adj_dims  = '[{}][4]'.format(oc)
          filter_decls += s + 'data_t {}{};\n'.format(l2_filters, l2_filt_dims)
+         adjustment_decls += s + 'data_t {}{};\n'.format(l2_adjustments, l2_adj_dims)
          filter_init  += s + '{}[0][0] = tmp.data;\n'.format(l2_filters)
+         adjustment_init  += s + '{}[0][0] = tmp.data;\n'.format(l2_adjustments)
          filter_params_top += s*2 + l2_filters + ',\n' 
-         layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters)
-         #layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t l1_filter_data{},\n data_t l2_filter_data{});\n\n'\
-         #   .format(name, in_dims, out_dims, filt_dims, l2_filt_dims)
+         adjustment_params_top += s*2 + l2_adjustments + ',\n' 
+         layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters, adjustments, l2_adjustments)
       else:
-         layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters)
-         #layer_decls += 'void {}(\n  data_t in_data{},\n  data_t out_data{},\n  data_t filter_data{});\n\n'\
-         #   .format(name, in_dims, out_dims, filt_dims)
+         layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, adjustments)
+
       # TCL declaration of path to layer implementation
       layer_dicts += s + '[dict create name {} path {} type {}] \\\n'.format(name, layer_impls[name], lt)
 
@@ -261,19 +276,23 @@ def get_network_substitutions(network_spec, layer_impls):
       layers[-1]['output_height'], layers[-1]['output_width'], layers[-1]['output_chans'])
   
    filter_params = filter_decls.replace(';', ',')
+   adjustment_params = adjustment_decls.replace(';', ',')
 
    substitutions = copy.copy(network_spec)
    substitutions.pop('layers', None)
    substitutions.update({
-      "fmap_declarations"      : fmap_decls,
-      "filter_declarations"    : filter_decls,
-      "layer_calls"            : layer_calls,
-      #"layer_declarations"     : layer_decls,
-      "layer_includes"         : layer_includes,
-      "layer_dicts"            : layer_dicts,
-      "filter_data_params"     : filter_params,
-      "filter_data_params_top" : filter_params_top,
-      "filter_init"            : filter_init
+      "fmap_declarations"          : fmap_decls,
+      "filter_declarations"        : filter_decls,
+      "adjustment_declarations"    : adjustment_decls,
+      "layer_calls"                : layer_calls,
+      "layer_includes"             : layer_includes,
+      "layer_dicts"                : layer_dicts,
+      "filter_data_params"         : filter_params,
+      "filter_data_params_top"     : filter_params_top,
+      "filter_init"                : filter_init,
+      "adjustment_data_params"     : adjustment_params,
+      "adjustment_data_params_top" : adjustment_params_top,
+      "adjustment_init"            : adjustment_init
    })
    return substitutions
 

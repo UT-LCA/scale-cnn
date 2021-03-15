@@ -15,8 +15,10 @@ for {set i 0} {$$i < $$num_layers} {incr i} {
    # Set memory array names and other variables
    set in_data "$${layer_name}_fmaps"
    set filter_data "$${layer_name}_filters"
+   set adjustment_data "$${layer_name}_adjustments"
    if {$$layer_type == "conv-conv"} {
       set filter_data_2 "$${layer_name}_l2_filters"
+      set adjustment_data_2 "$${layer_name}_l2_adjustments"
    }
    set final_layer [expr $$i == ($$num_layers-1)]
    if {$$final_layer == 1} {
