@@ -85,7 +85,7 @@ int compare_expected_vs_actual(data_t *expected_data, data_t *actual_data, int n
       printf("%d out of %d points exceeded low error threshold.\n", low_error_count, num_els);
    }
 
-   int MAX_EXACT_EQUAL_COUNT = num_els * 2 / 3;
+   int MAX_EXACT_EQUAL_COUNT = num_els * 5 / 6;
    if (exactly_equal_count > MAX_EXACT_EQUAL_COUNT) {
       printf("Too many points (%d out of %d) equaled their exact expected values.\n", exactly_equal_count, num_els);
       return -1;

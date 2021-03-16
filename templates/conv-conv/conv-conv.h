@@ -4,6 +4,6 @@ void $lname (
    data_t out_data[$output_height][$output_width][$output_chans],
    data_t l1_filter_data[$intermediate_chans][$filter_size][$filter_size][$input_chans],
    data_t l2_filter_data[$output_chans][$intermediate_chans],
-   data_t l1_adjustments[$intermediate_chans][4]
+   data_t l1_adjustments[$intermediate_chans][4],
    data_t l2_adjustments[$output_chans][4]
 );

@@ -96,7 +96,7 @@ void ${lname}_l2_writeOutputs (
       data_t inv_sqrt_var = l2_adjustments[ochan][1];
       data_t bias         = l2_adjustments[ochan][2];
       // Send the sum through the adjustment pipeline.
-      quad[ochan % 4]     = adjust(sum, mean, inv_sqrt_var, bias);
+      quad[ochan % 4]     = ${lname}_adjust_value(sum, mean, inv_sqrt_var, bias);
       // Every four iterations, write four values to the output all at once
       // We do it this way because the output data is stored in UltraRAMs where
       // four words are packed into a single URAM row.

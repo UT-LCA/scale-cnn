@@ -176,7 +176,7 @@ void ${lname}_dot_product (
 // with the desired scale value during pre-computation outside the FPGA.
 //
 // This function is intentionally inlined and is intended to be pipelined by the caller.
-data_t adjust (
+data_t ${lname}_adjust_value (
    data_t val_in,
    data_t mean,
    data_t inv_sqrt_variance,
@@ -220,6 +220,6 @@ void ${lname}_adjust (
       data_t mean         = adjustments[ochan][0];
       data_t inv_sqrt_var = adjustments[ochan][1];
       data_t bias         = adjustments[ochan][2];
-      outputs[o] = adjust(sums[o], mean, inv_sqrt_var, bias);
+      outputs[o] = ${lname}_adjust_value(sums[o], mean, inv_sqrt_var, bias);
    }
 }

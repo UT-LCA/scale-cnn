@@ -264,9 +264,9 @@ def get_network_substitutions(network_spec, layer_impls):
          adjustment_init  += s + '{}[0][0] = tmp.data;\n'.format(l2_adjustments)
          filter_params_top += s*2 + l2_filters + ',\n' 
          adjustment_params_top += s*2 + l2_adjustments + ',\n' 
-         layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters, adjustments, l2_adjustments)
+         layer_calls  += s + '{}({}, {}, {}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, l2_filters, adjustments, l2_adjustments)
       else:
-         layer_calls  += s + '{}({}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, adjustments)
+         layer_calls  += s + '{}({}, {}, {}, {});\n'.format(name, ifmaps, ofmaps, filters, adjustments)
 
       # TCL declaration of path to layer implementation
       layer_dicts += s + '[dict create name {} path {} type {}] \\\n'.format(name, layer_impls[name], lt)
@@ -445,6 +445,7 @@ def get_network_design_points(layer_impls):
    print('\nGenerating network implementation options...')
    network_implementations = []
    stop = False
+   limiting_counts = {}
    while not stop:
       network_impl = {}
       max_latency = -1
@@ -472,10 +473,18 @@ def get_network_design_points(layer_impls):
       for ck in cost.keys():
          if ck != "total" and cost[ck] > 1:
             not_enough_resources = True
-            break
+            if ck in limiting_counts:
+               limiting_counts[ck] += 1
+            else:
+               limiting_counts[ck] = 1
 
       if not not_enough_resources:
          network_implementations.append(network_impl)
+
+   # Report how many design points were discarded and what resource cost exceeded 100%
+   print("Frequencies of estimated resource costs exceeding 100% for discarded options:")
+   for ck in limiting_counts:
+      print("{}: {}".format(ck, limiting_counts[ck]))
 
    # Filter out any implementations that are not Pareto-optimal
    def network_design_point_compare(a, b):
