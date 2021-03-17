@@ -19,7 +19,8 @@ if {$$final_layer} {
 # Implement filter data with either Block RAMs or UltraRAMs. The tool will decide which.
 # For conv-conv layers, L2 filter data will always be in Block RAMs because it is typically
 # less data.
-set_directive_bind_storage -type ram_2p -impl $filter_ram_type $$filter_top $$filter_data
+set filter_ram_type $filter_ram_type
+set_directive_bind_storage -type ram_2p -impl $$filter_ram_type $$filter_top $$filter_data
 if {$$layer_type == "conv-conv"} {
    set_directive_bind_storage -type ram_2p -impl bram $$filter_top $$filter_data_2
 }
@@ -41,7 +42,14 @@ if {$$layer_type == "conv-conv"} {
 # Reshape filters with the same factor as the inputs.
 set INPUT_RESHAPE_FACTOR [expr {max($$READ_SCALE_FACTOR, $input_words_per_uram_row)}]
 set_directive_array_reshape -type cyclic -factor $$INPUT_RESHAPE_FACTOR $$top $$in_data -dim 3
-set_directive_array_reshape -type cyclic -factor $$READ_SCALE_FACTOR $$filter_top $$filter_data -dim 4
+# If filters are in BRAMs, we do not need to reshape beyond the read scale factor
+# But if they are in URAMs, we need to reshape with minimum factor 4 for the same reason as the inputs.
+if {$$filter_ram_type == "uram"} {
+   set filter_reshape_factor $$INPUT_RESHAPE_FACTOR
+} else {
+   set filter_reshape_factor $$READ_SCALE_FACTOR
+}
+set_directive_array_reshape -type cyclic -factor $$filter_reshape_factor $$filter_top $$filter_data -dim 4
 
 # The output data reshape partitioning factor will really depend on what the next layer wants to do,
 # since the outputs are the inputs to the next layer. So only set this when this is the final layer.
