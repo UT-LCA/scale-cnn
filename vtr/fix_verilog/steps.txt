@@ -1,0 +1,74 @@
+First, copy all Verilog files to a subdirectory named verilog/ under this directory.
+
+To apply the automated fixes to the code, execute fix_verilog.sh
+To run ODIN, execute run.sh
+
+You may need to do the above steps multiple times when fixing the code to see where new problems are.
+
+As of the time of this writing, the issue with the port connection order is not yet fixed. The script
+that fixes port order in instantiation is not optimized at all and takes a long time to run. I recommend
+opening up fix_verilog.sh and commenting out the line at the bottom that calls the script, and only 
+reenable it once all other errors are resolved.
+
+Manual fixes you need to make:
+
+- There is an unused module whose name ends with "regslice_both_w1". Find it with grep and remove it.
+
+- Create models for the missing floating-point op components. You can find them and copy them from 
+  previous designs, but you may need to change the names a bit. Running ODIN will tell you which
+  modules are missing. For any missing hsub modules, I just replaced them with hadd instead since the 
+  underlying logic is almost the exact same. You can find the names of the relevant files quickly with
+  commands like "ls *hmul*". A sample file with these modules can be found in fp_modules.v
+
+- There may be some for loops that counts downwards, as follows:
+
+    for (ap_tvar_int_0 = 64 - 1; ap_tvar_int_0 >= 0; ap_tvar_int_0 = ap_tvar_int_0 - 1) begin
+  
+  This is not supported by ODIN. Rewrite the loop to start at 0 and count upwards, as follows:
+
+    for (ap_tvar_int_0 = 0; ap_tvar_int_0 < 64; ap_tvar_int_0 = ap_tvar_int_0 + 1) begin
+
+  So far I have only seen this appear once or twice per layer, and not for all layers. So it should 
+  not be many places that require fixing.
+
+- Once you fix all of these issues, you will probably encounter segfaults. These are due to the issue
+  where you pass a parameter value to a paramater on a submodule instantiation with the same name.
+  You can find all cases of this with this command:
+
+      grep -E "\.([A-Z_]+)\(\1\)" *
+
+  You can open all files in Vim at once like this:
+
+      vim $(grep -lE "\.([A-Z_]+)\(\1\)" *)
+
+  In what I have seen so far, every time this problem occurs, these lines cause the problem:
+
+	#(
+    .DATA_WIDTH(DATA_WIDTH),
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .DEPTH(DEPTH))
+
+  Additionally, I have noticed that these lines are always technically unnecessary because the 
+  default values of the parameters on the submodules always match the values that are being 
+  passed to them. So, I simply open up all files with these lines and remove them one by one.
+  I know this could be done with a sed command, but I wasn't able to figure out how to do a 
+  multi-line find/replace correctly, so I just always do it manually.
+
+  The number of files that have this can be somewhat large (a few dozen), but it's very quick
+  to remove all of them one at a time. I've found the module instantiation that includes these
+  lines is always near the bottom of the file. So, you just have to open Vim as described above 
+  and do the following for each file:
+
+   - "G" to go to the bottom of the file
+   - "9" + "Up" to get to the right line
+   - Delete the lines however you prefer
+   - ":wn" to go to the next file
+   - ":wq" when you get the message saying there are no more files
+
+  Even with several dozen files to go through, I've found that once you get the hang of it, this
+  does not take more than a few minutes to do manually.
+ 
+- Once you get errors about port order, open fix_verilog.sh and re-enable the call to the script
+  that fixes port order on module instantiation
+
+
