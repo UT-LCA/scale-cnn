@@ -1,0 +1,29 @@
+
+===========================================================
+== Synthesis results for tdf9 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf9/r1_o1
+
+Total latency (raw)  : 3,324,744 cycles
+Total latency (true) : 3,324,744 cycles
+Estimated total latency: 3,337,502 cycles
+Estimation error: 0.38%
+
+Cost info:
+bram: 1.53%
+dsp: 0.61%
+ff: 0.43%
+lut: 0.78%
+uram: 2.50%
+Total cost: 0.058
+
+Subfunction latencies:
+tdf9_accum_1: 237 cycles
+tdf9_adjust: 22 cycles
+tdf9_accum_2: 81 cycles
+tdf9_readInputs: 132 cycles
+tdf9_dot_product: 264 cycles
+tdf9_writeOutputs_unaligned: 2 cycles
+tdf9_readFilters: 258 cycles

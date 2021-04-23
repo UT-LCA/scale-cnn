@@ -1,0 +1,5 @@
+set READ_SCALE_FACTOR  4
+set OCHAN_SCALE_FACTOR 32
+set PRODUCTS_PART_FACTOR 4
+set l2_mult_unroll     64
+set UNROLL_ADJUST_LOOP False

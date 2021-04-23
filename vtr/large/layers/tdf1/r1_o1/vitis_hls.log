@@ -1,0 +1,29 @@
+
+****** Vitis HLS - High-Level Synthesis from C, C++ and OpenCL v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/scripts/vitis_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/bin/unwrapped/lnx64.o/vitis_hls'
+INFO: [HLS 200-10] For user 'drauch' on host 'yoshi.ece.utexas.edu' (Linux_x86_64 version 3.10.0-1160.11.1.el7.x86_64) on Fri Apr 16 08:51:57 CDT 2021
+INFO: [HLS 200-10] On os "CentOS Linux release 7.9.2009 (Core)"
+INFO: [HLS 200-10] In directory '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o1'
+Sourcing Tcl script 'tdf1.tcl'
+INFO: [HLS 200-1510] Running: open_project -reset tdf1_prj 
+INFO: [HLS 200-10] Creating and opening project '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o1/tdf1_prj'.
+INFO: [HLS 200-1510] Running: add_files -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common -D FAST_COMPILE=0 /home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h tdf1.cpp 
+INFO: [HLS 200-10] Adding design file '/home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h' to the project
+INFO: [HLS 200-10] Adding design file 'tdf1.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common/test -I /home/ecelrc/students/drauch/research/scale-cnn/common /home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp ../test/golden.cpp ../test/tb_tdf1.cpp 
+INFO: [HLS 200-10] Adding test bench file '/home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/golden.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/tb_tdf1.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top tdf1_top 
+INFO: [HLS 200-1510] Running: open_solution -reset solution1 
+INFO: [HLS 200-10] Creating and opening solution '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o1/tdf1_prj/solution1'.
+INFO: [HLS 200-10] Cleaning up the solution database.
+WARNING: [HLS 200-40] No /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o1/tdf1_prj/solution1/solution1.aps file found.
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1505.html
+INFO: [HLS 200-1510] Running: set_part xcvu3p-ffvc1517-3-e 

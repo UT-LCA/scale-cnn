@@ -1,0 +1,775 @@
+
+===========================================================
+== Synthesis results for tdf10 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o1
+
+Total latency (raw)  : 58,204,780 cycles
+Total latency (true) : 58,204,780 cycles
+Estimated total latency: 58,207,640 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 2.92%
+dsp: 1.05%
+ff: 0.48%
+lut: 1.28%
+uram: 1.19%
+Total cost: 0.069
+
+Subfunction latencies:
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_accum_1: 297 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_adjust: 6 cycles
+tdf10_dot_product: 579 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_accum_2: 25 cycles
+tdf10_l2_multiply4: 67 cycles
+
+
+Implementation: r1_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o2
+
+Total latency (raw)  : 29,102,700 cycles
+Total latency (true) : 29,102,700 cycles
+Estimated total latency: 29,105,560 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 3.26%
+dsp: 1.49%
+ff: 0.66%
+lut: 1.69%
+uram: 1.19%
+Total cost: 0.083
+
+Subfunction latencies:
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_1: 297 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_adjust: 9 cycles
+tdf10_dot_product: 579 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_l2_accum: 513 cycles
+tdf10_accum_2: 25 cycles
+tdf10_l2_multiply4: 131 cycles
+
+
+Implementation: r1_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o4
+
+Total latency (raw)  : 14,551,660 cycles
+Total latency (true) : 14,551,660 cycles
+Estimated total latency: 14,554,520 cycles
+Estimation error: 0.02%
+
+Cost info:
+bram: 3.96%
+dsp: 2.28%
+ff: 0.95%
+lut: 2.41%
+uram: 1.31%
+Total cost: 0.109
+
+Subfunction latencies:
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_adjust: 11 cycles
+tdf10_accum_1: 297 cycles
+tdf10_dot_product: 579 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_l2_accum: 449 cycles
+tdf10_l2_multiply4: 259 cycles
+tdf10_accum_2: 25 cycles
+
+
+Implementation: r1_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o8
+
+Total latency (raw)  : 7,276,140 cycles
+Total latency (true) : 7,276,140 cycles
+Estimated total latency: 7,279,000 cycles
+Estimation error: 0.04%
+
+Cost info:
+bram: 5.35%
+dsp: 3.95%
+ff: 1.54%
+lut: 3.96%
+uram: 1.56%
+Total cost: 0.164
+
+Subfunction latencies:
+tdf10_adjust: 15 cycles
+tdf10_dot_product: 579 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_accum: 417 cycles
+tdf10_accum_1: 297 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_multiply4: 259 cycles
+tdf10_accum_2: 25 cycles
+
+
+Implementation: r1_o16
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o16
+
+Total latency (raw)  : 3,638,380 cycles
+Total latency (true) : 3,638,380 cycles
+Estimated total latency: 3,641,240 cycles
+Estimation error: 0.08%
+
+Cost info:
+bram: 8.12%
+dsp: 7.28%
+ff: 2.71%
+lut: 7.31%
+uram: 2.06%
+Total cost: 0.275
+
+Subfunction latencies:
+tdf10_adjust: 24 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_dot_product: 579 cycles
+tdf10_l2_accum: 401 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_1: 297 cycles
+tdf10_l2_multiply4: 259 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_accum_2: 25 cycles
+
+
+Implementation: r1_o32
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r1_o32
+
+Total latency (raw)  : 1,819,500 cycles
+Total latency (true) : 1,819,500 cycles
+Estimated total latency: 1,822,360 cycles
+Estimation error: 0.16%
+
+Cost info:
+bram: 13.82%
+dsp: 13.95%
+ff: 5.05%
+lut: 15.88%
+uram: 2.06%
+Total cost: 0.508
+
+Subfunction latencies:
+tdf10_adjust: 40 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_dot_product: 579 cycles
+tdf10_l2_accum: 393 cycles
+tdf10_l2_multiply4: 259 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_1: 297 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_accum_2: 25 cycles
+
+
+Implementation: r2_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r2_o1
+
+Total latency (raw)  : 29,303,288 cycles
+Total latency (true) : 29,303,288 cycles
+Estimated total latency: 29,304,536 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 3.06%
+dsp: 1.32%
+ff: 0.53%
+lut: 1.93%
+uram: 1.19%
+Total cost: 0.080
+
+Subfunction latencies:
+tdf10_accum_1: 157 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_adjust: 6 cycles
+tdf10_dot_product: 291 cycles
+tdf10_accum_2: 49 cycles
+tdf10_l2_multiply4: 67 cycles
+
+
+Implementation: r2_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r2_o2
+
+Total latency (raw)  : 14,651,896 cycles
+Total latency (true) : 14,651,896 cycles
+Estimated total latency: 14,653,144 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 3.68%
+dsp: 2.11%
+ff: 0.78%
+lut: 2.76%
+uram: 1.19%
+Total cost: 0.105
+
+Subfunction latencies:
+tdf10_accum_1: 157 cycles
+tdf10_readFilters6: 290 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_dot_product: 291 cycles
+tdf10_adjust: 9 cycles
+tdf10_l2_accum: 257 cycles
+tdf10_accum_2: 49 cycles
+tdf10_l2_multiply4: 131 cycles
+
+
+Implementation: r2_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r2_o4
+
+Total latency (raw)  : 7,326,200 cycles
+Total latency (true) : 7,326,200 cycles
+Estimated total latency: 7,327,448 cycles
+Estimation error: 0.02%
+
+Cost info:
+bram: 4.79%
+dsp: 3.60%
+ff: 1.21%
+lut: 4.34%
+uram: 1.31%
+Total cost: 0.153
+
+Subfunction latencies:
+tdf10_readFilters6: 290 cycles
+tdf10_accum_1: 157 cycles
+tdf10_dot_product: 291 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_accum: 225 cycles
+tdf10_adjust: 11 cycles
+tdf10_l2_multiply4: 131 cycles
+tdf10_accum_2: 49 cycles
+
+
+Implementation: r2_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r2_o8
+
+Total latency (raw)  : 3,663,352 cycles
+Total latency (true) : 3,663,352 cycles
+Estimated total latency: 3,664,600 cycles
+Estimation error: 0.03%
+
+Cost info:
+bram: 7.01%
+dsp: 6.58%
+ff: 2.06%
+lut: 7.55%
+uram: 1.56%
+Total cost: 0.248
+
+Subfunction latencies:
+tdf10_readFilters6: 290 cycles
+tdf10_dot_product: 291 cycles
+tdf10_l2_accum: 209 cycles
+tdf10_accum_1: 157 cycles
+tdf10_adjust: 15 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_multiply4: 131 cycles
+tdf10_accum_2: 49 cycles
+
+
+Implementation: r2_o16
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r2_o16
+
+Total latency (raw)  : 1,831,928 cycles
+Total latency (true) : 1,831,928 cycles
+Estimated total latency: 1,833,176 cycles
+Estimation error: 0.07%
+
+Cost info:
+bram: 11.60%
+dsp: 12.54%
+ff: 3.77%
+lut: 14.24%
+uram: 2.06%
+Total cost: 0.442
+
+Subfunction latencies:
+tdf10_readFilters6: 290 cycles
+tdf10_adjust: 24 cycles
+tdf10_dot_product: 291 cycles
+tdf10_l2_accum: 201 cycles
+tdf10_accum_1: 157 cycles
+tdf10_l2_multiply4: 131 cycles
+tdf10_readInputs7: 290 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_2: 49 cycles
+
+
+Implementation: r4_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r4_o1
+
+Total latency (raw)  : 14,852,440 cycles
+Total latency (true) : 14,852,440 cycles
+Estimated total latency: 14,852,984 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 3.61%
+dsp: 1.84%
+ff: 0.65%
+lut: 1.62%
+uram: 1.19%
+Total cost: 0.089
+
+Subfunction latencies:
+tdf10_accum_1: 93 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_dot_product: 147 cycles
+tdf10_readInputs8: 146 cycles
+tdf10_adjust: 6 cycles
+tdf10_readFilters7: 146 cycles
+tdf10_accum_2: 97 cycles
+tdf10_l2_multiply4: 67 cycles
+
+
+Implementation: r4_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r4_o2
+
+Total latency (raw)  : 7,426,392 cycles
+Total latency (true) : 7,426,392 cycles
+Estimated total latency: 7,426,936 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 4.93%
+dsp: 3.42%
+ff: 1.06%
+lut: 2.51%
+uram: 1.19%
+Total cost: 0.131
+
+Subfunction latencies:
+tdf10_accum_1: 93 cycles
+tdf10_dot_product: 147 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_accum: 129 cycles
+tdf10_adjust: 9 cycles
+tdf10_readInputs7: 146 cycles
+tdf10_l2_multiply4: 67 cycles
+tdf10_readFilters6: 146 cycles
+tdf10_accum_2: 97 cycles
+
+
+Implementation: r4_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r4_o4
+
+Total latency (raw)  : 3,713,368 cycles
+Total latency (true) : 3,713,368 cycles
+Estimated total latency: 3,713,912 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 7.15%
+dsp: 6.23%
+ff: 1.77%
+lut: 4.07%
+uram: 1.31%
+Total cost: 0.205
+
+Subfunction latencies:
+tdf10_accum_1: 93 cycles
+tdf10_dot_product: 147 cycles
+tdf10_l2_accum: 113 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_adjust: 11 cycles
+tdf10_readInputs7: 146 cycles
+tdf10_l2_multiply4: 67 cycles
+tdf10_readFilters6: 146 cycles
+tdf10_accum_2: 97 cycles
+
+
+Implementation: r4_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r4_o8
+
+Total latency (raw)  : 1,856,856 cycles
+Total latency (true) : 1,856,856 cycles
+Estimated total latency: 1,857,400 cycles
+Estimation error: 0.03%
+
+Cost info:
+bram: 11.74%
+dsp: 11.84%
+ff: 3.18%
+lut: 7.30%
+uram: 1.56%
+Total cost: 0.356
+
+Subfunction latencies:
+tdf10_dot_product: 147 cycles
+tdf10_l2_accum: 105 cycles
+tdf10_accum_1: 93 cycles
+tdf10_adjust: 15 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_multiply4: 67 cycles
+tdf10_readFilters6: 146 cycles
+tdf10_readInputs7: 146 cycles
+tdf10_accum_2: 97 cycles
+
+
+Implementation: r8_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r8_o1
+
+Total latency (raw)  : 7,626,974 cycles
+Total latency (true) : 7,626,974 cycles
+Estimated total latency: 7,627,208 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 4.93%
+dsp: 3.16%
+ff: 0.95%
+lut: 2.34%
+uram: 1.25%
+Total cost: 0.126
+
+Subfunction latencies:
+tdf10_accum_1: 73 cycles
+tdf10_dot_product: 75 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_accum_2: 41 cycles
+tdf10_readInputs8: 74 cycles
+tdf10_adjust: 6 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_readFilters7: 74 cycles
+tdf10_accum_3: 25 cycles
+
+
+Implementation: r8_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r8_o2
+
+Total latency (raw)  : 3,813,598 cycles
+Total latency (true) : 3,813,598 cycles
+Estimated total latency: 3,813,832 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 7.71%
+dsp: 6.40%
+ff: 1.73%
+lut: 4.00%
+uram: 1.38%
+Total cost: 0.212
+
+Subfunction latencies:
+tdf10_accum_1: 73 cycles
+tdf10_dot_product: 75 cycles
+tdf10_l2_accum: 65 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_2: 41 cycles
+tdf10_adjust: 9 cycles
+tdf10_readInputs7: 74 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_readFilters6: 74 cycles
+tdf10_accum_3: 25 cycles
+
+
+Implementation: r8_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r8_o4
+
+Total latency (raw)  : 1,906,910 cycles
+Total latency (true) : 1,906,910 cycles
+Estimated total latency: 1,907,144 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 12.57%
+dsp: 12.19%
+ff: 3.11%
+lut: 7.03%
+uram: 1.62%
+Total cost: 0.365
+
+Subfunction latencies:
+tdf10_accum_1: 73 cycles
+tdf10_dot_product: 75 cycles
+tdf10_l2_accum: 57 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_adjust: 11 cycles
+tdf10_accum_2: 41 cycles
+tdf10_readInputs7: 74 cycles
+tdf10_readFilters6: 74 cycles
+tdf10_accum_3: 25 cycles
+
+
+Implementation: r16_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r16_o1
+
+Total latency (raw)  : 7,526,563 cycles
+Total latency (true) : 7,526,563 cycles
+Estimated total latency: 6,824,344 cycles
+Estimation error: 9.33%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 5.07%
+dsp: 5.44%
+ff: 1.63%
+lut: 4.55%
+uram: 1.50%
+Total cost: 0.182
+
+Subfunction latencies:
+tdf10_accum_1: 57 cycles
+tdf10_dot_product: 39 cycles
+tdf10_accum_2: 45 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_readInputs8: 38 cycles
+tdf10_adjust: 6 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_readFilters7: 38 cycles
+tdf10_accum_3: 49 cycles
+
+
+Implementation: r16_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r16_o2
+
+Total latency (raw)  : 3,763,363 cycles
+Total latency (true) : 3,763,363 cycles
+Estimated total latency: 3,412,376 cycles
+Estimation error: 9.33%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 7.43%
+dsp: 10.96%
+ff: 3.08%
+lut: 8.35%
+uram: 1.75%
+Total cost: 0.316
+
+Subfunction latencies:
+tdf10_accum_1: 57 cycles
+tdf10_dot_product: 39 cycles
+tdf10_l2_accum: 65 cycles
+tdf10_accum_2: 45 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_readInputs7: 38 cycles
+tdf10_adjust: 9 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_readFilters6: 38 cycles
+tdf10_accum_3: 49 cycles
+
+
+Implementation: r16_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r16_o4
+
+Total latency (raw)  : 1,881,763 cycles
+Total latency (true) : 1,881,763 cycles
+Estimated total latency: 1,706,392 cycles
+Estimation error: 9.32%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 11.46%
+dsp: 21.32%
+ff: 5.81%
+lut: 15.66%
+uram: 2.25%
+Total cost: 0.565
+
+Subfunction latencies:
+tdf10_accum_1: 57 cycles
+tdf10_dot_product: 39 cycles
+tdf10_l2_accum: 57 cycles
+tdf10_accum_2: 45 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_adjust: 11 cycles
+tdf10_readInputs7: 38 cycles
+tdf10_readFilters6: 38 cycles
+tdf10_accum_3: 49 cycles
+
+
+Implementation: r32_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r32_o1
+
+Total latency (raw)  : 7,526,425 cycles
+Total latency (true) : 7,526,425 cycles
+Estimated total latency: 6,824,344 cycles
+Estimation error: 9.33%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 2.71%
+dsp: 9.39%
+ff: 2.10%
+lut: 3.84%
+uram: 2.00%
+Total cost: 0.200
+
+Subfunction latencies:
+tdf10_accum_1: 22 cycles
+tdf10_dot_product: 21 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_readInputs8: 20 cycles
+tdf10_l2_multiply4: 19 cycles
+tdf10_adjust: 6 cycles
+tdf10_readFilters7: 20 cycles
+tdf10_accum_2: 28 cycles
+
+
+Implementation: r32_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r32_o2
+
+Total latency (raw)  : 3,763,316 cycles
+Total latency (true) : 3,763,316 cycles
+Estimated total latency: 3,412,376 cycles
+Estimation error: 9.33%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 3.68%
+dsp: 18.51%
+ff: 3.88%
+lut: 6.73%
+uram: 2.50%
+Total cost: 0.353
+
+Subfunction latencies:
+tdf10_accum_1: 22 cycles
+tdf10_dot_product: 21 cycles
+tdf10_l2_accum: 65 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_readInputs7: 20 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_adjust: 9 cycles
+tdf10_readFilters6: 20 cycles
+tdf10_accum_2: 28 cycles
+
+
+Implementation: r32_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r32_o4
+
+Total latency (raw)  : 1,881,710 cycles
+Total latency (true) : 1,881,710 cycles
+Estimated total latency: 1,706,392 cycles
+Estimation error: 9.32%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 4.79%
+dsp: 36.40%
+ff: 7.27%
+lut: 12.17%
+uram: 2.50%
+Total cost: 0.631
+
+Subfunction latencies:
+tdf10_dot_product: 21 cycles
+tdf10_accum_1: 22 cycles
+tdf10_l2_accum: 57 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_readInputs7: 20 cycles
+tdf10_adjust: 11 cycles
+tdf10_readFilters6: 20 cycles
+tdf10_accum_2: 28 cycles
+
+
+Implementation: r64_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r64_o1
+
+Total latency (raw)  : 7,526,417 cycles
+Total latency (true) : 7,526,417 cycles
+Estimated total latency: 6,824,344 cycles
+Estimation error: 9.33%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 3.12%
+dsp: 18.16%
+ff: 3.78%
+lut: 7.01%
+uram: 2.81%
+Total cost: 0.349
+
+Subfunction latencies:
+tdf10_accum_1: 20 cycles
+tdf10_dot_product: 12 cycles
+tdf10_readInputs8: 11 cycles
+tdf10_l2_writeOutputs3: 74 cycles
+tdf10_l2_multiply4: 11 cycles
+tdf10_adjust: 6 cycles
+tdf10_accum_2: 11 cycles
+tdf10_readFilters7: 11 cycles
+
+
+Implementation: r64_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r64_o2
+
+Total latency (raw)  : 3,763,300 cycles
+Total latency (true) : 3,763,300 cycles
+Estimated total latency: 3,412,376 cycles
+Estimation error: 9.32%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 3.68%
+dsp: 35.70%
+ff: 7.35%
+lut: 13.71%
+uram: 2.81%
+Total cost: 0.633
+
+Subfunction latencies:
+tdf10_accum_1: 20 cycles
+tdf10_dot_product: 12 cycles
+tdf10_l2_accum: 65 cycles
+tdf10_l2_multiply4: 19 cycles
+tdf10_readInputs7: 11 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_adjust: 9 cycles
+tdf10_readFilters6: 11 cycles
+tdf10_accum_2: 11 cycles
+
+
+Implementation: r8_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf10/r8_o8
+
+Total latency (raw)  : 953,566 cycles
+Total latency (true) : 953,566 cycles
+Estimated total latency: 953,800 cycles
+Estimation error: 0.02%
+
+Cost info:
+bram: 22.01%
+dsp: 23.77%
+ff: 5.86%
+lut: 13.16%
+uram: 2.12%
+Total cost: 0.669
+
+Subfunction latencies:
+tdf10_dot_product: 75 cycles
+tdf10_l2_accum: 53 cycles
+tdf10_accum_1: 73 cycles
+tdf10_l2_multiply4: 35 cycles
+tdf10_adjust: 15 cycles
+tdf10_l2_writeOutputs: 74 cycles
+tdf10_accum_2: 41 cycles
+tdf10_readFilters6: 74 cycles
+tdf10_readInputs7: 74 cycles
+tdf10_accum_3: 25 cycles

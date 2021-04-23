@@ -1,0 +1,96 @@
+
+****** Vitis HLS - High-Level Synthesis from C, C++ and OpenCL v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/scripts/vitis_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/bin/unwrapped/lnx64.o/vitis_hls'
+INFO: [HLS 200-10] For user 'drauch' on host 'yoshi.ece.utexas.edu' (Linux_x86_64 version 3.10.0-1160.11.1.el7.x86_64) on Sat Mar 20 14:57:27 CDT 2021
+INFO: [HLS 200-10] On os "CentOS Linux release 7.9.2009 (Core)"
+INFO: [HLS 200-10] In directory '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/axi_in'
+Sourcing Tcl script 'td_fused_axi_in.tcl'
+INFO: [HLS 200-1510] Running: open_project -reset td_fused_axi_in_prj 
+INFO: [HLS 200-10] Creating and opening project '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/axi_in/td_fused_axi_in_prj'.
+INFO: [HLS 200-1510] Running: add_files -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common td_fused_axi_in.cpp 
+INFO: [HLS 200-10] Adding design file 'td_fused_axi_in.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top td_fused_axi_in_top 
+INFO: [HLS 200-1510] Running: open_solution -reset solution1 
+INFO: [HLS 200-10] Creating and opening solution '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/axi_in/td_fused_axi_in_prj/solution1'.
+INFO: [HLS 200-10] Cleaning up the solution database.
+WARNING: [HLS 200-40] No /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/axi_in/td_fused_axi_in_prj/solution1/solution1.aps file found.
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1505.html
+INFO: [HLS 200-1510] Running: set_part xcvu3p-ffvc1517-3-e 
+INFO: [HLS 200-10] Setting target device to 'xcvu3p-ffvc1517-3-e'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_s2p -impl uram td_fused_axi_in_top fmaps 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 td_fused_axi_in_top fmaps -dim 3 
+INFO: [HLS 200-1510] Running: csynth_design 
+INFO: [HLS 200-111] Finished File checks and directory preparation: CPU user time: 0.01 seconds. CPU system time: 0 seconds. Elapsed time: 0.01 seconds; current allocated memory: 238.905 MB.
+INFO: [HLS 200-10] Analyzing design file 'td_fused_axi_in.cpp' ... 
+INFO: [HLS 200-111] Finished Source Code Analysis and Preprocessing: CPU user time: 5.79 seconds. CPU system time: 0.54 seconds. Elapsed time: 6.49 seconds; current allocated memory: 240.607 MB.
+INFO: [HLS 200-777] Using interface defaults for 'Vivado' flow target.
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_user_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:314:57)
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_dest_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:317:61)
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_id_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:317:43)
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_user_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:316:54)
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_dest_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:315:46)
+INFO: [HLS 214-131] Inlining function 'hls::axis<decimal16, 0ul, 0ul, 0ul>::get_id_ptr()' into 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' (/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/ap_axi_sdata.h:315:30)
+INFO: [HLS 214-131] Inlining function 'hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>::read_nb(hls::axis<decimal16, 0ul, 0ul, 0ul>&)' into 'td_fused_axi_in(hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>&, decimal16 (*) [224][4])' (td_fused_axi_in.cpp:23:23)
+INFO: [HLS 214-178] Inlining function 'td_fused_axi_in(hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>&, decimal16 (*) [224][4])' into 'td_fused_axi_in_top(hls::stream<hls::axis<decimal16, 0ul, 0ul, 0ul>, 0>&)' (td_fused_axi_in.cpp:35:0)
+INFO: [HLS 200-111] Finished Compiling Optimization and Transform: CPU user time: 4.67 seconds. CPU system time: 0.58 seconds. Elapsed time: 5.52 seconds; current allocated memory: 241.774 MB.
+INFO: [HLS 200-111] Finished Checking Pragmas: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0 seconds; current allocated memory: 241.775 MB.
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms: CPU user time: 0.05 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.09 seconds; current allocated memory: 247.078 MB.
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability: CPU user time: 0.1 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.12 seconds; current allocated memory: 252.940 MB.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'VITIS_LOOP_20_3' (td_fused_axi_in.cpp:22) in function 'td_fused_axi_in_top' for pipelining.
+INFO: [HLS 200-489] Unrolling loop 'VITIS_LOOP_26_4' (td_fused_axi_in.cpp:26) in function 'td_fused_axi_in_top' completely with a factor of 4.
+INFO: [XFORM 203-131] Reshaping array 'fmaps' (td_fused_axi_in.cpp:38) in dimension 3 completely.
+INFO: [XFORM 203-102] Automatically partitioning small array 'p' (td_fused_axi_in.cpp:19) completely based on array size.
+INFO: [XFORM 203-101] Partitioning array 'p' (td_fused_axi_in.cpp:19) in dimension 1 completely.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (td_fused_axi_in.cpp:22:9) to (td_fused_axi_in.cpp:25:17) in function 'td_fused_axi_in_top'... converting 4 basic blocks.
+INFO: [HLS 200-111] Finished Loop, function and other optimizations: CPU user time: 0.23 seconds. CPU system time: 0.03 seconds. Elapsed time: 0.3 seconds; current allocated memory: 280.443 MB.
+INFO: [XFORM 203-541] Flattening a loop nest 'VITIS_LOOP_18_2' (td_fused_axi_in.cpp:22:9) in function 'td_fused_axi_in_top'.
+INFO: [XFORM 203-541] Flattening a loop nest 'VITIS_LOOP_17_1' (td_fused_axi_in.cpp:22:9) in function 'td_fused_axi_in_top'.
+INFO: [HLS 200-472] Inferring partial write operation for 'fmaps' (td_fused_axi_in.cpp:27:37)
+INFO: [HLS 200-111] Finished Architecture Synthesis: CPU user time: 0.12 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.16 seconds; current allocated memory: 276.148 MB.
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'td_fused_axi_in_top' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'td_fused_axi_in_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'VITIS_LOOP_17_1_VITIS_LOOP_18_2_VITIS_LOOP_20_3'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 1, loop 'VITIS_LOOP_17_1_VITIS_LOOP_18_2_VITIS_LOOP_20_3'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.09 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.11 seconds; current allocated memory: 276.444 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+WARNING: [BIND 205-102] The specified resource core for memory 'fmaps' will be ignored if a simpler one can be used.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.09 seconds. CPU system time: 0 seconds. Elapsed time: 0.11 seconds; current allocated memory: 276.782 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'td_fused_axi_in_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Design contains AXI ports. Reset is fixed to synchronous and active low.
+INFO: [RTGEN 206-500] Setting interface mode on port 'td_fused_axi_in_top/stream_in_V_data_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'td_fused_axi_in_top/stream_in_V_keep_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'td_fused_axi_in_top/stream_in_V_strb_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'td_fused_axi_in_top/stream_in_V_last_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on function 'td_fused_axi_in_top' to 'ap_ctrl_hs'.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'td_fused_axi_in_top'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.15 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.18 seconds; current allocated memory: 277.298 MB.
+INFO: [RTMG 210-278] Implementing memory 'td_fused_axi_in_top_fmaps_ram (RAM_S2P_URAM)' using ultra RAMs.
+INFO: [HLS 200-111] Finished Generating all RTL models: CPU user time: 1.25 seconds. CPU system time: 0.1 seconds. Elapsed time: 1.66 seconds; current allocated memory: 284.743 MB.
+INFO: [VHDL 208-304] Generating VHDL RTL for td_fused_axi_in_top.
+INFO: [VLOG 209-307] Generating Verilog RTL for td_fused_axi_in_top.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 292.72 MHz
+INFO: [HLS 200-111] Finished Command csynth_design CPU user time: 12.62 seconds. CPU system time: 1.31 seconds. Elapsed time: 14.86 seconds; current allocated memory: 284.863 MB.
+INFO: [HLS 200-112] Total CPU user time: 17.23 seconds. Total CPU system time: 3.02 seconds. Total elapsed time: 19.59 seconds; peak allocated memory: 284.743 MB.
+INFO: [Common 17-206] Exiting vitis_hls at Sat Mar 20 14:57:46 2021...

@@ -1,0 +1,665 @@
+
+****** Vitis HLS - High-Level Synthesis from C, C++ and OpenCL v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/scripts/vitis_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/bin/unwrapped/lnx64.o/vitis_hls'
+INFO: [HLS 200-10] For user 'drauch' on host 'yoshi.ece.utexas.edu' (Linux_x86_64 version 3.10.0-1160.11.1.el7.x86_64) on Thu Apr 15 11:51:38 CDT 2021
+INFO: [HLS 200-10] On os "CentOS Linux release 7.9.2009 (Core)"
+INFO: [HLS 200-10] In directory '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o2'
+Sourcing Tcl script 'tdf1.tcl'
+INFO: [HLS 200-1510] Running: open_project -reset tdf1_prj 
+INFO: [HLS 200-10] Creating and opening project '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o2/tdf1_prj'.
+INFO: [HLS 200-1510] Running: add_files -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common -D FAST_COMPILE=0 /home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h tdf1.cpp 
+INFO: [HLS 200-10] Adding design file '/home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h' to the project
+INFO: [HLS 200-10] Adding design file 'tdf1.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common/test -I /home/ecelrc/students/drauch/research/scale-cnn/common /home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp ../test/golden.cpp ../test/tb_tdf1.cpp 
+INFO: [HLS 200-10] Adding test bench file '/home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/golden.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/tb_tdf1.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top tdf1_top 
+INFO: [HLS 200-1510] Running: open_solution -reset solution1 
+INFO: [HLS 200-10] Creating and opening solution '/home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o2/tdf1_prj/solution1'.
+INFO: [HLS 200-10] Cleaning up the solution database.
+WARNING: [HLS 200-40] No /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf1/r1_o2/tdf1_prj/solution1/solution1.aps file found.
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1505.html
+INFO: [HLS 200-1510] Running: set_part xcvu3p-ffvc1517-3-e 
+INFO: [HLS 200-10] Setting target device to 'xcvu3p-ffvc1517-3-e'
+INFO: [HLS 200-1510] Running: create_clock -period 3 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 3ns.
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_s2p -impl uram tdf1_top in_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_s2p -impl uram tdf1_top out_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_2p -impl bram tdf1_top filter_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_2p -impl bram tdf1_top adjustments 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf1_top in_data -dim 3 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 1 tdf1_top filter_data -dim 4 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf1_top out_data -dim 3 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf1_top adjustments -dim 2 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 2 -dim 1 tdf1_top filter_data 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 2 -dim 1 tdf1 weight_vecs 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 2 -dim 1 tdf1 products 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf1_readInputs/IL6 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 1 tdf1_readInputs/IL6 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf1_readFilters/FL6 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 1 tdf1_readFilters/FL6 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf1_dot_product/DP_OUTER_3 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 1 tdf1_dot_product/DP_OUTER_3 
+INFO: [HLS 200-1510] Running: set_directive_dataflow tdf1/TOP_LOOP 
+INFO: [HLS 200-1510] Running: config_op hadd -impl fulldsp -latency 7 
+INFO: [HLS 200-1445] Configure operator 'hadd' with implementation style 'fulldsp'.
+INFO: [HLS 200-1446] Configure operator 'hadd' with latency 7.
+INFO: [HLS 200-1510] Running: config_op hmul -impl maxdsp -latency 4 
+INFO: [HLS 200-1445] Configure operator 'hmul' with implementation style 'maxdsp'.
+INFO: [HLS 200-1446] Configure operator 'hmul' with latency 4.
+INFO: [HLS 200-1510] Running: csim_design -clean 
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch GCC as the compiler.
+   Compiling ../../../../../../../../../common/test/tb_utils.cpp in debug mode
+   Compiling ../../../../../test/golden.cpp in debug mode
+   Compiling ../../../../../test/tb_tdf1.cpp in debug mode
+   Compiling ../../../../tdf1.cpp in debug mode
+   Generating csim.exe
+In file included from /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/hls_hotbm_apfixed.h:45:0,
+                 from /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/hls_math.h:1065,
+                 from ../../../../tdf1_conv_stages.h:8,
+                 from ../../../../tdf1.cpp:6:
+/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/utils/x_hls_utils.h:243:40: warning: ‘hls_preserve’ attribute directive ignored [-Wattributes]
+ __attribute__((hls_preserve)) T reg(T d)
+                                        ^
+Beginning functional validation.
+Generating random inputs.
+Running synthesized function...
+Running golden comparison function...
+Comparing expected vs. actual values.
+0 out of 200704 points exceeded low error threshold.
+118896 out of 200704 points equaled their exact expected values.
+Validation successful.
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-111] Finished Command csim_design CPU user time: 47.04 seconds. CPU system time: 2.05 seconds. Elapsed time: 79.46 seconds; current allocated memory: 239.923 MB.
+INFO: [HLS 200-1510] Running: config_dataflow -strict_mode off 
+INFO: [HLS 200-1510] Running: csynth_design 
+INFO: [HLS 200-111] Finished File checks and directory preparation: CPU user time: 0.01 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.08 seconds; current allocated memory: 240.131 MB.
+INFO: [HLS 200-10] Analyzing design file 'tdf1.cpp' ... 
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:117:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:118:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:119:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:120:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:121:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:151:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:152:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:153:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:154:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:155:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:156:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:157:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:158:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:159:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:160:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:210:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:211:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:212:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:239:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:240:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:241:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:242:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:243:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:244:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:280:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:281:9
+WARNING: [HLS 207-5301] unused parameter 'k': ./tdf1_conv_stages.h:76:37
+INFO: [HLS 200-111] Finished Source Code Analysis and Preprocessing: CPU user time: 54.21 seconds. CPU system time: 4.48 seconds. Elapsed time: 211.01 seconds; current allocated memory: 243.504 MB.
+INFO: [HLS 200-777] Using interface defaults for 'Vivado' flow target.
+INFO: [HLS 214-131] Inlining function 'tdf1_adjust_value(decimal16, decimal16, decimal16, decimal16)' into 'tdf1_adjust(decimal16*, decimal16*, decimal16 (*) [4], unsigned short)' (./tdf1_conv_stages.h:223:20)
+WARNING: [HLS 214-185] The resource pragma (storage) on function argument, in 'call' is unsupported (tdf1.cpp:299:9)
+INFO: [HLS 214-186] Unrolling loop 'FL7' (./tdf1_conv_stages.h:50:18) in function 'tdf1_readFilters' completely with a factor of 2 (./tdf1_conv_stages.h:50:18)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_90_2' (./tdf1_conv_stages.h:90:27) in function 'tdf1_writeOutputs_unaligned' completely with a factor of 4 (./tdf1_conv_stages.h:90:27)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_21_1' (tdf1.cpp:21:19) in function 'tdf1_poolOutputs' completely with a factor of 2 (tdf1.cpp:21:19)
+INFO: [HLS 214-178] Inlining function 'fp_struct<decimal16>::fp_struct(decimal16)' into 'int generic_signbit<decimal16>(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/include/FloatingPoint/hls_signbit.h:11:0)
+INFO: [HLS 214-178] Inlining function 'fp_struct<decimal16>::__signbit() const' into 'int generic_signbit<decimal16>(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/include/FloatingPoint/hls_signbit.h:11:0)
+INFO: [HLS 214-178] Inlining function 'int generic_signbit<decimal16>(decimal16)' into 'hls::signbit(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/src/c++/signbithalf.cpp:7:0)
+INFO: [HLS 214-178] Inlining function 'hls::signbit(decimal16)' into 'tdf1_adjust(decimal16*, decimal16*, decimal16 (*) [4], unsigned short)' (./tdf1_conv_stages.h:212:0)
+WARNING: [HLS 214-167] The program may have out of bound array access (./tdf1_conv_stages.h:94:37)
+WARNING: [HLS 214-167] The program may have out of bound array access (./tdf1_conv_stages.h:94:37)
+WARNING: [HLS 214-167] The program may have out of bound array access (./tdf1_conv_stages.h:94:37)
+WARNING: [HLS 214-167] The program may have out of bound array access (./tdf1_conv_stages.h:94:37)
+WARNING: [HLS 214-167] The program may have out of bound array access (tdf1.cpp:23:42)
+WARNING: [HLS 214-167] The program may have out of bound array access (tdf1.cpp:24:19)
+WARNING: [HLS 214-167] The program may have out of bound array access (tdf1.cpp:23:42)
+WARNING: [HLS 214-167] The program may have out of bound array access (tdf1.cpp:24:19)
+INFO: [HLS 214-248] cyclic reshaped array 'out_data' on dimension 3 with 4 (tdf1.cpp:298:137)
+INFO: [HLS 200-111] Finished Compiling Optimization and Transform: CPU user time: 11.29 seconds. CPU system time: 1.27 seconds. Elapsed time: 78.54 seconds; current allocated memory: 245.013 MB.
+INFO: [HLS 200-111] Finished Checking Pragmas: CPU user time: 0.01 seconds. CPU system time: 0 seconds. Elapsed time: 0 seconds; current allocated memory: 245.014 MB.
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms: CPU user time: 0.49 seconds. CPU system time: 0.08 seconds. Elapsed time: 2.53 seconds; current allocated memory: 266.336 MB.
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability: CPU user time: 0.7 seconds. CPU system time: 0.03 seconds. Elapsed time: 4.02 seconds; current allocated memory: 287.771 MB.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'IL_LOOP' (tdf1.cpp:104) in function 'tdf1_accum_3' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'IL_LOOP' (tdf1.cpp:74) in function 'tdf1_accum_2' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'DP_OUTER_3' (./tdf1_conv_stages.h:149) in function 'tdf1_dot_product' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'IL_LOOP' (tdf1.cpp:44) in function 'tdf1_accum_1' for pipelining.
+INFO: [HLS 200-489] Unrolling loop 'WRPC_LOOP' (tdf1.cpp:112) in function 'tdf1_accum_3' completely with a factor of 2.
+INFO: [HLS 200-489] Unrolling loop 'WRPC_LOOP' (tdf1.cpp:82) in function 'tdf1_accum_2' completely with a factor of 2.
+INFO: [HLS 200-489] Unrolling loop 'DP_INNER' (./tdf1_conv_stages.h:152) in function 'tdf1_dot_product' completely with a factor of 2.
+INFO: [HLS 200-489] Unrolling loop 'WRPC_LOOP' (tdf1.cpp:52) in function 'tdf1_accum_1' completely with a factor of 2.
+WARNING: [XFORM 203-135] Cannot reshape array 'filter_data' (tdf1.cpp:300): incorrect reshape factor 1.
+WARNING: [XFORM 203-135] Cannot reshape array 'filter_data' (tdf1.cpp:300): incorrect reshape factor 1.
+INFO: [XFORM 203-131] Reshaping array 'in_data' (tdf1.cpp:299) in dimension 3 completely.
+INFO: [XFORM 203-131] Reshaping array 'adjustments' (tdf1.cpp:301) in dimension 2 completely.
+INFO: [XFORM 203-101] Partitioning array 'weight_vecs' (tdf1.cpp:244) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'products' (tdf1.cpp:245) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'sums' (tdf1.cpp:246) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'outputs' (tdf1.cpp:247) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'input_indices' (tdf1.cpp:250) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'output_indices' (tdf1.cpp:251) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum3_out_0' (tdf1.cpp:281) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum3_out_1' (tdf1.cpp:282) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'outputRow'  in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'filter_data' (tdf1.cpp:300) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'max_vals'  in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'vals' (tdf1.cpp:108) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'vals' (tdf1.cpp:78) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'vals' (tdf1.cpp:48) in dimension 1 completely.
+INFO: [XFORM 203-721] Extract dataflow region from loop TOP_LOOP (tdf1.cpp:240)  of function 'tdf1'.
+INFO: [HLS 200-988] Store statement on variable  'sums[0]25' (tdf1.cpp:246) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf1.cpp:240:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[1]26' (tdf1.cpp:246) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf1.cpp:240:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [XFORM 203-712] Applying dataflow to function 'dataflow_in_loop_TOP_LOOP' (tdf1.cpp:240:7), detected/extracted 16 process function(s): 
+	 'tdf1_get_next_ijk'
+	 'tdf1_readInputs'
+	 'tdf1_readFilters'
+	 'tdf1_dot_product'
+	 'tdf1_accum_1'
+	 'tdf1_accum_1'
+	 'tdf1_accum_2'
+	 'tdf1_accum_2'
+	 'tdf1_accum_3'
+	 'tdf1_accum_3'
+	 'tdf1_accum_4'
+	 'Block_entry_proc_proc'
+	 'tdf1_accum_4'
+	 'Block_entry_proc_proc31'
+	 'tdf1_adjust'
+	 'tdf1_poolOutputs'.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock in function 'tdf1_get_next_ijk'... converting 6 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/include/FloatingPoint/hls_signbit.h:12:16) to (./tdf1_conv_stages.h:223:18) in function 'tdf1_adjust'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (tdf1.cpp:104:13) to (tdf1.cpp:118:28) in function 'tdf1_accum_3.1'... converting 3 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (tdf1.cpp:104:13) to (tdf1.cpp:118:28) in function 'tdf1_accum_3'... converting 3 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (tdf1.cpp:44:13) in function 'tdf1_accum_1'... converting 3 basic blocks.
+INFO: [HLS 200-111] Finished Loop, function and other optimizations: CPU user time: 2.5 seconds. CPU system time: 0.29 seconds. Elapsed time: 12.67 seconds; current allocated memory: 332.111 MB.
+INFO: [XFORM 203-541] Flattening a loop nest 'IL5' (./tdf1_conv_stages.h:20:21) in function 'tdf1_readInputs'.
+INFO: [XFORM 203-541] Flattening a loop nest 'IL4' (./tdf1_conv_stages.h:19:18) in function 'tdf1_readInputs'.
+INFO: [XFORM 203-541] Flattening a loop nest 'FL5' (./tdf1_conv_stages.h:48:26) in function 'tdf1_readFilters'.
+INFO: [XFORM 203-541] Flattening a loop nest 'FL4' (./tdf1_conv_stages.h:47:23) in function 'tdf1_readFilters'.
+INFO: [XFORM 203-541] Flattening a loop nest 'DP_OUTER_2' (./tdf1_conv_stages.h:148:33) in function 'tdf1_dot_product'.
+INFO: [XFORM 203-541] Flattening a loop nest 'DP_OUTER_1' (./tdf1_conv_stages.h:147:28) in function 'tdf1_dot_product'.
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[0]' (./tdf1_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[1]' (./tdf1_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[0]' (./tdf1_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[1]' (./tdf1_conv_stages.h:139).
+INFO: [HLS 200-472] Inferring partial write operation for 'filter_data[0]' (tdf1.cpp:304:28)
+INFO: [HLS 200-472] Inferring partial write operation for 'adjustments' (tdf1.cpp:305:22)
+INFO: [HLS 200-472] Inferring partial write operation for 'ifmap_vec' (./tdf1_conv_stages.h:33:35)
+INFO: [HLS 200-472] Inferring partial write operation for 'weight_vecs[0]' (./tdf1_conv_stages.h:55:43)
+INFO: [HLS 200-472] Inferring partial write operation for 'products[0]' (./tdf1_conv_stages.h:153:32)
+INFO: [HLS 200-472] Inferring partial write operation for 'accum_out' (tdf1.cpp:88:28)
+INFO: [HLS 200-472] Inferring partial write operation for 'accum_out' (tdf1.cpp:58:28)
+INTERNAL-INFO: never seen llvm instruction 'hsub'(535)
+WARNING: [HLS 200-1449] Process tdf1_readInputs5 has both a predecessor and reads an input from its caller (see the GUI dataflow viewer). This may lead to lower throughput. Consider copying this input via a predecessor process.
+INFO: [HLS 200-111] Finished Architecture Synthesis: CPU user time: 2.28 seconds. CPU system time: 0.15 seconds. Elapsed time: 11.09 seconds; current allocated memory: 496.245 MB.
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'tdf1_top' ...
+WARNING: [SYN 201-103] Legalizing function name 'tdf1_accum_3.1' to 'tdf1_accum_3_1'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf1_accum_4.1' to 'tdf1_accum_4_1'.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_get_next_ijk' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.03 seconds. Elapsed time: 0.8 seconds; current allocated memory: 496.865 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.23 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.61 seconds; current allocated memory: 497.197 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_readInputs5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL4_IL5_IL6'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL4_IL5_IL6'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.72 seconds. CPU system time: 0.02 seconds. Elapsed time: 4.49 seconds; current allocated memory: 497.657 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.46 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.81 seconds; current allocated memory: 498.258 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_readFilters4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'FL4_FL5_FL6'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 3, loop 'FL4_FL5_FL6'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.75 seconds. CPU system time: 0.01 seconds. Elapsed time: 3.21 seconds; current allocated memory: 498.518 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.26 seconds. CPU system time: 0.02 seconds. Elapsed time: 1.31 seconds; current allocated memory: 498.841 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_dot_product' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'DP_OUTER_1_DP_OUTER_2_DP_OUTER_3'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 9, loop 'DP_OUTER_1_DP_OUTER_2_DP_OUTER_3'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.51 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.79 seconds; current allocated memory: 499.133 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.38 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.81 seconds; current allocated memory: 499.503 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 11, loop 'IL_LOOP'
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_1' consists of the following:	'hadd' operation ('sum0', tdf1.cpp:57) [24]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.58 seconds. CPU system time: 0.03 seconds. Elapsed time: 2.42 seconds; current allocated memory: 499.627 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.21 seconds. CPU system time: 0 seconds. Elapsed time: 0.89 seconds; current allocated memory: 499.786 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 11, loop 'IL_LOOP'
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_2' consists of the following:	'hadd' operation ('sum0', tdf1.cpp:87) [22]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.24 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.99 seconds; current allocated memory: 499.900 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.17 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.78 seconds; current allocated memory: 500.045 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 11, loop 'IL_LOOP'
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_3' consists of the following:	'hadd' operation ('sum0', tdf1.cpp:117) [31]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.35 seconds. CPU system time: 0.02 seconds. Elapsed time: 1.8 seconds; current allocated memory: 500.246 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.23 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.1 seconds; current allocated memory: 500.560 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_3_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 11, loop 'IL_LOOP'
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_3_1' consists of the following:	'hadd' operation ('sum0', tdf1.cpp:117) [31]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.4 seconds. CPU system time: 0.01 seconds. Elapsed time: 2 seconds; current allocated memory: 500.791 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.29 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.3 seconds; current allocated memory: 501.104 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_4' consists of the following:	wire read on port 'accum_in_3_read' (tdf1.cpp:130) [6]  (0 ns)
+	'hadd' operation ('sum0', tdf1.cpp:131) [10]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.39 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.7 seconds; current allocated memory: 501.189 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.24 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.09 seconds; current allocated memory: 501.305 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.12 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.49 seconds; current allocated memory: 501.335 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.04 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.21 seconds; current allocated memory: 501.369 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_accum_4_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_accum_4_1' consists of the following:	wire read on port 'accum_in_3_read' (tdf1.cpp:130) [6]  (0 ns)
+	'hadd' operation ('sum0', tdf1.cpp:131) [10]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.68 seconds; current allocated memory: 501.453 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.35 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.39 seconds; current allocated memory: 501.569 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc31' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.15 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.62 seconds; current allocated memory: 501.628 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.04 seconds. CPU system time: 0 seconds. Elapsed time: 0.21 seconds; current allocated memory: 501.662 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_adjust' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'ADJUST_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 23, loop 'ADJUST_LOOP'
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'tdf1_adjust' consists of the following:	'hadd' operation ('biased', ./tdf1_conv_stages.h:187) [37]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.25 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.18 seconds; current allocated memory: 501.848 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.48 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.99 seconds; current allocated memory: 502.132 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_writeOutputs_unaligned' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.36 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.69 seconds; current allocated memory: 502.347 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.12 seconds. CPU system time: 0 seconds. Elapsed time: 0.5 seconds; current allocated memory: 502.606 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_poolOutputs' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.19 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.81 seconds; current allocated memory: 502.704 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.13 seconds. CPU system time: 0 seconds. Elapsed time: 0.59 seconds; current allocated memory: 502.879 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'dataflow_in_loop_TOP_LOOP' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+WARNING: [HLS 200-871] Estimated clock period (2.236ns) exceeds the target (target clock period: 3ns, clock uncertainty: 0.81ns, effective delay budget: 2.19ns).
+Resolution: For help on HLS 200-871 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-871.html
+WARNING: [HLS 200-1016] The critical path in module 'dataflow_in_loop_TOP_LOOP' consists of the following:	'call' operation ('_ln287', tdf1.cpp:287) to 'tdf1_accum_4' [82]  (2.24 ns)
+
+Resolution: For help on HLS 200-1016 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1016.html
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.31 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.37 seconds; current allocated memory: 503.087 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 5.46 seconds. CPU system time: 0.03 seconds. Elapsed time: 25.79 seconds; current allocated memory: 503.472 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 1.81 seconds. CPU system time: 0.02 seconds. Elapsed time: 8.29 seconds; current allocated memory: 503.546 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.67 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.7 seconds; current allocated memory: 503.686 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf1_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 1.8 seconds. CPU system time: 0.01 seconds. Elapsed time: 9.88 seconds; current allocated memory: 503.758 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+WARNING: [BIND 205-102] The specified resource core for memory 'filter_data_0' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'adjustments' will be ignored if a simpler one can be used.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.6 seconds. CPU system time: 0.01 seconds. Elapsed time: 2.41 seconds; current allocated memory: 503.909 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_get_next_ijk' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Register 'i_p' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'j_p' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'i' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'j' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'k' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'i_out' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'j_out' is power-on initialization.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_get_next_ijk'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 2.01 seconds. CPU system time: 0.04 seconds. Elapsed time: 10.7 seconds; current allocated memory: 504.395 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_readInputs5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_readInputs5'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.99 seconds. CPU system time: 0.05 seconds. Elapsed time: 5.5 seconds; current allocated memory: 506.759 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_readFilters4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_readFilters4'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1.94 seconds. CPU system time: 0.04 seconds. Elapsed time: 4.99 seconds; current allocated memory: 509.565 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_dot_product' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hmul_16ns_16ns_16_5_max_dsp_1': 2 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_dot_product'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.61 seconds. CPU system time: 0.03 seconds. Elapsed time: 1.9 seconds; current allocated memory: 511.537 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1.01 seconds. CPU system time: 0.02 seconds. Elapsed time: 4.33 seconds; current allocated memory: 513.266 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_2'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.29 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.54 seconds; current allocated memory: 514.172 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'mux_42_1_1_1': 4 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_3'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.19 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.33 seconds; current allocated memory: 515.322 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_3_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'mux_42_1_1_1': 4 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_3_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.4 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.67 seconds; current allocated memory: 517.010 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 2 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_4'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.56 seconds. CPU system time: 0.03 seconds. Elapsed time: 0.89 seconds; current allocated memory: 518.331 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.2 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.34 seconds; current allocated memory: 518.737 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_accum_4_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 2 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_accum_4_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.14 seconds; current allocated memory: 519.142 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc31' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc31'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.19 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.31 seconds; current allocated memory: 519.563 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_adjust' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_8_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'hmul_16ns_16ns_16_5_max_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'hsub_16ns_16ns_16_7_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_adjust'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.21 seconds; current allocated memory: 520.371 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_writeOutputs_unaligned' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Register 'outputCount' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'outputChanIdx' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'outputRow_0' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'outputRow_1' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'outputRow_2' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'outputRow_3' is power-on initialization.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_writeOutputs_unaligned'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.47 seconds. CPU system time: 0.03 seconds. Elapsed time: 1.17 seconds; current allocated memory: 521.521 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_poolOutputs' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Register 'max_vals_0' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'max_vals_1' is power-on initialization.
+INFO: [RTGEN 206-100] Generating core module 'hcmp_16ns_16ns_1_2_no_dsp_1': 2 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_poolOutputs'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.22 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.38 seconds; current allocated memory: 522.921 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'dataflow_in_loop_TOP_LOOP' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'dataflow_in_loop_TOP_LOOP'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.34 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.63 seconds; current allocated memory: 525.706 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 2.53 seconds. CPU system time: 0.05 seconds. Elapsed time: 4.54 seconds; current allocated memory: 527.563 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf1_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'tdf1_top/dummy_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'tdf1_top/out_data' to 'ap_memory'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'tdf1_top' to 'ap_ctrl_hs'.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf1_top'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1.72 seconds. CPU system time: 0.03 seconds. Elapsed time: 3.93 seconds; current allocated memory: 528.288 MB.
+INFO: [HLS 200-741] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_memcore using a single memory for all blocks
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_memcore_ram (RAM)' using auto RAMs.
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_products_0_memcore using a separate memory for each block
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_dataflow_in_loop_TOP_LOOP_products_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_memcore using a separate memory for each block
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum2_out_0_memcore using a separate memory for each block
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_dataflow_in_loop_TOP_LOOP_accum2_out_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [RTMG 210-285] Implementing FIFO 'input_indices_23_c_U(tdf1_top_fifo_w3_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'input_indices_23_c1_U(tdf1_top_fifo_w3_d9_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'output_indices_04_c_U(tdf1_top_fifo_w7_d10_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'output_indices_15_c_U(tdf1_top_fifo_w14_d10_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'resetMaximum6_c_U(tdf1_top_fifo_w1_d10_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'storeOutput7_c_U(tdf1_top_fifo_w1_d10_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'input_indices_0_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'input_indices_1_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_0_0_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_0_1_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_0_2_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_0_3_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_1_0_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_1_1_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_1_2_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum3_out_1_3_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_channel_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_0_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_3_channel_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_1_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_0_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_1_U(tdf1_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'start_for_tdf1_readFilters4_U0_U(tdf1_top_start_for_tdf1_readFilters4_U0)' using Shift Registers.
+WARNING: [RTMG 210-274] Memory 'tdf1_top_in_data' is read-only, switch it to a ROM.
+INFO: [RTMG 210-279] Implementing memory 'tdf1_top_in_data_rom' using ultra ROMs.
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_filter_data_0_ram (RAM_2P_BRAM)' using block RAMs.
+WARNING: [RTMG 210-274] Memory 'tdf1_top_filter_data_1' is read-only, switch it to a ROM.
+INFO: [RTMG 210-279] Implementing memory 'tdf1_top_filter_data_1_rom' using block ROMs.
+INFO: [RTMG 210-278] Implementing memory 'tdf1_top_adjustments_ram (RAM_2P_BRAM)' using block RAMs.
+INFO: [HLS 200-741] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_memcore using a single memory for all blocks
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_products_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum2_out_0_memcore using a separate memory for each block
+INFO: [HLS 200-741] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_memcore using a single memory for all blocks
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_products_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf1_top_dataflow_in_loop_TOP_LOOP_accum2_out_0_memcore using a separate memory for each block
+INFO: [HLS 200-111] Finished Generating all RTL models: CPU user time: 9.67 seconds. CPU system time: 1.26 seconds. Elapsed time: 40.59 seconds; current allocated memory: 537.431 MB.
+INFO: [VHDL 208-304] Generating VHDL RTL for tdf1_top.
+INFO: [VLOG 209-307] Generating Verilog RTL for tdf1_top.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 447.23 MHz
+INFO: [HLS 200-111] Finished Command csynth_design CPU user time: 115.37 seconds. CPU system time: 8.52 seconds. Elapsed time: 500.3 seconds; current allocated memory: 538.993 MB.
+INFO: [HLS 200-112] Total CPU user time: 169.67 seconds. Total CPU system time: 13.51 seconds. Total elapsed time: 597.12 seconds; peak allocated memory: 537.431 MB.
+INFO: [Common 17-206] Exiting vitis_hls at Thu Apr 15 12:01:34 2021...

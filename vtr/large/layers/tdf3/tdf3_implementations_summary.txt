@@ -1,0 +1,30 @@
+
+===========================================================
+== Synthesis results for tdf3 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf3/r1_o1
+
+Total latency (raw)  : 2,107,526 cycles
+Total latency (true) : 2,107,526 cycles
+Estimated total latency: 2,107,518 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 0.28%
+dsp: 0.70%
+ff: 0.55%
+lut: 1.00%
+uram: 4.38%
+Total cost: 0.069
+
+Subfunction latencies:
+tdf3_accum_1: 41 cycles
+tdf3_adjust: 22 cycles
+tdf3_accum_2: 15 cycles
+tdf3_accum_3: 37 cycles
+tdf3_readInputs: 19 cycles
+tdf3_dot_product: 40 cycles
+tdf3_writeOutputs_unaligned: 2 cycles
+tdf3_readFilters: 34 cycles

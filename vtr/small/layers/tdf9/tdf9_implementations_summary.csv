@@ -1,0 +1,5 @@
+ImplementationDir,Latency,Cost
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r1_o1,3261868,0.05693375999886033
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r1_o2,1631148,0.06835759147666161
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r2_o1,1656072,0.06615664020485643
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r4_o1,853170,0.08184839573049554

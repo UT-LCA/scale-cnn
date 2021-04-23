@@ -1,0 +1,284 @@
+
+===========================================================
+== Synthesis results for tdf12 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r1_o1
+
+Total latency (raw)  : 26,852,344 cycles
+Total latency (true) : 26,852,344 cycles
+Estimated total latency: 27,048,414 cycles
+Estimation error: 0.73%
+
+Cost info:
+bram: 8.82%
+dsp: 0.61%
+ff: 0.44%
+lut: 0.80%
+uram: 1.25%
+Total cost: 0.119
+
+Subfunction latencies:
+tdf12_accum_1: 125 cycles
+tdf12_adjust: 22 cycles
+tdf12_accum_2: 81 cycles
+tdf12_readInputs: 68 cycles
+tdf12_dot_product: 136 cycles
+tdf12_writeOutputs_unaligned: 3 cycles
+tdf12_readFilters: 130 cycles
+
+
+Implementation: r1_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r1_o2
+
+Total latency (raw)  : 13,426,344 cycles
+Total latency (true) : 13,426,344 cycles
+Estimated total latency: 13,524,414 cycles
+Estimation error: 0.73%
+
+Cost info:
+bram: 9.10%
+dsp: 0.96%
+ff: 0.66%
+lut: 1.15%
+uram: 1.25%
+Total cost: 0.131
+
+Subfunction latencies:
+tdf12_accum_1: 125 cycles
+tdf12_adjust: 25 cycles
+tdf12_dot_product: 136 cycles
+tdf12_accum_2: 81 cycles
+tdf12_readInputs: 68 cycles
+tdf12_writeOutputs_unaligned: 7 cycles
+tdf12_readFilters: 130 cycles
+
+
+Implementation: r1_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r1_o4
+
+Total latency (raw)  : 6,713,344 cycles
+Total latency (true) : 6,713,344 cycles
+Estimated total latency: 6,762,414 cycles
+Estimation error: 0.73%
+
+Cost info:
+bram: 9.51%
+dsp: 1.71%
+ff: 1.03%
+lut: 1.76%
+uram: 1.25%
+Total cost: 0.153
+
+Subfunction latencies:
+tdf12_adjust: 27 cycles
+tdf12_accum_1: 125 cycles
+tdf12_dot_product: 136 cycles
+tdf12_accum_2: 81 cycles
+tdf12_readInputs: 68 cycles
+tdf12_readFilters: 131 cycles
+tdf12_writeOutputs_aligned: 4 cycles
+
+
+Implementation: r1_o5
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r1_o5
+
+Total latency (raw)  : 5,958,750 cycles
+Total latency (true) : 5,958,750 cycles
+Estimated total latency: 5,410,014 cycles
+Estimation error: 9.21%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 10.42%
+dsp: 2.02%
+ff: 1.29%
+lut: 2.27%
+uram: 1.25%
+Total cost: 0.172
+
+Subfunction latencies:
+tdf12_adjust: 28 cycles
+tdf12_accum_1: 125 cycles
+tdf12_dot_product: 136 cycles
+tdf12_readFilters: 151 cycles
+tdf12_writeOutputs_unaligned: 13 cycles
+tdf12_accum_2: 81 cycles
+tdf12_readInputs: 68 cycles
+
+
+Implementation: r2_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r2_o1
+
+Total latency (raw)  : 16,072,243 cycles
+Total latency (true) : 16,072,243 cycles
+Estimated total latency: 14,504,222 cycles
+Estimation error: 9.76%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 8.75%
+dsp: 0.88%
+ff: 0.58%
+lut: 1.24%
+uram: 1.25%
+Total cost: 0.127
+
+Subfunction latencies:
+tdf12_accum_1: 75 cycles
+tdf12_readInputs: 68 cycles
+tdf12_adjust: 22 cycles
+tdf12_dot_product: 72 cycles
+tdf12_accum_2: 19 cycles
+tdf12_accum_3: 81 cycles
+tdf12_writeOutputs_unaligned: 3 cycles
+tdf12_readFilters: 66 cycles
+
+
+Implementation: r2_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r2_o2
+
+Total latency (raw)  : 8,036,243 cycles
+Total latency (true) : 8,036,243 cycles
+Estimated total latency: 7,252,222 cycles
+Estimation error: 9.76%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 9.24%
+dsp: 1.49%
+ff: 0.93%
+lut: 1.76%
+uram: 1.25%
+Total cost: 0.147
+
+Subfunction latencies:
+tdf12_accum_1: 75 cycles
+tdf12_readInputs: 68 cycles
+tdf12_adjust: 25 cycles
+tdf12_dot_product: 72 cycles
+tdf12_accum_2: 19 cycles
+tdf12_accum_3: 81 cycles
+tdf12_writeOutputs_unaligned: 7 cycles
+tdf12_readFilters: 66 cycles
+
+
+Implementation: r4_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r4_o1
+
+Total latency (raw)  : 11,172,177 cycles
+Total latency (true) : 11,172,177 cycles
+Estimated total latency: 8,232,126 cycles
+Estimation error: 26.32%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 8.61%
+dsp: 1.40%
+ff: 0.90%
+lut: 1.52%
+uram: 1.25%
+Total cost: 0.137
+
+Subfunction latencies:
+tdf12_accum_1: 56 cycles
+tdf12_accum_2: 41 cycles
+tdf12_dot_product: 40 cycles
+tdf12_adjust: 22 cycles
+tdf12_accum_3: 15 cycles
+tdf12_accum_4: 37 cycles
+tdf12_writeOutputs_unaligned: 3 cycles
+tdf12_readInputs: 35 cycles
+tdf12_readFilters: 34 cycles
+
+
+Implementation: r4_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r4_o2
+
+Total latency (raw)  : 5,586,177 cycles
+Total latency (true) : 5,586,177 cycles
+Estimated total latency: 4,116,126 cycles
+Estimation error: 26.32%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 8.96%
+dsp: 2.54%
+ff: 1.59%
+lut: 2.59%
+uram: 1.25%
+Total cost: 0.169
+
+Subfunction latencies:
+tdf12_accum_1: 56 cycles
+tdf12_dot_product: 40 cycles
+tdf12_accum_2: 41 cycles
+tdf12_adjust: 25 cycles
+tdf12_accum_3: 15 cycles
+tdf12_accum_4: 37 cycles
+tdf12_writeOutputs_unaligned: 7 cycles
+tdf12_readInputs: 35 cycles
+tdf12_readFilters: 34 cycles
+
+
+Implementation: r8_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r8_o1
+
+Total latency (raw)  : 4,900,106 cycles
+Total latency (true) : 4,900,106 cycles
+Estimated total latency: 5,096,078 cycles
+Estimation error: 4.00%
+
+Cost info:
+bram: 8.12%
+dsp: 3.42%
+ff: 1.59%
+lut: 1.73%
+uram: 1.25%
+Total cost: 0.161
+
+Subfunction latencies:
+tdf12_accum_2: 23 cycles
+tdf12_accum_1: 19 cycles
+tdf12_accum_3: 21 cycles
+tdf12_dot_product: 24 cycles
+tdf12_adjust: 22 cycles
+tdf12_accum_4: 15 cycles
+tdf12_readInputs: 19 cycles
+tdf12_writeOutputs_unaligned: 3 cycles
+tdf12_readFilters: 18 cycles
+
+
+Implementation: r2_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf12/r2_o4
+
+Total latency (raw)  : 4,018,243 cycles
+Total latency (true) : 4,018,243 cycles
+Estimated total latency: 3,626,222 cycles
+Estimation error: 9.76%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 10.07%
+dsp: 2.76%
+ff: 1.56%
+lut: 2.72%
+uram: 1.25%
+Total cost: 0.184
+
+Subfunction latencies:
+tdf12_accum_1: 75 cycles
+tdf12_dot_product: 72 cycles
+tdf12_adjust: 27 cycles
+tdf12_readInputs: 68 cycles
+tdf12_readFilters: 67 cycles
+tdf12_accum_2: 19 cycles
+tdf12_accum_3: 81 cycles
+tdf12_writeOutputs_aligned: 4 cycles

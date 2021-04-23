@@ -1,0 +1,476 @@
+
+===========================================================
+== Synthesis results for tdf8 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r1_o1
+
+Total latency (raw)  : 59,810,437 cycles
+Total latency (true) : 59,810,437 cycles
+Estimated total latency: 59,810,686 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 5.21%
+dsp: 0.61%
+ff: 0.51%
+lut: 1.17%
+uram: 1.25%
+Total cost: 0.088
+
+Subfunction latencies:
+tdf8_accum_1: 265 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_adjust: 22 cycles
+tdf8_dot_product: 297 cycles
+tdf8_accum_2: 81 cycles
+tdf8_readFilters4: 291 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r1_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r1_o2
+
+Total latency (raw)  : 29,905,541 cycles
+Total latency (true) : 29,905,541 cycles
+Estimated total latency: 29,905,790 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 5.56%
+dsp: 0.96%
+ff: 0.74%
+lut: 1.53%
+uram: 1.25%
+Total cost: 0.100
+
+Subfunction latencies:
+tdf8_accum_1: 265 cycles
+tdf8_adjust: 25 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_dot_product: 297 cycles
+tdf8_accum_2: 81 cycles
+tdf8_readFilters4: 291 cycles
+tdf8_poolOutputs: 8 cycles
+
+
+Implementation: r1_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r1_o4
+
+Total latency (raw)  : 14,953,094 cycles
+Total latency (true) : 14,953,094 cycles
+Estimated total latency: 14,953,342 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 6.39%
+dsp: 1.67%
+ff: 1.13%
+lut: 2.22%
+uram: 1.25%
+Total cost: 0.126
+
+Subfunction latencies:
+tdf8_adjust: 27 cycles
+tdf8_accum_1: 265 cycles
+tdf8_dot_product: 297 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_readFilters4: 292 cycles
+tdf8_accum_2: 81 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r1_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r1_o8
+
+Total latency (raw)  : 7,476,870 cycles
+Total latency (true) : 7,476,870 cycles
+Estimated total latency: 7,477,118 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 8.06%
+dsp: 3.07%
+ff: 1.89%
+lut: 3.72%
+uram: 1.25%
+Total cost: 0.180
+
+Subfunction latencies:
+tdf8_adjust: 31 cycles
+tdf8_dot_product: 297 cycles
+tdf8_accum_1: 265 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_readFilters4: 292 cycles
+tdf8_poolOutputs: 6 cycles
+tdf8_accum_2: 81 cycles
+
+
+Implementation: r1_o16
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r1_o16
+
+Total latency (raw)  : 3,738,759 cycles
+Total latency (true) : 3,738,759 cycles
+Estimated total latency: 3,739,006 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 11.39%
+dsp: 5.88%
+ff: 3.41%
+lut: 6.98%
+uram: 1.25%
+Total cost: 0.289
+
+Subfunction latencies:
+tdf8_adjust: 40 cycles
+tdf8_dot_product: 297 cycles
+tdf8_readFilters4: 293 cycles
+tdf8_accum_1: 265 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_poolOutputs: 8 cycles
+tdf8_accum_2: 81 cycles
+
+
+Implementation: r2_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r2_o1
+
+Total latency (raw)  : 32,514,503 cycles
+Total latency (true) : 32,514,503 cycles
+Estimated total latency: 30,908,878 cycles
+Estimation error: 4.94%
+
+Cost info:
+bram: 5.28%
+dsp: 0.79%
+ff: 0.65%
+lut: 1.59%
+uram: 1.25%
+Total cost: 0.096
+
+Subfunction latencies:
+tdf8_accum_1: 145 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_adjust: 22 cycles
+tdf8_dot_product: 153 cycles
+tdf8_accum_2: 161 cycles
+tdf8_readFilters4: 147 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r2_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r2_o2
+
+Total latency (raw)  : 16,257,479 cycles
+Total latency (true) : 16,257,479 cycles
+Estimated total latency: 15,454,670 cycles
+Estimation error: 4.94%
+
+Cost info:
+bram: 5.83%
+dsp: 1.32%
+ff: 0.95%
+lut: 2.06%
+uram: 1.25%
+Total cost: 0.114
+
+Subfunction latencies:
+tdf8_accum_1: 145 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_dot_product: 153 cycles
+tdf8_adjust: 25 cycles
+tdf8_accum_2: 161 cycles
+tdf8_readFilters4: 147 cycles
+tdf8_poolOutputs: 8 cycles
+
+
+Implementation: r2_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r2_o4
+
+Total latency (raw)  : 8,128,967 cycles
+Total latency (true) : 8,128,967 cycles
+Estimated total latency: 7,727,566 cycles
+Estimation error: 4.94%
+
+Cost info:
+bram: 6.94%
+dsp: 2.37%
+ff: 1.51%
+lut: 2.96%
+uram: 1.25%
+Total cost: 0.150
+
+Subfunction latencies:
+tdf8_accum_1: 145 cycles
+tdf8_dot_product: 153 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_adjust: 27 cycles
+tdf8_readFilters4: 148 cycles
+tdf8_accum_2: 161 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r2_o8
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r2_o8
+
+Total latency (raw)  : 4,064,711 cycles
+Total latency (true) : 4,064,711 cycles
+Estimated total latency: 3,864,014 cycles
+Estimation error: 4.94%
+
+Cost info:
+bram: 9.72%
+dsp: 4.47%
+ff: 2.58%
+lut: 4.90%
+uram: 1.25%
+Total cost: 0.229
+
+Subfunction latencies:
+tdf8_dot_product: 153 cycles
+tdf8_accum_1: 145 cycles
+tdf8_adjust: 31 cycles
+tdf8_readInputs5: 149 cycles
+tdf8_readFilters4: 148 cycles
+tdf8_poolOutputs: 6 cycles
+tdf8_accum_2: 161 cycles
+
+
+Implementation: r4_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r4_o1
+
+Total latency (raw)  : 18,465,057 cycles
+Total latency (true) : 18,465,057 cycles
+Estimated total latency: 16,457,974 cycles
+Estimation error: 10.87%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 5.76%
+dsp: 1.32%
+ff: 0.86%
+lut: 1.67%
+uram: 1.25%
+Total cost: 0.109
+
+Subfunction latencies:
+tdf8_accum_1: 91 cycles
+tdf8_accum_2: 41 cycles
+tdf8_dot_product: 81 cycles
+tdf8_readInputs6: 77 cycles
+tdf8_adjust: 22 cycles
+tdf8_accum_3: 81 cycles
+tdf8_readFilters5: 75 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r4_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r4_o2
+
+Total latency (raw)  : 9,232,673 cycles
+Total latency (true) : 9,232,673 cycles
+Estimated total latency: 8,229,110 cycles
+Estimation error: 10.87%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 6.67%
+dsp: 2.37%
+ff: 1.42%
+lut: 2.52%
+uram: 1.25%
+Total cost: 0.142
+
+Subfunction latencies:
+tdf8_accum_1: 91 cycles
+tdf8_dot_product: 81 cycles
+tdf8_accum_2: 41 cycles
+tdf8_adjust: 25 cycles
+tdf8_readInputs5: 77 cycles
+tdf8_accum_3: 81 cycles
+tdf8_readFilters4: 75 cycles
+tdf8_poolOutputs: 8 cycles
+
+
+Implementation: r4_o4
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r4_o4
+
+Total latency (raw)  : 4,616,481 cycles
+Total latency (true) : 4,616,481 cycles
+Estimated total latency: 4,114,678 cycles
+Estimation error: 10.87%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 8.75%
+dsp: 4.47%
+ff: 2.50%
+lut: 4.19%
+uram: 1.25%
+Total cost: 0.212
+
+Subfunction latencies:
+tdf8_accum_1: 91 cycles
+tdf8_dot_product: 81 cycles
+tdf8_adjust: 27 cycles
+tdf8_accum_2: 41 cycles
+tdf8_readInputs5: 77 cycles
+tdf8_readFilters4: 76 cycles
+tdf8_accum_3: 81 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r8_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r8_o1
+
+Total latency (raw)  : 12,845,269 cycles
+Total latency (true) : 12,845,269 cycles
+Estimated total latency: 9,232,522 cycles
+Estimation error: 28.13%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 5.76%
+dsp: 2.37%
+ff: 1.48%
+lut: 2.95%
+uram: 1.25%
+Total cost: 0.138
+
+Subfunction latencies:
+tdf8_accum_1: 63 cycles
+tdf8_accum_2: 47 cycles
+tdf8_dot_product: 45 cycles
+tdf8_readInputs6: 40 cycles
+tdf8_adjust: 22 cycles
+tdf8_accum_4: 15 cycles
+tdf8_accum_5: 37 cycles
+tdf8_accum_3: 19 cycles
+tdf8_readFilters5: 39 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r8_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r8_o2
+
+Total latency (raw)  : 6,422,741 cycles
+Total latency (true) : 6,422,741 cycles
+Estimated total latency: 4,616,330 cycles
+Estimation error: 28.13%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 6.39%
+dsp: 4.47%
+ff: 2.66%
+lut: 5.04%
+uram: 1.25%
+Total cost: 0.198
+
+Subfunction latencies:
+tdf8_accum_1: 63 cycles
+tdf8_dot_product: 45 cycles
+tdf8_accum_2: 47 cycles
+tdf8_adjust: 25 cycles
+tdf8_readInputs5: 40 cycles
+tdf8_accum_4: 15 cycles
+tdf8_accum_5: 37 cycles
+tdf8_accum_3: 19 cycles
+tdf8_readFilters4: 39 cycles
+tdf8_poolOutputs: 8 cycles
+
+
+Implementation: r16_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r16_o1
+
+Total latency (raw)  : 5,820,543 cycles
+Total latency (true) : 5,820,543 cycles
+Estimated total latency: 5,619,796 cycles
+Estimation error: 3.45%
+
+Cost info:
+bram: 4.65%
+dsp: 5.53%
+ff: 2.45%
+lut: 3.00%
+uram: 2.50%
+Total cost: 0.181
+
+Subfunction latencies:
+tdf8_accum_1: 28 cycles
+tdf8_accum_2: 24 cycles
+tdf8_dot_product: 27 cycles
+tdf8_accum_3: 22 cycles
+tdf8_readInputs6: 22 cycles
+tdf8_adjust: 22 cycles
+tdf8_accum_4: 23 cycles
+tdf8_readFilters5: 21 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r32_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r32_o1
+
+Total latency (raw)  : 40,341,655 cycles
+Total latency (true) : 40,341,655 cycles
+Estimated total latency: 3,813,433 cycles
+Estimation error: 90.55%
+
+WARNING: Latency estimation error unexpectedly high. Check layer synthesis results.
+
+Cost info:
+bram: 5.14%
+dsp: 14.82%
+ff: 7.06%
+lut: 8.76%
+uram: 5.00%
+Total cost: 0.408
+
+Subfunction latencies:
+tdf8_accum_1: 16 cycles
+tdf8_accum_2: 14 cycles
+tdf8_accum_3: 13 cycles
+tdf8_accum_4: 200 cycles
+tdf8_dot_product: 17 cycles
+tdf8_accum_5: 18 cycles
+tdf8_accum_6: 18 cycles
+tdf8_readInputs6: 13 cycles
+tdf8_accum_7: 14 cycles
+tdf8_adjust: 22 cycles
+tdf8_accum_8: 15 cycles
+tdf8_readFilters5: 12 cycles
+tdf8_poolOutputs: 4 cycles
+
+
+Implementation: r16_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf8/r16_o2
+
+Total latency (raw)  : 2,910,335 cycles
+Total latency (true) : 2,910,335 cycles
+Estimated total latency: 2,809,940 cycles
+Estimation error: 3.45%
+
+Cost info:
+bram: 5.14%
+dsp: 10.79%
+ff: 4.52%
+lut: 5.06%
+uram: 2.50%
+Total cost: 0.280
+
+Subfunction latencies:
+tdf8_accum_1: 28 cycles
+tdf8_dot_product: 27 cycles
+tdf8_accum_2: 24 cycles
+tdf8_accum_3: 22 cycles
+tdf8_readInputs5: 22 cycles
+tdf8_adjust: 25 cycles
+tdf8_accum_4: 23 cycles
+tdf8_readFilters4: 21 cycles
+tdf8_poolOutputs: 8 cycles

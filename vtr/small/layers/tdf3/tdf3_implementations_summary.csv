@@ -1,0 +1,16 @@
+ImplementationDir,Latency,Cost
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r1_o1,1806428,0.06336392646252252
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r1_o2,903260,0.0734508889458726
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r1_o4,451675,0.09174702260116388
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r1_o8,225883,0.1310227551979828
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r1_o16,112987,0.2086315184021768
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r2_o1,1003575,0.0708849525610616
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r2_o2,501815,0.08584880797202099
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r2_o4,250935,0.11411188217193409
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r2_o8,125495,0.17319969317833767
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r2_o16,78450,0.29043261320170094
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o1,602151,0.0769242241311765
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o2,301095,0.1005943222856166
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o4,150567,0.1462698819724911
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o8,100387,0.2401826639528175
+/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o16,50211,0.4315410621051207

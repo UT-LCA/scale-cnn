@@ -1,0 +1,1209 @@
+
+****** Vitis HLS - High-Level Synthesis from C, C++ and OpenCL v2020.2 (64-bit)
+  **** SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+  **** IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+source /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/scripts/vitis_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/bin/unwrapped/lnx64.o/vitis_hls'
+INFO: [HLS 200-10] For user 'drauch' on host 'yoshi.ece.utexas.edu' (Linux_x86_64 version 3.10.0-1160.11.1.el7.x86_64) on Sat Mar 20 12:53:59 CDT 2021
+INFO: [HLS 200-10] On os "CentOS Linux release 7.9.2009 (Core)"
+INFO: [HLS 200-10] In directory '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o8'
+Sourcing Tcl script 'tdf3.tcl'
+INFO: [HLS 200-1510] Running: open_project -reset tdf3_prj 
+INFO: [HLS 200-10] Creating and opening project '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o8/tdf3_prj'.
+INFO: [HLS 200-1510] Running: add_files -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common -D FAST_COMPILE=0 /home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h tdf3.cpp 
+INFO: [HLS 200-10] Adding design file '/home/ecelrc/students/drauch/research/scale-cnn/common/global_defines.h' to the project
+INFO: [HLS 200-10] Adding design file 'tdf3.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb -cflags -I .. -I /home/ecelrc/students/drauch/research/scale-cnn/common/test -I /home/ecelrc/students/drauch/research/scale-cnn/common /home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp ../test/golden.cpp ../test/tb_tdf3.cpp 
+INFO: [HLS 200-10] Adding test bench file '/home/ecelrc/students/drauch/research/scale-cnn/common/test/tb_utils.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/golden.cpp' to the project
+INFO: [HLS 200-10] Adding test bench file '../test/tb_tdf3.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top tdf3_top 
+INFO: [HLS 200-1510] Running: open_solution -reset solution1 
+INFO: [HLS 200-10] Creating and opening solution '/home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o8/tdf3_prj/solution1'.
+INFO: [HLS 200-10] Cleaning up the solution database.
+WARNING: [HLS 200-40] No /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf3/r4_o8/tdf3_prj/solution1/solution1.aps file found.
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see www.xilinx.com/cgi-bin/docs/rdoc?v=2020.2;t=hls+guidance;d=200-1505.html
+INFO: [HLS 200-1510] Running: set_part xcvu3p-ffvc1517-3-e 
+INFO: [HLS 200-10] Setting target device to 'xcvu3p-ffvc1517-3-e'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_s2p -impl uram tdf3_top in_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_s2p -impl uram tdf3_top out_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_2p -impl bram tdf3_top filter_data 
+INFO: [HLS 200-1510] Running: set_directive_bind_storage -type ram_2p -impl bram tdf3_top adjustments 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf3_top in_data -dim 3 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf3_top filter_data -dim 4 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf3_top out_data -dim 3 
+INFO: [HLS 200-1510] Running: set_directive_array_reshape -type cyclic -factor 4 tdf3_top adjustments -dim 2 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 8 -dim 1 tdf3_top filter_data 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 8 -dim 1 tdf3 weight_vecs 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 8 -dim 1 tdf3 products 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 4 -dim 3 tdf3 ifmap_vec 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 4 -dim 4 tdf3 weight_vecs 
+INFO: [HLS 200-1510] Running: set_directive_array_partition -type cyclic -factor 4 -dim 2 tdf3 products 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf3_readInputs/IL6 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 4 tdf3_readInputs/IL6 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf3_readFilters/FL6 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 4 tdf3_readFilters/FL6 
+INFO: [HLS 200-1510] Running: set_directive_pipeline tdf3_dot_product/DP_OUTER_3 
+INFO: [HLS 200-1510] Running: set_directive_unroll -factor 4 tdf3_dot_product/DP_OUTER_3 
+INFO: [HLS 200-1510] Running: set_directive_dataflow tdf3/TOP_LOOP 
+INFO: [HLS 200-1510] Running: config_op hadd -impl fulldsp -latency 1 
+INFO: [HLS 200-1445] Configure operator 'hadd' with implementation style 'fulldsp'.
+INFO: [HLS 200-1446] Configure operator 'hadd' with latency 1.
+INFO: [HLS 200-1510] Running: config_op hmul -impl maxdsp -latency 1 
+INFO: [HLS 200-1445] Configure operator 'hmul' with implementation style 'maxdsp'.
+INFO: [HLS 200-1446] Configure operator 'hmul' with latency 1.
+INFO: [HLS 200-1510] Running: csim_design -clean 
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch GCC as the compiler.
+   Compiling ../../../../../../../../../common/test/tb_utils.cpp in debug mode
+   Compiling ../../../../../test/golden.cpp in debug mode
+   Compiling ../../../../../test/tb_tdf3.cpp in debug mode
+   Compiling ../../../../tdf3.cpp in debug mode
+   Generating csim.exe
+In file included from /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/hls_hotbm_apfixed.h:45:0,
+                 from /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/hls_math.h:1065,
+                 from ../../../../tdf3_conv_stages.h:8,
+                 from ../../../../tdf3.cpp:6:
+/usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/include/utils/x_hls_utils.h:243:40: warning: ‘hls_preserve’ attribute directive ignored [-Wattributes]
+ __attribute__((hls_preserve)) T reg(T d)
+                                        ^
+Beginning functional validation.
+Generating random inputs.
+Running synthesized function...
+Running golden comparison function...
+Comparing expected vs. actual values.
+0 out of 50176 points exceeded low error threshold.
+35774 out of 50176 points equaled their exact expected values.
+Validation successful.
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-111] Finished Command csim_design CPU user time: 10.88 seconds. CPU system time: 1.24 seconds. Elapsed time: 12.41 seconds; current allocated memory: 240.059 MB.
+INFO: [HLS 200-1510] Running: config_dataflow -strict_mode off 
+INFO: [HLS 200-1510] Running: csynth_design 
+INFO: [HLS 200-111] Finished File checks and directory preparation: CPU user time: 0.01 seconds. CPU system time: 0 seconds. Elapsed time: 0.01 seconds; current allocated memory: 240.333 MB.
+INFO: [HLS 200-10] Analyzing design file 'tdf3.cpp' ... 
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:117:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:118:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:119:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:120:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:121:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:151:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:152:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:153:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:154:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:155:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:156:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:157:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:158:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:159:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:160:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:210:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:211:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:212:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:239:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:240:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:241:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:242:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:243:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:244:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:280:9
+WARNING: [HLS 207-5510] 'Resource pragma' is deprecated, and it will be removed in future release. It is suggested to replace it with 'bind_op/bind_storage pragma'.: /usr/local/packages/xilinx_2020/Vitis_HLS/2020.2/common/technology/autopilot/hls_hotbm_apfixed.h:281:9
+WARNING: [HLS 207-5301] unused parameter 'k': ./tdf3_conv_stages.h:76:37
+INFO: [HLS 200-111] Finished Source Code Analysis and Preprocessing: CPU user time: 32.58 seconds. CPU system time: 2.45 seconds. Elapsed time: 35.28 seconds; current allocated memory: 243.756 MB.
+INFO: [HLS 200-777] Using interface defaults for 'Vivado' flow target.
+INFO: [HLS 214-131] Inlining function 'tdf3_adjust_value(decimal16, decimal16, decimal16, decimal16)' into 'tdf3_adjust(decimal16*, decimal16*, decimal16 (*) [4], unsigned short)' (./tdf3_conv_stages.h:223:20)
+WARNING: [HLS 214-185] The resource pragma (storage) on function argument, in 'call' is unsupported (tdf3.cpp:244:9)
+INFO: [HLS 214-188] Unrolling loop 'IL6' (./tdf3_conv_stages.h:25:15) in function 'tdf3_readInputs' partially with a factor of 4 (./tdf3_conv_stages.h:25:15)
+INFO: [HLS 214-188] Unrolling loop 'FL6' (./tdf3_conv_stages.h:49:15) in function 'tdf3_readFilters' partially with a factor of 4 (./tdf3_conv_stages.h:49:15)
+INFO: [HLS 214-186] Unrolling loop 'FL7' (./tdf3_conv_stages.h:50:18) in function 'tdf3_readFilters' completely with a factor of 8 (./tdf3_conv_stages.h:50:18)
+INFO: [HLS 214-186] Unrolling loop 'FL7' (./tdf3_conv_stages.h:50:18) in function 'tdf3_readFilters' completely with a factor of 8 (./tdf3_conv_stages.h:50:18)
+INFO: [HLS 214-186] Unrolling loop 'FL7' (./tdf3_conv_stages.h:50:18) in function 'tdf3_readFilters' completely with a factor of 8 (./tdf3_conv_stages.h:50:18)
+INFO: [HLS 214-186] Unrolling loop 'FL7' (./tdf3_conv_stages.h:50:18) in function 'tdf3_readFilters' completely with a factor of 8 (./tdf3_conv_stages.h:50:18)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_117_2' (./tdf3_conv_stages.h:117:25) in function 'tdf3_writeOutputs_aligned' completely with a factor of 4 (./tdf3_conv_stages.h:117:25)
+INFO: [HLS 214-188] Unrolling loop 'DP_OUTER_3' (./tdf3_conv_stages.h:149:22) in function 'tdf3_dot_product' partially with a factor of 4 (./tdf3_conv_stages.h:149:22)
+INFO: [HLS 214-178] Inlining function 'fp_struct<decimal16>::fp_struct(decimal16)' into 'int generic_signbit<decimal16>(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/include/FloatingPoint/hls_signbit.h:11:0)
+INFO: [HLS 214-178] Inlining function 'fp_struct<decimal16>::__signbit() const' into 'int generic_signbit<decimal16>(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/include/FloatingPoint/hls_signbit.h:11:0)
+INFO: [HLS 214-178] Inlining function 'int generic_signbit<decimal16>(decimal16)' into 'hls::signbit(decimal16)' (/wrk/ci/prod/2020.2/rdi_builds/continuous/2020_11_18_3064766/src/shared/hls/clib/hlsmath/src/c++/signbithalf.cpp:7:0)
+INFO: [HLS 214-178] Inlining function 'hls::signbit(decimal16)' into 'tdf3_adjust(decimal16*, decimal16*, decimal16 (*) [4], unsigned short)' (./tdf3_conv_stages.h:212:0)
+INFO: [HLS 214-248] cyclic reshaped array 'out_data' on dimension 3 with 4 (tdf3.cpp:243:137)
+INFO: [HLS 200-111] Finished Compiling Optimization and Transform: CPU user time: 7.21 seconds. CPU system time: 0.71 seconds. Elapsed time: 8.32 seconds; current allocated memory: 245.840 MB.
+INFO: [HLS 200-111] Finished Checking Pragmas: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0 seconds; current allocated memory: 245.842 MB.
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms: CPU user time: 0.31 seconds. CPU system time: 0.03 seconds. Elapsed time: 0.41 seconds; current allocated memory: 267.239 MB.
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability: CPU user time: 0.4 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.45 seconds; current allocated memory: 288.815 MB.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'IL_LOOP' (tdf3.cpp:56) in function 'tdf3_accum_2' for pipelining.
+INFO: [XFORM 203-502] Unrolling small iteration loop 'DP_OUTER_1' (./tdf3_conv_stages.h:147) in function 'tdf3_dot_product' automatically.
+INFO: [XFORM 203-502] Unrolling small iteration loop 'DP_OUTER_2' (./tdf3_conv_stages.h:148) in function 'tdf3_dot_product' automatically.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'DP_OUTER_3' (./tdf3_conv_stages.h:149) in function 'tdf3_dot_product' for pipelining.
+INFO: [XFORM 203-502] Unrolling small iteration loop 'FL4' (./tdf3_conv_stages.h:47) in function 'tdf3_readFilters' automatically.
+INFO: [XFORM 203-502] Unrolling small iteration loop 'FL5' (./tdf3_conv_stages.h:48) in function 'tdf3_readFilters' automatically.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'IL_LOOP' (tdf3.cpp:20) in function 'tdf3_accum_1' for pipelining.
+INFO: [HLS 200-489] Unrolling loop 'WRPC_LOOP' (tdf3.cpp:64) in function 'tdf3_accum_2' completely with a factor of 4.
+INFO: [HLS 200-489] Unrolling loop 'DP_OUTER_1' (./tdf3_conv_stages.h:147) in function 'tdf3_dot_product' completely with a factor of 1.
+INFO: [HLS 200-489] Unrolling loop 'DP_OUTER_2' (./tdf3_conv_stages.h:148) in function 'tdf3_dot_product' completely with a factor of 1.
+INFO: [HLS 200-489] Unrolling loop 'DP_INNER' (./tdf3_conv_stages.h:152) in function 'tdf3_dot_product' completely with a factor of 8.
+INFO: [HLS 200-489] Unrolling loop 'FL4' (./tdf3_conv_stages.h:47) in function 'tdf3_readFilters' completely with a factor of 1.
+INFO: [HLS 200-489] Unrolling loop 'FL5' (./tdf3_conv_stages.h:48) in function 'tdf3_readFilters' completely with a factor of 1.
+INFO: [HLS 200-489] Unrolling loop 'WRPC_LOOP' (tdf3.cpp:28) in function 'tdf3_accum_1' completely with a factor of 8.
+WARNING: [HLS 200-1476] Applying partition directive (tdf3.cpp:245:4) and reshape directive (tdf3.cpp:246:9) on the same variable 'filter_data' (tdf3.cpp:245) may lead to unexpected synthesis behaviors.\
+
+INFO: [XFORM 203-131] Reshaping array 'in_data' (tdf3.cpp:244) in dimension 3 with a cyclic factor of 4.
+INFO: [XFORM 203-131] Reshaping array 'filter_data' (tdf3.cpp:245) in dimension 4 with a cyclic factor of 4.
+INFO: [XFORM 203-131] Reshaping array 'adjustments' (tdf3.cpp:246) in dimension 2 completely.
+INFO: [XFORM 203-101] Partitioning array 'ifmap_vec' (tdf3.cpp:153) in dimension 3 with a cyclic factor 4.
+INFO: [XFORM 203-101] Partitioning array 'weight_vecs' (tdf3.cpp:154) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'products' (tdf3.cpp:155) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'sums' (tdf3.cpp:156) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'outputs' (tdf3.cpp:157) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'indices' (tdf3.cpp:160) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_0' (tdf3.cpp:178) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_1' (tdf3.cpp:179) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_2' (tdf3.cpp:180) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_3' (tdf3.cpp:181) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_4' (tdf3.cpp:182) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_5' (tdf3.cpp:183) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_6' (tdf3.cpp:184) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum1_out_7' (tdf3.cpp:185) in dimension 1 with a cyclic factor 2.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_0' (tdf3.cpp:202) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_1' (tdf3.cpp:203) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_2' (tdf3.cpp:204) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_3' (tdf3.cpp:205) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_4' (tdf3.cpp:206) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_5' (tdf3.cpp:207) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_6' (tdf3.cpp:208) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'accum2_out_7' (tdf3.cpp:209) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'filter_data' (tdf3.cpp:245) in dimension 1 with a cyclic factor 8.
+INFO: [XFORM 203-101] Partitioning array 'vals' (tdf3.cpp:60) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'vals' (tdf3.cpp:24) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'weight_vecs' (tdf3.cpp:154) in dimension 4 with a cyclic factor 4.
+INFO: [XFORM 203-101] Partitioning array 'products' (tdf3.cpp:155) in dimension 2 with a cyclic factor 4.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec1.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec2.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec3.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs2.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs3.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs8.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs84.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs85.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs86.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs9.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs97.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs98.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs99.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs10.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1010.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1011.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1012.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs11.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1113.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1114.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1115.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs12.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1216.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1217.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1218.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs13.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1319.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1320.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1321.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs14.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1422.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1423.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1424.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec1.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec2.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec3.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs2.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs3.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs4.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs44.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs45.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs46.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs5.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs57.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs58.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs59.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs6.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs610.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs611.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs612.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs7.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs713.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs714.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs715.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs8.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs816.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs817.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs818.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs9.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs919.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs920.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs921.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs10.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1022.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1023.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs1024.0' in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.0' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.1' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.2' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.3' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.1' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.2' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.3' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.0.0' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.1.0' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.2.0' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'ifmap_vec.3.0' (tdf3.cpp:153) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.0.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.1.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.2.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.3.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.4.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.5.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.6.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.0.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.1.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.2.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-102] Partitioning array 'weight_vecs.7.3.0' (tdf3.cpp:154) in dimension 1 automatically.
+INFO: [XFORM 203-721] Extract dataflow region from loop TOP_LOOP (tdf3.cpp:150)  of function 'tdf3'.
+INFO: [HLS 200-988] Store statement on variable  'sums[0]104' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[1]105' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[2]106' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[3]107' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[4]108' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[5]109' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[6]110' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [HLS 200-988] Store statement on variable  'sums[7]111' (tdf3.cpp:156) in a dataflow region ( 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7)) will infer a separate dataflow process. Consider placing this store inside a function.
+INFO: [XFORM 203-712] Applying dataflow to function 'dataflow_in_loop_TOP_LOOP' (tdf3.cpp:150:7), detected/extracted 38 process function(s): 
+	 'tdf3_get_next_ijk'
+	 'tdf3_readInputs'
+	 'tdf3_readFilters'
+	 'tdf3_dot_product'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_1'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_2'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc185'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc186'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc187'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc188'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc189'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc190'
+	 'tdf3_accum_3'
+	 'Block_entry_proc_proc191'
+	 'tdf3_adjust'
+	 'tdf3_writeOutputs_aligned'.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (./tdf3_conv_stages.h:116:36) in function 'tdf3_writeOutputs_aligned'... converting 13 basic blocks.
+INFO: [HLS 200-111] Finished Loop, function and other optimizations: CPU user time: 3.63 seconds. CPU system time: 0.1 seconds. Elapsed time: 4.27 seconds; current allocated memory: 334.618 MB.
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[2][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[6][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[5][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[3][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[3][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[5][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[4][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[2][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[1][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[5][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[4][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[1][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[2][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[3][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[6][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[5][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[7][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[4][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[1][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[6][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[0][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[0][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[0][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[0][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[1][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[6][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[2][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[7][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[4][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[3][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[7][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'products[7][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[2][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[6][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[5][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[3][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[3][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[5][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[4][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[2][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[1][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[5][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[4][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[1][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[2][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[3][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[6][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[5][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[7][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[4][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[1][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[6][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[0][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[0][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[0][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[0][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[1][0]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[6][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[2][2]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[7][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[4][1]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[3][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[7][3]' (./tdf3_conv_stages.h:139).
+WARNING: [ANALYSIS 214-52] Found false intra dependency for variable 'products[7][0]' (./tdf3_conv_stages.h:139).
+INFO: [HLS 200-472] Inferring partial write operation for 'filter_data[0]' (tdf3.cpp:249:28)
+INFO: [HLS 200-472] Inferring partial write operation for 'adjustments' (tdf3.cpp:250:22)
+INFO: [HLS 200-472] Inferring partial write operation for 'ifmap_vec[0][0][0]' (./tdf3_conv_stages.h:33:35)
+INFO: [HLS 200-472] Inferring partial write operation for 'weight_vecs[0][0][0][0]' (./tdf3_conv_stages.h:55:43)
+INFO: [HLS 200-472] Inferring partial write operation for 'products[0][0]' (./tdf3_conv_stages.h:153:32)
+INFO: [HLS 200-472] Inferring partial write operation for 'accum_out[0]' (tdf3.cpp:39:28)
+INFO: [HLS 200-472] Inferring partial write operation for 'accum_out[1]' (tdf3.cpp:40:28)
+INTERNAL-INFO: never seen llvm instruction 'hsub'(535)
+WARNING: [HLS 200-1449] Process tdf3_readInputs has both a predecessor and reads an input from its caller (see the GUI dataflow viewer). This may lead to lower throughput. Consider copying this input via a predecessor process.
+INFO: [HLS 200-111] Finished Architecture Synthesis: CPU user time: 2.49 seconds. CPU system time: 0.2 seconds. Elapsed time: 2.91 seconds; current allocated memory: 653.662 MB.
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'tdf3_top' ...
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.1' to 'tdf3_accum_2_1'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.2' to 'tdf3_accum_2_2'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.3' to 'tdf3_accum_2_3'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.4' to 'tdf3_accum_2_4'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.5' to 'tdf3_accum_2_5'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.6' to 'tdf3_accum_2_6'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_2.7' to 'tdf3_accum_2_7'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.1' to 'tdf3_accum_3_1'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.2' to 'tdf3_accum_3_2'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.3' to 'tdf3_accum_3_3'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.4' to 'tdf3_accum_3_4'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.5' to 'tdf3_accum_3_5'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.6' to 'tdf3_accum_3_6'.
+WARNING: [SYN 201-103] Legalizing function name 'tdf3_accum_3.7' to 'tdf3_accum_3_7'.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_get_next_ijk' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.17 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.27 seconds; current allocated memory: 654.345 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.05 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.07 seconds; current allocated memory: 654.519 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_readInputs' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL6'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 2, loop 'IL6'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.13 seconds. CPU system time: 0 seconds. Elapsed time: 0.17 seconds; current allocated memory: 654.725 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.12 seconds; current allocated memory: 655.012 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_readFilters' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'FL6'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 2, loop 'FL6'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.23 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.28 seconds; current allocated memory: 655.602 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.11 seconds. CPU system time: 0 seconds. Elapsed time: 0.14 seconds; current allocated memory: 656.339 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_dot_product' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'DP_OUTER_3'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 3, loop 'DP_OUTER_3'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.36 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.42 seconds; current allocated memory: 657.126 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.32 seconds. CPU system time: 0 seconds. Elapsed time: 0.35 seconds; current allocated memory: 658.083 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.53 seconds. CPU system time: 0 seconds. Elapsed time: 0.58 seconds; current allocated memory: 658.258 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.12 seconds. CPU system time: 0 seconds. Elapsed time: 0.15 seconds; current allocated memory: 658.488 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.17 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.22 seconds; current allocated memory: 658.648 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.1 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 658.828 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.15 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.2 seconds; current allocated memory: 658.959 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.1 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 659.139 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.15 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.2 seconds; current allocated memory: 659.269 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.1 seconds. CPU system time: 0 seconds. Elapsed time: 0.14 seconds; current allocated memory: 659.449 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.2 seconds; current allocated memory: 659.582 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.11 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 659.762 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.21 seconds; current allocated memory: 659.892 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.13 seconds. CPU system time: 0 seconds. Elapsed time: 0.16 seconds; current allocated memory: 660.102 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.21 seconds; current allocated memory: 660.232 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.11 seconds. CPU system time: 0 seconds. Elapsed time: 0.14 seconds; current allocated memory: 660.411 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_6' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.22 seconds; current allocated memory: 660.541 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.11 seconds. CPU system time: 0 seconds. Elapsed time: 0.14 seconds; current allocated memory: 660.721 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_2_7' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'IL_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'IL_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.16 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.21 seconds; current allocated memory: 660.851 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.1 seconds. CPU system time: 0 seconds. Elapsed time: 0.15 seconds; current allocated memory: 661.031 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.12 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.16 seconds; current allocated memory: 661.102 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.197 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.12 seconds; current allocated memory: 661.228 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.04 seconds. CPU system time: 0 seconds. Elapsed time: 0.08 seconds; current allocated memory: 661.262 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.06 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.332 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.427 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc185' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.12 seconds; current allocated memory: 661.457 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.05 seconds. CPU system time: 0 seconds. Elapsed time: 0.08 seconds; current allocated memory: 661.491 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.562 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.656 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc186' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 661.686 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.04 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.08 seconds; current allocated memory: 661.720 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.791 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.1 seconds; current allocated memory: 661.885 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc187' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.09 seconds. CPU system time: 0 seconds. Elapsed time: 0.12 seconds; current allocated memory: 661.915 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.05 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.07 seconds; current allocated memory: 661.978 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.049 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.144 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc188' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.08 seconds. CPU system time: 0 seconds. Elapsed time: 0.11 seconds; current allocated memory: 662.174 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.05 seconds. CPU system time: 0 seconds. Elapsed time: 0.08 seconds; current allocated memory: 662.237 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.308 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.11 seconds; current allocated memory: 662.403 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc189' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.12 seconds; current allocated memory: 662.432 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.04 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.07 seconds; current allocated memory: 662.466 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_6' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.537 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.11 seconds; current allocated memory: 662.631 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc190' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.09 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 662.662 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.05 seconds. CPU system time: 0 seconds. Elapsed time: 0.08 seconds; current allocated memory: 662.695 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_accum_3_7' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.766 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.08 seconds. CPU system time: 0 seconds. Elapsed time: 0.1 seconds; current allocated memory: 662.861 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'Block_entry_proc_proc191' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.09 seconds. CPU system time: 0 seconds. Elapsed time: 0.12 seconds; current allocated memory: 662.891 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.06 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.09 seconds; current allocated memory: 662.924 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_adjust' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'ADJUST_LOOP'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 7, loop 'ADJUST_LOOP'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.25 seconds. CPU system time: 0 seconds. Elapsed time: 0.3 seconds; current allocated memory: 663.315 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.24 seconds. CPU system time: 0 seconds. Elapsed time: 0.27 seconds; current allocated memory: 663.987 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_writeOutputs_aligned' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.37 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.42 seconds; current allocated memory: 664.163 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.09 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 664.422 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'dataflow_in_loop_TOP_LOOP' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_0_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_0_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_0_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_0_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_1_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_1_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_1_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_1_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_2_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_2_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_2_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_2_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_3_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_3_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_3_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_3_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_4_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_4_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_4_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_4_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_5_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_5_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_5_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_5_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_6_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_6_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_6_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_6_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_7_0_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_7_1_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_7_2_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+WARNING: [HLS 200-1019] Consider increasing the depth of PIPO weight_vecs_7_3_0_0 (from tdf3_readFilters_U0 to tdf3_dot_product_U0) to 3 to improve performance and/or avoid deadlocks.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0.5 seconds. CPU system time: 0.03 seconds. Elapsed time: 0.7 seconds; current allocated memory: 664.996 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 4.67 seconds. CPU system time: 0.01 seconds. Elapsed time: 4.73 seconds; current allocated memory: 665.865 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 1.67 seconds. CPU system time: 0.02 seconds. Elapsed time: 1.75 seconds; current allocated memory: 665.977 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.61 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.65 seconds; current allocated memory: 666.113 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'tdf3_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 1.7 seconds. CPU system time: 0 seconds. Elapsed time: 1.74 seconds; current allocated memory: 666.198 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+WARNING: [BIND 205-102] The specified resource core for memory 'filter_data_0' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'adjustments' will be ignored if a simpler one can be used.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0.62 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.66 seconds; current allocated memory: 666.341 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_get_next_ijk' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Register 'i' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'j' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'k' is power-on initialization.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_get_next_ijk'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1.68 seconds. CPU system time: 0.02 seconds. Elapsed time: 1.75 seconds; current allocated memory: 666.572 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_readInputs' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_readInputs'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.18 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.23 seconds; current allocated memory: 667.577 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_readFilters' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'mux_816_64_1_1': 8 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_readFilters'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.34 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.42 seconds; current allocated memory: 669.788 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_dot_product' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hmul_16ns_16ns_16_2_max_dsp_1': 32 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_dot_product'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.29 seconds. CPU system time: 0.04 seconds. Elapsed time: 0.41 seconds; current allocated memory: 673.963 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 6 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.97 seconds. CPU system time: 0.04 seconds. Elapsed time: 1.1 seconds; current allocated memory: 677.759 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.32 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.38 seconds; current allocated memory: 678.946 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.32 seconds; current allocated memory: 679.990 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_2'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.31 seconds; current allocated memory: 681.018 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_3'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.25 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.32 seconds; current allocated memory: 682.065 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_4'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.32 seconds; current allocated memory: 683.093 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_5'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.32 seconds; current allocated memory: 684.137 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_6' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_6'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.33 seconds; current allocated memory: 685.210 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_2_7' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 3 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_2_7'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.25 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.33 seconds; current allocated memory: 686.238 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.26 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.32 seconds; current allocated memory: 687.092 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.18 seconds; current allocated memory: 687.506 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_1'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 687.870 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc185' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc185'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.19 seconds; current allocated memory: 688.313 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_2'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.07 seconds. CPU system time: 0 seconds. Elapsed time: 0.13 seconds; current allocated memory: 688.647 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc186' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc186'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.19 seconds; current allocated memory: 689.091 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_3'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 689.425 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc187' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc187'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.14 seconds. CPU system time: 0 seconds. Elapsed time: 0.19 seconds; current allocated memory: 689.897 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_4' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_4'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.09 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 690.202 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc188' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc188'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.19 seconds; current allocated memory: 690.675 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_5' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_5'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.08 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 691.009 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc189' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc189'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.2 seconds; current allocated memory: 691.452 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_6' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_6'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.09 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.13 seconds; current allocated memory: 691.786 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc190' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc190'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.19 seconds; current allocated memory: 692.237 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_accum_3_7' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_accum_3_7'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.09 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.14 seconds; current allocated memory: 692.571 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'Block_entry_proc_proc191' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'Block_entry_proc_proc191'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.13 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.19 seconds; current allocated memory: 693.044 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_adjust' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'hadd_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'hmul_16ns_16ns_16_2_max_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'hsub_16ns_16ns_16_2_full_dsp_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'mux_83_16_1_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'mux_83_1_1_1': 8 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_adjust'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.17 seconds. CPU system time: 0.01 seconds. Elapsed time: 0.25 seconds; current allocated memory: 694.473 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_writeOutputs_aligned' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_writeOutputs_aligned'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0.75 seconds. CPU system time: 0.02 seconds. Elapsed time: 0.84 seconds; current allocated memory: 697.020 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'dataflow_in_loop_TOP_LOOP' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'dataflow_in_loop_TOP_LOOP'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 2.67 seconds. CPU system time: 0.03 seconds. Elapsed time: 2.75 seconds; current allocated memory: 710.513 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 4.1 seconds. CPU system time: 0.05 seconds. Elapsed time: 4.27 seconds; current allocated memory: 716.362 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'tdf3_top' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'tdf3_top/dummy_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'tdf3_top/out_data' to 'ap_memory'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'tdf3_top' to 'ap_ctrl_hs'.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'tdf3_top'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1.7 seconds. CPU system time: 0.01 seconds. Elapsed time: 1.79 seconds; current allocated memory: 717.491 MB.
+INFO: [HLS 200-741] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_0_0_0_memcore using a single memory for all blocks
+INFO: [RTMG 210-278] Implementing memory 'tdf3_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_0_0_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_products_0_0_memcore using a separate memory for each block
+INFO: [RTMG 210-278] Implementing memory 'tdf3_top_dataflow_in_loop_TOP_LOOP_products_0_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_0_memcore using a separate memory for each block
+INFO: [RTMG 210-278] Implementing memory 'tdf3_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_0_memcore_ram (RAM)' using auto RAMs.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_01_c_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_12_c_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_23_c1_U(tdf3_top_fifo_w1_d8_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_01_c2_U(tdf3_top_fifo_w6_d8_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_12_c3_U(tdf3_top_fifo_w12_d8_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_0_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_0_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_1_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_1_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_2_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_2_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_3_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_3_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_4_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_4_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_5_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_5_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_6_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_6_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_7_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'accum2_out_7_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_77_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_78_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_2_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_79_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_3_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_80_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_4_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_81_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_5_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_82_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_6_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'tmp_83_channel_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'sums_7_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'indices_23_c4_U(tdf3_top_fifo_w1_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_0_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_1_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_2_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_3_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_4_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_5_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_6_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+INFO: [RTMG 210-285] Implementing FIFO 'outputs_7_U(tdf3_top_fifo_w16_d2_S)' using Shift Registers.
+WARNING: [RTMG 210-274] Memory 'tdf3_top_in_data' is read-only, switch it to a ROM.
+INFO: [RTMG 210-279] Implementing memory 'tdf3_top_in_data_rom' using ultra ROMs.
+INFO: [RTMG 210-278] Implementing memory 'tdf3_top_filter_data_0_ram (RAM_2P_BRAM)' using block RAMs.
+WARNING: [RTMG 210-274] Memory 'tdf3_top_filter_data_1' is read-only, switch it to a ROM.
+INFO: [RTMG 210-279] Implementing memory 'tdf3_top_filter_data_1_rom' using block ROMs.
+INFO: [RTMG 210-278] Implementing memory 'tdf3_top_adjustments_ram (RAM_2P_BRAM)' using block RAMs.
+INFO: [HLS 200-741] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_0_0_0_memcore using a single memory for all blocks
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_products_0_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_0_memcore using a separate memory for each block
+INFO: [HLS 200-741] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_ifmap_vec_0_0_0_memcore using a single memory for all blocks
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_products_0_0_memcore using a separate memory for each block
+INFO: [HLS 200-740] Implementing PIPO tdf3_top_dataflow_in_loop_TOP_LOOP_accum1_out_0_0_memcore using a separate memory for each block
+INFO: [HLS 200-111] Finished Generating all RTL models: CPU user time: 9.69 seconds. CPU system time: 0.8 seconds. Elapsed time: 13.74 seconds; current allocated memory: 728.007 MB.
+INFO: [VHDL 208-304] Generating VHDL RTL for tdf3_top.
+INFO: [VLOG 209-307] Generating Verilog RTL for tdf3_top.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 141.34 MHz
+INFO: [HLS 200-111] Finished Command csynth_design CPU user time: 91.68 seconds. CPU system time: 5.3 seconds. Elapsed time: 106.5 seconds; current allocated memory: 731.896 MB.
+INFO: [HLS 200-112] Total CPU user time: 107.32 seconds. Total CPU system time: 8.34 seconds. Total elapsed time: 123.83 seconds; peak allocated memory: 728.007 MB.
+INFO: [Common 17-206] Exiting vitis_hls at Sat Mar 20 12:56:03 2021...

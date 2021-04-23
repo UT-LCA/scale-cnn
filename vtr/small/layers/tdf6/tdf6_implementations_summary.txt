@@ -1,0 +1,105 @@
+
+===========================================================
+== Synthesis results for tdf6 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf6/r1_o1
+
+Total latency (raw)  : 3,311,852 cycles
+Total latency (true) : 3,311,852 cycles
+Estimated total latency: 3,312,012 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 0.76%
+dsp: 0.61%
+ff: 0.32%
+lut: 0.74%
+uram: 4.38%
+Total cost: 0.068
+
+Subfunction latencies:
+tdf6_accum_1: 73 cycles
+tdf6_adjust: 6 cycles
+tdf6_readInputs: 66 cycles
+tdf6_accum_2: 25 cycles
+tdf6_dot_product: 131 cycles
+tdf6_readFilters: 130 cycles
+
+
+Implementation: r1_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf6/r1_o2
+
+Total latency (raw)  : 1,656,044 cycles
+Total latency (true) : 1,656,044 cycles
+Estimated total latency: 1,656,204 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 0.97%
+dsp: 0.96%
+ff: 0.48%
+lut: 1.08%
+uram: 4.38%
+Total cost: 0.079
+
+Subfunction latencies:
+tdf6_accum_1: 73 cycles
+tdf6_adjust: 9 cycles
+tdf6_dot_product: 131 cycles
+tdf6_readInputs: 66 cycles
+tdf6_accum_2: 25 cycles
+tdf6_writeOutputs_unaligned: 3 cycles
+tdf6_readFilters: 130 cycles
+
+
+Implementation: r2_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf6/r2_o1
+
+Total latency (raw)  : 1,706,152 cycles
+Total latency (true) : 1,706,152 cycles
+Estimated total latency: 1,706,188 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 0.97%
+dsp: 0.88%
+ff: 0.37%
+lut: 1.13%
+uram: 4.38%
+Total cost: 0.077
+
+Subfunction latencies:
+tdf6_accum_1: 45 cycles
+tdf6_readInputs: 66 cycles
+tdf6_adjust: 6 cycles
+tdf6_dot_product: 67 cycles
+tdf6_accum_2: 49 cycles
+tdf6_readFilters: 66 cycles
+
+
+Implementation: r4_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf6/r4_o1
+
+Total latency (raw)  : 903,278 cycles
+Total latency (true) : 903,278 cycles
+Estimated total latency: 903,276 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 0.97%
+dsp: 1.67%
+ff: 0.59%
+lut: 1.29%
+uram: 4.38%
+Total cost: 0.089
+
+Subfunction latencies:
+tdf6_accum_1: 29 cycles
+tdf6_accum_2: 13 cycles
+tdf6_dot_product: 35 cycles
+tdf6_adjust: 6 cycles
+tdf6_accum_3: 25 cycles
+tdf6_readInputs: 34 cycles
+tdf6_readFilters: 34 cycles

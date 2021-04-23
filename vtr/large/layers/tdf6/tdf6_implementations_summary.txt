@@ -1,0 +1,29 @@
+
+===========================================================
+== Synthesis results for tdf6 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/vtr/layers/tdf6/r1_o1
+
+Total latency (raw)  : 3,437,400 cycles
+Total latency (true) : 3,437,400 cycles
+Estimated total latency: 3,462,558 cycles
+Estimation error: 0.73%
+
+Cost info:
+bram: 0.76%
+dsp: 0.61%
+ff: 0.43%
+lut: 0.78%
+uram: 4.38%
+Total cost: 0.070
+
+Subfunction latencies:
+tdf6_accum_1: 125 cycles
+tdf6_adjust: 22 cycles
+tdf6_accum_2: 81 cycles
+tdf6_readInputs: 68 cycles
+tdf6_dot_product: 136 cycles
+tdf6_writeOutputs_unaligned: 2 cycles
+tdf6_readFilters: 130 cycles

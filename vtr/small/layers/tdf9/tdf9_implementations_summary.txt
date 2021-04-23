@@ -1,0 +1,105 @@
+
+===========================================================
+== Synthesis results for tdf9 layer implementations
+===========================================================
+
+Implementation: r1_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r1_o1
+
+Total latency (raw)  : 3,261,868 cycles
+Total latency (true) : 3,261,868 cycles
+Estimated total latency: 3,262,220 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 1.53%
+dsp: 0.61%
+ff: 0.31%
+lut: 0.74%
+uram: 2.50%
+Total cost: 0.057
+
+Subfunction latencies:
+tdf9_accum_1: 137 cycles
+tdf9_adjust: 6 cycles
+tdf9_readInputs: 130 cycles
+tdf9_accum_2: 25 cycles
+tdf9_dot_product: 259 cycles
+tdf9_readFilters: 258 cycles
+
+
+Implementation: r1_o2
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r1_o2
+
+Total latency (raw)  : 1,631,148 cycles
+Total latency (true) : 1,631,148 cycles
+Estimated total latency: 1,631,500 cycles
+Estimation error: 0.02%
+
+Cost info:
+bram: 1.81%
+dsp: 0.96%
+ff: 0.48%
+lut: 1.08%
+uram: 2.50%
+Total cost: 0.068
+
+Subfunction latencies:
+tdf9_accum_1: 137 cycles
+tdf9_adjust: 9 cycles
+tdf9_dot_product: 259 cycles
+tdf9_readInputs: 130 cycles
+tdf9_accum_2: 25 cycles
+tdf9_writeOutputs_unaligned: 3 cycles
+tdf9_readFilters: 258 cycles
+
+
+Implementation: r2_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r2_o1
+
+Total latency (raw)  : 1,656,072 cycles
+Total latency (true) : 1,656,072 cycles
+Estimated total latency: 1,656,204 cycles
+Estimation error: 0.01%
+
+Cost info:
+bram: 1.74%
+dsp: 0.88%
+ff: 0.37%
+lut: 1.13%
+uram: 2.50%
+Total cost: 0.066
+
+Subfunction latencies:
+tdf9_accum_1: 77 cycles
+tdf9_readInputs: 130 cycles
+tdf9_adjust: 6 cycles
+tdf9_dot_product: 131 cycles
+tdf9_accum_2: 49 cycles
+tdf9_readFilters: 130 cycles
+
+
+Implementation: r4_o1
+Directory: /home/ecelrc/students/drauch/research/scale-cnn/networks/td_fused/layers/tdf9/r4_o1
+
+Total latency (raw)  : 853,170 cycles
+Total latency (true) : 853,170 cycles
+Estimated total latency: 853,196 cycles
+Estimation error: 0.00%
+
+Cost info:
+bram: 2.29%
+dsp: 1.58%
+ff: 0.56%
+lut: 1.26%
+uram: 2.50%
+Total cost: 0.082
+
+Subfunction latencies:
+tdf9_accum_1: 53 cycles
+tdf9_accum_2: 25 cycles
+tdf9_dot_product: 67 cycles
+tdf9_adjust: 6 cycles
+tdf9_accum_3: 25 cycles
+tdf9_readInputs: 66 cycles
+tdf9_readFilters: 66 cycles
