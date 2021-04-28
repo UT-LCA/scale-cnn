@@ -16,6 +16,8 @@ The following is required to use Scale-CNN:
 - python3 and pip3. Virtual environment support also required if you do not have admin privileges.
 - Vitis HLS v2020.2, with `vitis_hls` executable directory added to `PATH`
 
+With these satisfied, the only step required for setup is to set the environment variable `SCALE_CNN_ROOT` to the top-level directory of the repo.
+
 ## Directory Structure
 
 - `common/` contains files that can be shared among all layer implementations of any layer type
@@ -23,7 +25,7 @@ The following is required to use Scale-CNN:
 - `layers/` contains some layer JSON files used to test individual layers. You should not need this to synthesize entire networks.
 - `networks/` contains JSON files used to describe entire networks. These show how network dimensions and options are provided to the tool.
 - `scripts/` contains all of the Python scripts for the tool. This is where you can find the top-level script, `scale-cnn.py`
-- `templates/` contains the template files for different layers. These template files have replacement tokens that are replaced with specific values for each layer or layer implementation
+- `templates/` contains the template files for different layers and networks. These template files have replacement tokens that are replaced with specific values for each implementation.
 - `vtr/` contains some tool-generated artifacts for a separate research project external to Scale-CNN.
 
 ## Usage
