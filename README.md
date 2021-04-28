@@ -107,3 +107,25 @@ This step can take several minutes to over an hour.
 
 
 ## Layer Types
+
+Currently, the only layer types supported by Scale-CNN are:
+
+- `conv`: Simple convolution layer.
+- `conv-max`: Fused convolution-maxpool layer.
+- `conv-conv`: Two convolution layers fused together to reduce memory requirements
+- `axi_in` / `axi_out`: These are "pseudo-layers" that exist at the beginning and end of the network pipeline to connect the accelerator to an AXI4-Lite bus. These are automatically created by the tool and should not be included in the network JSON file.
+
+In addition to the weights and biases, all convolution layers are designed to have per-filter batch normalization constants (mean and 1/stddev). These can be set to 0 and 1 respectively if no batch normalization is required; however, a good optimization to make in the future would be to extend the tool to make this optional.
+
+# Additional limitations
+
+These limitations currently exist in the tool and could be removed with further development:
+
+- The number of channels in any layer must either be exactly 3 or a multiple of 4. 
+- Convolution stride must be 1. Supporting larger values is nominally supported but has not been tested.
+- For maxpool layers, stride must equal pooling size.
+- For fused conv-conv layers, the second layer must have filter size = 1. The first layer can have any filter size.
+
+Lastly, the Vitis HLS toolchain currently does a really bad job of array partitioning or reshaping with any factor that is not
+a power of 2 (this is why the first limitation exists). If you try to extend this tool, do everything you can to make sure
+that this is satisfied.
