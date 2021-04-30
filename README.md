@@ -6,7 +6,7 @@ Scale-CNN is a tool for generating high-throughput CNN inference accelerators on
 
 Scale-CNN works by generating multiple possible implementations for each layer in the network. It synthesizes each layer with Vitis HLS to get resource utilization and performance estimates and then uses those to determine the Pareto-optimal design points. It can then generate multiple implementations for the network by choosing different permutations of layer design points and putting them together to make an accelerator for the entire network. The permutations are chosen intelligently such that the layer latencies are balanced -- this maximizes resource efficiency.
 
-Scale-CNN is intended to work for any CNN, but currently only has a minimal feature set to support basic convolution and maxpool layers. It was primarily designed around the [Tiny Darknet](https://pjreddie.com/darknet/tiny-darknet/) neural network.
+Scale-CNN is intended to work for any CNN, but currently only has a minimal feature set to support basic convolution and maxpool layers. It was primarily designed around the [Tiny Darknet](https://pjreddie.com/darknet/tiny-darknet/) neural network. Additionally, it currently only supports networks with simple feed-forward topologies. Topologies with feedback, divergence and convergence are not supported.
 
 ## Requirements
 
@@ -20,6 +20,7 @@ With these satisfied, the only step required for setup is to set the environment
 
 ## Directory Structure
 
+- `doc/` holds documentation
 - `common/` contains files that can be shared among all layer implementations of any layer type
 - `fpgas/` contains a single file, `fpgas.json`, that stores on-chip resources for different FPGAs. This data can be found in Xilinx Product Tables
 - `layers/` contains some layer JSON files used to test individual layers. You should not need this to synthesize entire networks.
@@ -59,7 +60,7 @@ Since the synthesizing can take a while, you should pipe all output to a log fil
 python3 scale-cnn.py explore_layer -l ../layers/examples/tiny_darknet_conv1.json -i ../layers/td_conv1/td_conv1_implementations.txt -ss --cost_function default
 ```
 
-The synthesis command does the same thing, but this lets you skip the lengthy syntheses with `-ss` and lets you choose a different cost function without having to re-synthesize everything.
+The synthesis command does the same thing, but this lets you skip the lengthy syntheses with `-ss` (skip synthesis) and lets you choose a different cost function without having to re-synthesize everything. In retrospect, these probably should have been split up as separate commands, since it is a bit confusing. The "explore\_layer" command both performs the synthesis step ands run the analysis. To just run the analysis after synthesis has finished without running all the syntheses again, you run "explore\_layer" again while skipping synthesis.
 
 ### Network Generation
 
@@ -108,6 +109,14 @@ vitis_hls -f td_fused.tcl &> out.log &
 This step can take several minutes to over an hour.
 
 
+## Layer / Network Implementation Names
+
+Scale-CNN generates multiple possible implementations for both layers and networks. Different implementations are given different names. The naming schemes are slightly different for layers and networks.
+
+A layer implementation name will looks like "r2\_o4". As mentioned in the paper, each layer implementation is characterized by two values -- input channel scale factor and output channel scale factor. The numbers next to "r" and "o" represent these two scale factors, respectively. The reason it is "r" instead of "i" is because I had originally called it the "read scale factor" and then never got around to changing it in the code.
+
+A network implementation name will look like "i3". In this case, "i" just stands for "implementation", and the number does not represent anything of significance; it is just used to distinguish itself from other implementations.
+
 ## Layer Types
 
 Currently, the only layer types supported by Scale-CNN are:
@@ -118,6 +127,8 @@ Currently, the only layer types supported by Scale-CNN are:
 - `axi_in` / `axi_out`: These are "pseudo-layers" that exist at the beginning and end of the network pipeline to connect the accelerator to an AXI4-Lite bus. These are automatically created by the tool and should not be included in the network JSON file.
 
 In addition to the weights and biases, all convolution layers are designed to have per-filter batch normalization constants (mean and 1/stddev). These can be set to 0 and 1 respectively if no batch normalization is required; however, a good optimization to make in the future would be to extend the tool to make this optional.
+
+It should also be noted that Scale-CNN only supports simple feed-forward network topologies; networks that use feedback or divergence and convergence are not supported.
 
 # Additional limitations
 
